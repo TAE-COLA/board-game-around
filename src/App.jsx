@@ -2,8 +2,7 @@ import { useState } from 'react';
 
 function App() {
 
-  let [글제목, b] = useState('남자 코드 추천');
-  let posts = '강남 우동 맛집';
+  let [글제목, b] = useState('효진아 안뇽 사랑훼');
 
   let [likes, changeLikes] = useState(0);
   function like() {
@@ -17,9 +16,9 @@ function App() {
       </div>
       <div className="list">
         <h4>{ 글제목 }</h4>
-        <p>2월 17일 발행</p>
+        <p>나를 얼만큼 사랑하니?!</p>
       </div>
-      <button className="btn" onClick={ like }>👍 { likes }</button>
+      <button className="btn" onClick={ like }>{ likes } 만큼 사랑해</button>
     </div>
   );
 }
