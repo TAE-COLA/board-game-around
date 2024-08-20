@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'nanumsquare';
+  font-weight: 700;
+  src: url('./assets/fonts/NanumSquareNeoOTF-Bd.otf') format('opentype');
+}
+
+@font-face {
+  font-family: 'nanumsquare';
+  font-weight: 800;
+  src: url('./assets/fonts/NanumSquareNeoOTF-Eb.otf') format('opentype');
+}
+
+@font-face {
+  font-family: 'nanumsquare';
+  font-weight: 900;
+  src: url('./assets/fonts/NanumSquareNeoOTF-Hv.otf') format('opentype');
+}
+
+@font-face {
+  font-family: 'nanumsquare';
+  font-weight: 300;
+  src: url('./assets/fonts/NanumSquareNeoOTF-Lt.otf') format('opentype');
+}
+
+@font-face {
+  font-family: 'nanumsquare';
+  font-weight: 400;
+  src: url('./assets/fonts/NanumSquareNeoOTF-Rg.otf') format('opentype');
+}
+
+.App {
+  font-family: 'nanumsquare';
+}
