@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "baseUrl": "src"
+  },
+  "paths": {
+      "app/*": ["app/*"],
+      "assets/*": ["assets/*"],
+      "entities/*": ["entities/*"],
+      "pages/*": ["pages/*"],
+      "shared/*": ["shared/*"],
+      "widgets/*": ["widgets/*"]
+    },
+  "include": ["src"],
+  "exclude": ["node_modules"]
+}
