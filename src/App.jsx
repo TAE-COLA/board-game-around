@@ -3,7 +3,7 @@ import { PageRouter } from './pages';
 
 function App() {
   return (
-    <div className="app">
+    <div className="app min-h-screen bg-blue-200">
       <BrowserRouter>
         <PageRouter />
       </BrowserRouter>
