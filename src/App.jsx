@@ -3,7 +3,7 @@ import { PageRouter } from './pages';
 
 function App() {
   return (
-    <div className="app min-h-screen bg-blue-200">
+    <div className="app flex flex-col w-full bg-blue-200 min-h-screen overflow-x-hidden">
       <BrowserRouter>
         <PageRouter />
       </BrowserRouter>
