@@ -1,23 +1,21 @@
-import { Button, Card, CardBody, CardFooter, CardHeader, Heading, Text } from '@chakra-ui/react';
+import { Button, Card, CardBody, CardFooter, CardHeader, CardProps, Heading, HeadingProps, Text } from '@chakra-ui/react';
 import { Game } from 'entities';
 import React from 'react';
-import { HeadingSize } from 'shared';
 
-type IProps = {
+type IProps = CardProps & {
   game: Game;
   onClickButton: () => void;
-  className?: string;
-  headerSize?: HeadingSize;
+  headerSize?: HeadingProps['size'];
 }
 
 const GameCard: React.FC<IProps> = ({ 
   game,
   onClickButton,
-  className = '',
-  headerSize = HeadingSize.MD
+  headerSize = 'md',
+  ...props
 }) => {
   return (
-    <Card className={className}>
+    <Card {...props}>
       <CardHeader>
         <Heading size={headerSize}>{ game.name }</Heading>
       </CardHeader>
