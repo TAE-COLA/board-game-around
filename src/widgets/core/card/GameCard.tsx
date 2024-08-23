@@ -1,24 +1,27 @@
+import { Button, Card, CardBody, CardFooter, CardHeader, Heading, Text } from '@chakra-ui/react';
 import { Game } from 'entities';
 import React from 'react';
 
-export interface GameCardProps {
+type IProps = {
   game: Game;
+  className?: string;
 }
 
-const GameCard: React.FC<GameCardProps> = ({ game }) => {
+const GameCard: React.FC<IProps> = ({ 
+  game 
+}) => {
   return (
-    <div className="card w-96 bg-white shadow-xl">
-      <figure>
-        <img src={game.image} alt={game.name} />
-      </figure>
-      <div className="card-body">
-        <h2 className="card-title">{ game.name }</h2>
-        <p>{ game.description }</p>
-        <div className="card-actions justify-end">
-          <button className="btn btn-primary">Buy Now</button>
-        </div>
-      </div>
-    </div>
+    <Card>
+      <CardHeader>
+        <Heading size='md'>{ game.name }</Heading>
+      </CardHeader>
+      <CardBody>
+        <Text>{ game.description }</Text>
+      </CardBody>
+      <CardFooter>
+        <Button>View here</Button>
+      </CardFooter>
+    </Card>
   )
 }
 
