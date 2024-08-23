@@ -1,1 +1,2 @@
-export { FourDirections, TwoDirections } from './Directions';
+export * from './directions';
+

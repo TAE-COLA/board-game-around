@@ -1,24 +1,29 @@
-import classNames from 'classnames';
 import { Game } from 'entities';
 import React from 'react';
-import { GameCard } from 'widgets';
+import { defaultFD, defaultTD, type FourDirections, type TwoDirections } from 'shared';
+import { GameCard, StyledGrid } from 'widgets';
 
-export interface GameCardGridProps {
+type IProps = {
   games: Game[];
+  columns: number | string;
   className?: string;
+  gap?: TwoDirections;
+  padding?: FourDirections;
+  margin?: FourDirections;
 }
 
-const GameCardGrid: React.FC<GameCardGridProps> = ({ games, className }) => {
-  "grid grid-cols-[repeat(auto-fit,384px)] gap-x-[${gap.x}] gap-y-[${gap.y}] py-8"
+const GameCardGrid: React.FC<IProps> = ({ 
+  games, 
+  columns,
+  className = '',
+  gap = defaultTD,
+  padding = defaultFD,
+  margin = defaultFD
+}) => {
   return (
-    <div className={
-      classNames(
-        'grid grid-cols-[repeat(auto-fit,384px)] py-8',
-        className
-      )
-    }>
-      { games.map(game => <GameCard key={game.id} game={game} />) }
-    </div>
+    <StyledGrid className={className} columns={columns} gap={gap} padding={padding} margin={margin}>
+      {games.map(game => <GameCard key={game.id} game={game} />)}
+    </StyledGrid>
   )
 }
 

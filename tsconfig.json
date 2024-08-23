@@ -109,6 +109,7 @@
     "app/*": ["app/*"],
     "assets/*": ["assets/*"],
     "entities/*": ["entities/*"],
+    "features/*": ["features/*"],
     "pages/*": ["pages/*"],
     "shared/*": ["shared/*"],
     "widgets/*": ["widgets/*"]

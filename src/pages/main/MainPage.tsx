@@ -21,7 +21,7 @@ const MainPage: React.FC = () => {
     <div className="max-w-full px-16 pt-8">
       <Header />
 
-      <GameCardGrid games={games} className="gap-x-8"/>
+      <GameCardGrid games={games} columns={3} />
     </div>
   )
 }
