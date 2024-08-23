@@ -1,10 +1,10 @@
-import { Button, Card, CardBody, CardFooter, CardHeader, CardProps, Heading, HeadingProps, Text } from '@chakra-ui/react';
+import { Button, ButtonProps, Card, CardBody, CardFooter, CardHeader, CardProps, Heading, HeadingProps, Text } from '@chakra-ui/react';
 import { Game } from 'entities';
 import React from 'react';
 
 type IProps = CardProps & {
   game: Game;
-  onClickButton: () => void;
+  onClickButton: ButtonProps['onClick'];
   headerSize?: HeadingProps['size'];
 }
 
