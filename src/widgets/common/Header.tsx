@@ -1,13 +1,29 @@
+import { Box, BoxProps, Button, Text } from '@chakra-ui/react';
 import React from 'react';
+import { FontSize } from 'shared';
 
-const Header: React.FC = () => {
+type IProps = BoxProps & {
+  onClickLoginButton: () => void;
+}
+
+const Header: React.FC<IProps> = ({
+  onClickLoginButton,
+  ...props
+}) => {
   return (
-    <header>
-      <div className="flex rounded-lg px-8 py-4  bg-white justify-between items-center">
-        <p className="text-2xl font-bold">우니의 보드게임천국</p>
-        <button className="btn">로그인</button>
-      </div>
-    </header>
+    <Box 
+      display="flex" 
+      justifyContent="space-between" 
+      alignItems="center" 
+      paddingX="32px" 
+      paddingY="16px" 
+      backgroundColor="white" 
+      borderRadius="8px" 
+      {...props}
+    >
+      <Text as="b" fontSize={FontSize["2XL"]}>우니의 보드게임천국</Text>
+      <Button onClick={onClickLoginButton}>로그인</Button>
+    </Box>
   );
 }
 

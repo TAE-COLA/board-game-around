@@ -1,29 +1,20 @@
+import { BoxProps, SimpleGrid } from '@chakra-ui/react';
 import { Game } from 'entities';
 import React from 'react';
-import { defaultFD, defaultTD, type FourDirections, type TwoDirections } from 'shared';
-import { GameCard, StyledGrid } from 'widgets';
+import { GameCard } from 'widgets';
 
-type IProps = {
+type IProps = BoxProps & {
   games: Game[];
-  columns: number | string;
-  className?: string;
-  gap?: TwoDirections;
-  padding?: FourDirections;
-  margin?: FourDirections;
 }
 
 const GameCardGrid: React.FC<IProps> = ({ 
-  games, 
-  columns,
-  className = '',
-  gap = defaultTD,
-  padding = defaultFD,
-  margin = defaultFD
+  games,
+  ...props
 }) => {
   return (
-    <StyledGrid className={className} columns={columns} gap={gap} padding={padding} margin={margin}>
-      {games.map(game => <GameCard key={game.id} game={game} />)}
-    </StyledGrid>
+    <SimpleGrid minChildWidth="120px" spacing='40px' {...props}>
+      {games.map(game => <GameCard key={game.id} game={game} onClickButton={() => {}}/>)}
+    </SimpleGrid>
   )
 }
 
