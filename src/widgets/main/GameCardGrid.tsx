@@ -12,7 +12,7 @@ const GameCardGrid: React.FC<IProps> = ({
   ...props
 }) => {
   return (
-    <SimpleGrid minChildWidth="120px" spacing='40px' {...props}>
+    <SimpleGrid minChildWidth="240px" spacing='40px' {...props}>
       {games.map(game => <GameCard key={game.id} game={game} onClickButton={() => {}}/>)}
     </SimpleGrid>
   )
