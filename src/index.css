@@ -32,6 +32,6 @@
   src: url('./assets/fonts/NanumSquareNeoOTF-Rg.otf') format('opentype');
 }
 
-.App {
+.app {
   font-family: 'nanumsquare';
 }
