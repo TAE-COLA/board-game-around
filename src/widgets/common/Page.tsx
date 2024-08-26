@@ -1,13 +1,16 @@
-import { Box } from '@chakra-ui/react';
+import { Box, BoxProps } from '@chakra-ui/react';
 import React from 'react';
 
-type IProps = {
+type IProps = BoxProps & {
   children: React.ReactNode;
 }
 
-const Page: React.FC<IProps> = ({ children }) => {
+const Page: React.FC<IProps> = ({ 
+  children,
+  ...props
+}) => {
   return (
-    <Box maxWidth="100%" paddingX="64px" paddingTop="32px">
+    <Box maxWidth="100%" paddingX="64px" paddingY="32px" {...props}>
       {children}
     </Box>
   )

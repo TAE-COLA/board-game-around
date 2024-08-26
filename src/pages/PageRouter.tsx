@@ -1,7 +1,6 @@
+import { LoginPage, MainPage } from 'pages';
 import React from 'react';
 import { Route, Routes, useLocation } from 'react-router-dom';
-import { LoginPage } from './login';
-import { MainPage } from './main';
 
 const PageRouter: React.FC = () => {
   const location = useLocation();

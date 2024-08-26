@@ -1,10 +1,13 @@
 import React from 'react';
+import { LoginContainer, LoginFields, Page } from 'widgets';
 
 const LoginPage: React.FC = () => {
   return (
-    <div>
-      <h1>Login</h1>
-    </div>
+    <Page height="100vh">
+      <LoginContainer>
+        <LoginFields />
+      </LoginContainer>
+    </Page>
   );
 };
 

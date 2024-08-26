@@ -8,7 +8,7 @@ const App: React.FC = () => {
   const background = "linear(to-br, blue.200, pink.200)";
   
   return (
-    <Flex flexDirection="column" width="100%" minHeight="100vh" overflowX="hidden" bgGradient={background}>
+    <Flex className="app" flexDirection="column" width="100%" minHeight="100vh" overflowX="hidden" bgGradient={background}>
       <BrowserRouter>
         <PageRouter />
       </BrowserRouter>
