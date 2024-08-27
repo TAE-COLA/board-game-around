@@ -1,4 +1,4 @@
-import { Button, Flex, FlexProps, FormControl, FormLabel, Input, Text } from '@chakra-ui/react';
+import { Button, Flex, FlexProps, FormControl, FormLabel, Input, Text, useToast } from '@chakra-ui/react';
 import { useAuth } from 'features';
 import React, { useState } from 'react';
 
@@ -7,12 +7,20 @@ const LoginFields: React.FC<FlexProps> = ({ ...props }) => {
   const [ email, setEmail ] = useState('');
   const [ password, setPassword ] = useState('');
   const [ error, setError ] = useState<string | null>(null);
+  const toast = useToast();
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log(email, password);
     try {
       await login(email, password);
+      toast({
+        title: '로그인 완료',
+        description: '로그인이 완료되었습니다.',
+        status: 'success',
+        duration: 9000,
+        isClosable: true
+      });
     } catch (err) {
       setError('Login failed: ' + err);
     }

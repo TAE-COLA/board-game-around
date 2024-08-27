@@ -10,19 +10,19 @@ const ProtectedRoute: React.FC = () => {
   const toast = useToast()
 
   useEffect(() => {
-    if (!user && location.pathname !== '/login') {
-      if (loading) return;
+    if (loading) return;
 
+    if (!user) {
       navigate('/login', { replace: true });
       toast({
         title: '로그인 필요',
         description: "로그인이 필요한 메뉴입니다. 로그인해주세요.",
         status: 'error',
         duration: 9000,
-        isClosable: true,
+        isClosable: true
       })
     }
-  }, [user, location.pathname]);
+  }, [loading, user, location.pathname]);
 
   return <Outlet />;
 };
