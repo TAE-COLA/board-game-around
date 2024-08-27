@@ -1,1 +1,1 @@
-export { default as Providers, useAuth } from './Providers';
+export { default as Providers } from './Providers';

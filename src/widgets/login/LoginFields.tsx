@@ -1,5 +1,5 @@
 import { Button, Flex, FlexProps, FormControl, FormLabel, Input, Text } from '@chakra-ui/react';
-import { useAuth } from 'app';
+import { useAuth } from 'features';
 import React, { useState } from 'react';
 
 const LoginFields: React.FC<FlexProps> = ({ ...props }) => {

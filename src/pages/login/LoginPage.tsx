@@ -1,4 +1,4 @@
-import { useAuth } from 'app';
+import { useAuth } from 'features';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LoginContainer, LoginFields, Page } from 'widgets';
@@ -8,7 +8,7 @@ const LoginPage: React.FC = () => {
   const navigate = useNavigate();
 
   if (user) {
-    navigate('/', { replace: true });
+    navigate('/main', { replace: true });
   }
 
   return (

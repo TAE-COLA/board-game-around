@@ -1,5 +1,5 @@
 import { Box, BoxProps, Button, Text } from '@chakra-ui/react';
-import { useAuth } from 'app';
+import { useAuth } from 'features';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FontSize } from 'shared';
