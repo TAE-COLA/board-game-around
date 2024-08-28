@@ -1,17 +1,17 @@
-import { Button, Flex, FlexProps, Text } from '@chakra-ui/react';
+import { Button, Flex, FlexProps, Text, useToast } from '@chakra-ui/react';
 import { useAuth } from 'features';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { showToast } from 'widgets';
 
 const GreetingUser: React.FC<FlexProps> = ({ ...props }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const toast = useToast();
 
   const logoutAndNavigate = () => {
     logout();
     navigate('/login', { replace: true });
-    showToast({ title: '로그아웃', body: '정상적으로 로그아웃되었습니다.' });
+    toast({ title: '로그아웃', description: '정상적으로 로그아웃되었습니다.', status: 'info', duration: 9000, isClosable: true });
   }
 
   if (!user) return <div />
