@@ -47,6 +47,7 @@ const RegisterFields: React.FC<IProps> = ({
             value={email.value}
             onChange={(e) => onEmailChange(e.target.value)}
             paddingRight='100'
+            isReadOnly={emailDuplicate === false}
           />
           <InputRightElement width='120'>
             {emailDuplicate === false ? 

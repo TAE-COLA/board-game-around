@@ -125,7 +125,7 @@ function checkEmailValidity(email: string): string | null {
 
 function checkEmailDuplicate(email: string): boolean {
   const random = Math.random();
-  if (random < 1) {
+  if (random < 0.5) {
     return false;
   } else {
     return true;
