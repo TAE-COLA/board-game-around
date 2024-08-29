@@ -1,7 +1,8 @@
 import { CheckIcon } from '@chakra-ui/icons';
-import { Button, Flex, FlexProps, FormControl, FormErrorMessage, FormHelperText, Input, InputGroup, InputRightElement } from '@chakra-ui/react';
+import { Button, Flex, FlexProps } from '@chakra-ui/react';
 import React from 'react';
 import { FormData } from 'shared';
+import { FormInput } from 'widgets';
 
 type IProps = FlexProps & {
   email: FormData<'email', string>;
@@ -39,58 +40,41 @@ const RegisterFields: React.FC<IProps> = ({
 }) => {
   return (
     <Flex direction='column' width='full' maxWidth='md' padding='8' gap='4' bg='white' borderRadius='md' boxShadow='md' {...props}>
-      <FormControl id={email.label} isInvalid={email.error !== null}>
-        <InputGroup>
-          <Input
-            type='email'
-            placeholder='이메일'
-            value={email.value}
-            onChange={(e) => onEmailChange(e.target.value)}
-            paddingRight='100'
-            isReadOnly={emailDuplicate === false}
-          />
-          <InputRightElement width='120'>
-            {emailDuplicate === false ? 
-              <CheckIcon color='green.500' marginRight='4' /> : 
-              <Button onClick={onClickCheckForDuplicatesButton} isDisabled={email.value.length === 0 || email.error !== null} size='sm' marginRight='1'>중복확인</Button>
-            }
-          </InputRightElement>
-        </InputGroup>
-        <FormErrorMessage paddingX='2'>{email.error}</FormErrorMessage>
-      </FormControl>
-      <FormControl id={password.label} isInvalid={password.error !== null}>
-        <Input 
-          type='password'
-          placeholder="비밀번호" 
-          value={password.value} 
-          onChange={(e) => onPasswordChange(e.target.value)} 
-        />
-        {!password.error ? 
-          <FormHelperText paddingX='2'>비밀번호는 8자 이상이어야 합니다.</FormHelperText> :
-          <FormErrorMessage paddingX='2'>{password.error}</FormErrorMessage>
+      <FormInput
+        id={email.label}
+        data={email}
+        onValueChange={(value) => onEmailChange(value)}
+        type='email'
+        placeholder='이메일'
+        isReadOnly={emailDuplicate === false}
+      >
+        {emailDuplicate === false ? 
+          <CheckIcon color='green.500' marginRight='4' /> : 
+          <Button onClick={onClickCheckForDuplicatesButton} isDisabled={email.value.length === 0 || email.error !== null} size='sm' marginRight='1'>중복확인</Button>
         }
-      </FormControl>
-      <FormControl id={passwordConfirm.label} isInvalid={passwordConfirm.error !== null}>
-        <Input 
-          type='password'
-          placeholder="비밀번호 확인" 
-          value={passwordConfirm.value} 
-          onChange={(e) => onPasswordConfirmChange(e.target.value)} 
-        />
-        <FormErrorMessage paddingX='2'>{passwordConfirm.error}</FormErrorMessage>
-      </FormControl>
-      <FormControl id={nickname.label} isInvalid={nickname.error !== null}>
-        <Input 
-          type='text'
-          placeholder="닉네임" 
-          value={nickname.value} 
-          onChange={(e) => onNicknameChange(e.target.value)} 
-        />
-        {!nickname.error ? 
-          <FormHelperText paddingX='2'>닉네임은 2자 이상 10자 이하로 입력하세요.</FormHelperText> :
-          <FormErrorMessage paddingX='2'>{nickname.error}</FormErrorMessage>
-        }
-      </FormControl>
+      </FormInput>
+      <FormInput
+        id={password.label}
+        data={password}
+        onValueChange={(value) => onPasswordChange(value)}
+        type='password'
+        placeholder='비밀번호'
+        helperText='비밀번호는 8자 이상이어야 합니다.'
+      />
+      <FormInput
+        id={passwordConfirm.label}
+        data={passwordConfirm}
+        onValueChange={(value) => onPasswordConfirmChange(value)}
+        type='password'
+        placeholder='비밀번호 확인'
+      />
+      <FormInput
+        id={nickname.label}
+        data={nickname}
+        onValueChange={(value) => onNicknameChange(value)}
+        placeholder='닉네임'
+        helperText='닉네임은 2자 이상 10자 이하로 입력하세요.'
+      />
       <Button onClick={onClickSubmitButton} isDisabled={!valid} size="lg">회원가입</Button>
     </Flex>
   );
