@@ -1,0 +1,90 @@
+import { useToast } from '@chakra-ui/react';
+import { useAuth } from 'features';
+import { useEffect, useReducer } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+type LoginState = {
+  loading: boolean;
+  email: string;
+  password: string;
+};
+
+type LoginEvent =
+  | { type: 'ON_EMAIL_CHANGE'; email: string }
+  | { type: 'ON_PASSWORD_CHANGE'; password: string }
+  | { type: 'ON_CLICK_LOGIN_BUTTON' }
+  | { type: 'ON_CLICK_REGISTER_BUTTON' };
+
+type LoginReduce =
+  | { type: 'LOADING'; loading: boolean }
+  | { type: 'EMAIL'; email: string }
+  | { type: 'PASSWORD'; password: string };
+
+function handleLoginReduce(state: LoginState, reduce: LoginReduce): LoginState {
+  switch (reduce.type) {
+    case 'LOADING':
+      return { ...state, loading: reduce.loading };
+    case 'EMAIL':
+      return { ...state, email: reduce.email };
+    case 'PASSWORD':
+      return { ...state, password: reduce.password };
+    default:
+      return state;
+  }
+}
+
+export function useLoginIntent() {
+  const initialState: LoginState = {
+    loading: false,
+    email: '',
+    password: ''
+  };
+  const [state, dispatch] = useReducer(handleLoginReduce, initialState);
+
+  const navigate = useNavigate();
+  const toast = useToast();
+
+  const { user, login } = useAuth();
+
+  const onEvent = async (event: LoginEvent) => {
+    switch (event.type) {
+      case 'ON_EMAIL_CHANGE':
+        dispatch({ type: 'EMAIL', email: event.email });
+        break;
+      case 'ON_PASSWORD_CHANGE':
+        dispatch({ type: 'PASSWORD', password: event.password });
+        break;
+      case 'ON_CLICK_LOGIN_BUTTON':
+        dispatch({ type: 'LOADING', loading: true });
+        try {
+          await login(state.email, state.password);
+          dispatch({ type: 'LOADING', loading: false });
+
+          navigate('/main', { replace: true });
+          toast({ title: '로그인 완료', description: '로그인이 완료되었습니다.', status: 'success', duration: 9000, isClosable: true });
+        } catch (error) {
+          dispatch({ type: 'LOADING', loading: false });
+
+          toast({ title: '로그인 실패', description: '로그인에 실패했습니다.', status: 'error', duration: 9000, isClosable: true });
+        }
+        break;
+      case 'ON_CLICK_REGISTER_BUTTON':
+        navigate('/register');
+        break;
+      default:
+        break;
+    }
+  };
+
+  useEffect(() => {
+    if (user) { 
+      navigate('/main', { replace: true });
+      toast({ title: '로그인', description: '이미 로그인되어 있습니다.', status: 'info', duration: 9000, isClosable: true });
+    }
+  }, [user]);
+
+  return {
+    state,
+    onEvent,
+  };
+}

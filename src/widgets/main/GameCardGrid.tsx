@@ -4,16 +4,24 @@ import React from 'react';
 import { GameCard } from 'widgets';
 
 type IProps = BoxProps & {
-  games: Game[];
+  gameList: Game[];
+  onClickGamePlayButton: (game: Game) => void;
 }
 
 const GameCardGrid: React.FC<IProps> = ({ 
-  games,
+  gameList,
+  onClickGamePlayButton,
   ...props
 }) => {
   return (
     <SimpleGrid minChildWidth="240px" spacing='40px' {...props}>
-      {games.map(game => <GameCard key={game.id} game={game} onClickButton={() => {}}/>)}
+      {gameList.map(game => 
+        <GameCard 
+          key={game.id} 
+          game={game} 
+          onClickGamePlayButton={() => onClickGamePlayButton(game)}
+        />
+      )}
     </SimpleGrid>
   )
 }

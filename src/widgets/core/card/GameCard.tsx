@@ -4,26 +4,26 @@ import React from 'react';
 
 type IProps = CardProps & {
   game: Game;
-  onClickButton: ButtonProps['onClick'];
+  onClickGamePlayButton: ButtonProps['onClick'];
   headerSize?: HeadingProps['size'];
 }
 
 const GameCard: React.FC<IProps> = ({ 
   game,
-  onClickButton,
+  onClickGamePlayButton,
   headerSize = 'md',
   ...props
 }) => {
   return (
     <Card {...props}>
       <CardHeader>
-        <Heading size={headerSize}>{ game.name }</Heading>
+        <Heading size={headerSize}>{game.name}</Heading>
       </CardHeader>
       <CardBody>
-        <Text>{ game.description }</Text>
+        <Text>{game.description}</Text>
       </CardBody>
       <CardFooter>
-        <Button onClick={onClickButton}>플레이 하기</Button>
+        <Button onClick={onClickGamePlayButton}>플레이 하기</Button>
       </CardFooter>
     </Card>
   )

@@ -1,19 +1,28 @@
 import { Box } from '@chakra-ui/react';
-import { useFetchGameList } from 'features';
+import { useMainIntent } from 'pages';
 import React from 'react';
-import { GameCardGrid, Header } from 'widgets';
+import { GameCardGrid, GreetingUser, Header, Page } from 'widgets';
 
 const MainPage: React.FC = () => {
-  const { data: games } = useFetchGameList();
+  const { state, onEvent } = useMainIntent();
 
   return (
-    <Box maxWidth="100%" paddingX="64px" paddingTop="32px">
-      <Header onClickLoginButton={() => {}} />
-      {!games || games.length === 0 ? 
+    <Page>
+      <Header>
+        <GreetingUser
+          user={state.user}
+          onClickLogoutButton={() => onEvent({ type: 'ON_CLICK_LOGOUT_BUTTON' })}
+        />
+      </Header>
+      {!state.gameList || state.gameList.length === 0 ? 
         <Box>No games found.</Box> : 
-        <GameCardGrid games={games} marginTop='32px'/>
+        <GameCardGrid 
+          gameList={state.gameList} 
+          onClickGamePlayButton={game => onEvent({ type: 'ON_CLICK_GAME_PLAY_BUTTON', game })}
+          marginTop='32px'
+        />
       }
-    </Box>
+    </Page>
   )
 }
 

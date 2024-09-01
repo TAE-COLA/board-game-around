@@ -1,6 +1,5 @@
 import { Game } from 'entities';
 import { firestore } from 'features';
-import 'firebase/firestore';
 import { collection, getDocs } from 'firebase/firestore';
 import { useQuery } from 'react-query';
 
