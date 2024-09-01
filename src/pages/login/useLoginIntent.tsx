@@ -44,7 +44,7 @@ export function useLoginIntent() {
   const navigate = useNavigate();
   const toast = useToast();
 
-  const { user, login } = useAuth();
+  const { user, loading, login } = useAuth();
 
   const onEvent = async (event: LoginEvent) => {
     switch (event.type) {
@@ -68,11 +68,13 @@ export function useLoginIntent() {
   };
 
   useEffect(() => {
+    if (loading) return;
+    
     if (user) { 
       navigate('/main', { replace: true });
       toast({ title: '로그인', description: '이미 로그인되어 있습니다.', status: 'info', duration: 9000, isClosable: true });
     }
-  }, [user]);
+  }, [user, loading]);
 
   return {
     state,
