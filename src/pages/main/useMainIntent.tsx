@@ -1,4 +1,4 @@
-import { useToast } from '@chakra-ui/react';
+import { useDisclosure, useToast } from '@chakra-ui/react';
 import { Game, User } from 'entities';
 import { useAuth, useFetchGameList } from 'features';
 import { useEffect, useReducer } from 'react';
@@ -8,16 +8,20 @@ type MainState = {
   loading: boolean;
   user: User | null;
   gameList: Game[];
+  selectedGame: Game | null;
 };
 
 type MainEvent =
   | { type: 'ON_CLICK_LOGOUT_BUTTON' }
-  | { type: 'ON_CLICK_GAME_PLAY_BUTTON'; game: Game };
+  | { type: 'ON_CLICK_GAME_PLAY_BUTTON'; game: Game }
+  | { type: 'ON_CLICK_CREATE_LOUNGE_BUTTON' }
+  | { type: 'ON_CLICK_JOIN_LOUNGE_BUTTON'; code: string };
 
 type MainReduce =
   | { type: 'LOADING'; loading: boolean }
   | { type: 'USER'; user: User | null }
-  | { type: 'GAMES'; gameList: Game[] };
+  | { type: 'GAME_LIST'; gameList: Game[] }
+  | { type: 'SELECTED_GAME'; selectedGame: Game | null };
 
 function handleMainReduce(state: MainState, reduce: MainReduce): MainState {
   switch (reduce.type) {
@@ -25,8 +29,10 @@ function handleMainReduce(state: MainState, reduce: MainReduce): MainState {
       return { ...state, loading: reduce.loading };
     case 'USER':
       return { ...state, user: reduce.user };
-    case 'GAMES':
+    case 'GAME_LIST':
       return { ...state, gameList: reduce.gameList };
+    case 'SELECTED_GAME':
+      return { ...state, selectedGame: reduce.selectedGame };
     default:
       return state;
   }
@@ -37,6 +43,7 @@ export function useMainIntent() {
     loading: false,
     user: null,
     gameList: [],
+    selectedGame: null,
   };
   const [state, dispatch] = useReducer(handleMainReduce, initialState);
 
@@ -45,6 +52,13 @@ export function useMainIntent() {
 
   const { user, logout } = useAuth();
   const { data: gameList } = useFetchGameList();
+
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const onCloseGameEntryModal = () => {
+    dispatch({ type: 'SELECTED_GAME', selectedGame: null })
+    onClose();
+  };
+  const modal = { isOpen, onOpen, onClose: onCloseGameEntryModal };
 
   const onEvent = async (event: MainEvent) => {
     switch (event.type) {
@@ -55,7 +69,14 @@ export function useMainIntent() {
         toast({ title: '로그아웃', description: '정상적으로 로그아웃되었습니다.', status: 'info', duration: 9000, isClosable: true });
         break;
       case 'ON_CLICK_GAME_PLAY_BUTTON':
-        // TODO: 게임 실행 페이지로 이동
+        dispatch({ type: 'SELECTED_GAME', selectedGame: event.game });
+        onOpen();
+        break;
+      case 'ON_CLICK_CREATE_LOUNGE_BUTTON':
+        onCloseGameEntryModal();
+        break;
+      case 'ON_CLICK_JOIN_LOUNGE_BUTTON':
+        onCloseGameEntryModal();
         break;
       default:
         break;
@@ -64,11 +85,12 @@ export function useMainIntent() {
 
   useEffect(() => {
     if (user) dispatch({ type: 'USER', user });
-    if (gameList) dispatch({ type: 'GAMES', gameList });
+    if (gameList) dispatch({ type: 'GAME_LIST', gameList });
   }, [user, gameList]);
 
   return {
     state,
-    onEvent,
+    modal,
+    onEvent
   };
 }

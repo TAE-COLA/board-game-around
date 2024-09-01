@@ -1,10 +1,10 @@
 import { Box } from '@chakra-ui/react';
 import { useMainIntent } from 'pages';
 import React from 'react';
-import { GameCardGrid, GreetingUser, Header, Page } from 'widgets';
+import { GameCardGrid, GameEntryModal, GreetingUser, Header, Page } from 'widgets';
 
 const MainPage: React.FC = () => {
-  const { state, onEvent } = useMainIntent();
+  const { state, modal, onEvent } = useMainIntent();
 
   return (
     <Page>
@@ -20,6 +20,14 @@ const MainPage: React.FC = () => {
           gameList={state.gameList} 
           onClickGamePlayButton={game => onEvent({ type: 'ON_CLICK_GAME_PLAY_BUTTON', game })}
           marginTop='32px'
+        />
+      }
+      {state.selectedGame &&
+        <GameEntryModal 
+          modal={modal} 
+          game={state.selectedGame} 
+          onClickCreateLoungeButton={() => onEvent({ type: 'ON_CLICK_CREATE_LOUNGE_BUTTON' })}
+          onClickJoinLoungeButton={code => onEvent({ type: 'ON_CLICK_JOIN_LOUNGE_BUTTON', code })}
         />
       }
     </Page>

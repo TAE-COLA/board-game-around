@@ -107,12 +107,12 @@
   },
   "paths": {
     "app/*": ["app/*"],
-    "assets/*": ["assets/*"],
-    "entities/*": ["entities/*"],
-    "features/*": ["features/*"],
     "pages/*": ["pages/*"],
+    "widgets/*": ["widgets/*"],
+    "features/*": ["features/*"],
+    "entities/*": ["entities/*"],
     "shared/*": ["shared/*"],
-    "widgets/*": ["widgets/*"]
+    "assets/*": ["assets/*"]
   },
   "include": ["./src/**/*"],
   "exclude": [
