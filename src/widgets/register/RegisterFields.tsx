@@ -10,14 +10,12 @@ type IProps = FlexProps & {
   password: FormData<'password', string>;
   passwordConfirm: FormData<'passwordConfrim', string>;
   nickname: FormData<'nickname', string>;
-  birthday: FormData<'birthday', Date>;
   valid: boolean;
   onEmailChange: (email: string) => void;
   onClickCheckForDuplicatesButton: () => void;
   onPasswordChange: (password: string) => void;
   onPasswordConfirmChange: (passwordConfirm: string) => void;
   onNicknameChange: (nickname: string) => void;
-  onBirthdayChange: (birthday: Date) => void;
   onClickSubmitButton: () => void;
 };
 
@@ -27,14 +25,12 @@ const RegisterFields: React.FC<IProps> = ({
   password,
   passwordConfirm,
   nickname,
-  birthday,
   valid,
   onEmailChange,
   onClickCheckForDuplicatesButton,
   onPasswordChange,
   onPasswordConfirmChange,
   onNicknameChange,
-  onBirthdayChange,
   onClickSubmitButton,
   ...props 
 }) => {

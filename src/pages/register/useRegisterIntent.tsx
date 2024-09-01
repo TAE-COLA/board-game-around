@@ -1,4 +1,5 @@
 import { useToast } from '@chakra-ui/react';
+import { checkEmailForDuplicate, signUpWithEmailAndPassword } from 'features';
 import { useReducer } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FormData } from 'shared';
@@ -10,7 +11,6 @@ type RegisterState = {
   password: FormData<'password', string>;
   passwordConfirm: FormData<'passwordConfrim', string>;
   nickname: FormData<'nickname', string>;
-  birthday: FormData<'birthday', Date>;
   valid: boolean;
 };
 
@@ -20,7 +20,6 @@ type RegisterEvent =
   | { type: 'ON_PASSWORD_CHANGE'; password: string }
   | { type: 'ON_PASSWORD_CONFIRM_CHANGE'; passwordConfirm: string }
   | { type: 'ON_NICKNAME_CHANGE'; nickname: string }
-  | { type: 'ON_BIRTHDAY_CHANGE'; birthday: Date }
   | { type: 'ON_CLICK_SUBMIT_BUTTON' };
 
 type RegisterReduce =
@@ -30,7 +29,6 @@ type RegisterReduce =
   | { type: 'PASSWORD'; password: FormData<'password', string> }
   | { type: 'PASSWORD_CONFIRM'; passwordConfirm: FormData<'passwordConfrim', string> }
   | { type: 'NICKNAME'; nickname: FormData<'nickname', string> }
-  | { type: 'BIRTHDAY'; birthday: FormData<'birthday', Date> }
   | { type: 'VALID'; valid: boolean };
 
 function handleRegisterReduce(state: RegisterState, reduce: RegisterReduce): RegisterState {
@@ -47,8 +45,6 @@ function handleRegisterReduce(state: RegisterState, reduce: RegisterReduce): Reg
       return { ...state, passwordConfirm: reduce.passwordConfirm };
     case 'NICKNAME':
       return { ...state, nickname: reduce.nickname };
-    case 'BIRTHDAY':
-      return { ...state, birthday: reduce.birthday };
     case 'VALID':
       return { ...state, valid: reduce.valid };
     default:
@@ -64,7 +60,6 @@ export function useRegisterIntent() {
     password: { label: 'password', value: '', error: null },
     passwordConfirm: { label: 'passwordConfrim', value: '', error: null },
     nickname: { label: 'nickname', value: '', error: null },
-    birthday: { label: 'birthday', value: new Date(), error: null },
     valid: false,
   };
   const [state, dispatch] = useReducer(handleRegisterReduce, initialState);
@@ -79,7 +74,7 @@ export function useRegisterIntent() {
         dispatch({ type: 'VALID', valid: checkValid(state) });
         break;
       case 'ON_CLICK_CHECK_FOR_DUPLICATES_BUTTON':
-        const emailDuplicate = checkEmailDuplicate(state.email.value);
+        const emailDuplicate = await checkEmailForDuplicate(state.email.value);
         dispatch({ type: 'EMAIL', email: { label: 'email', value: state.email.value, error: emailDuplicate ? '중복된 이메일입니다.' : null } });
         dispatch({ type: 'EMAIL_DUPLICATE', emailDuplicate: emailDuplicate });
         dispatch({ type: 'VALID', valid: checkValid(state) });
@@ -96,12 +91,10 @@ export function useRegisterIntent() {
         dispatch({ type: 'NICKNAME', nickname: { label: 'nickname', value: event.nickname, error: checkNicknameValidity(event.nickname) } });
         dispatch({ type: 'VALID', valid: checkValid(state) });
         break;
-      case 'ON_BIRTHDAY_CHANGE':
-        dispatch({ type: 'BIRTHDAY', birthday: { label: 'birthday', value: event.birthday, error: null } });
-        dispatch({ type: 'VALID', valid: checkValid(state) });
-        break;
       case 'ON_CLICK_SUBMIT_BUTTON':
-        // TODO: 회원가입 버튼 클릭 시 이벤트 처리
+        await signUpWithEmailAndPassword(state.email.value, state.password.value, state.nickname.value)
+        toast({ title: '회원가입 완료', description: '회원가입이 완료됐습니다.', status: 'success', duration: 5000, isClosable: true });
+        navigate('/main', { replace: true });
         break;
       default:
         break;
@@ -115,6 +108,8 @@ export function useRegisterIntent() {
 }
 
 function checkEmailValidity(email: string): string | null {
+  if (email.length === 0) { return null; }
+
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   if (!emailRegex.test(email)) {
     return '이메일 형식이 올바르지 않습니다.';
@@ -123,17 +118,10 @@ function checkEmailValidity(email: string): string | null {
   return null;
 }
 
-function checkEmailDuplicate(email: string): boolean {
-  const random = Math.random();
-  if (random < 0.5) {
-    return false;
-  } else {
-    return true;
-  }
-}
-
 function checkPasswordValidity(password: string): string | null {
-  if (0 < password.length && password.length < 8) {
+  if (password.length === 0) { return null; }
+
+  if (password.length < 8) {
     return '비밀번호는 8자 이상이어야 합니다.';
   }
 
@@ -141,7 +129,9 @@ function checkPasswordValidity(password: string): string | null {
 }
 
 function checkPasswordConfirmValidity(password: string, passwordConfirm: string): string | null {
-  if (0 < passwordConfirm.length && password !== passwordConfirm) {
+  if (passwordConfirm.length === 0) { return null; }
+
+  if (password !== passwordConfirm) {
     return '비밀번호가 일치하지 않습니다.';
   }
 
@@ -149,7 +139,9 @@ function checkPasswordConfirmValidity(password: string, passwordConfirm: string)
 }
 
 function checkNicknameValidity(nickname: string): string | null {
-  if (0 < nickname.length && (nickname.length < 2 || 10 < nickname.length)) {
+  if (nickname.length === 0) { return null; }
+
+  if (nickname.length < 2 || 10 < nickname.length) {
     return '닉네임은 2자 이상 10자 이하로 입력하세요.';
   }
 
@@ -167,9 +159,6 @@ function checkValid(state: RegisterState): boolean {
     return false;
   }
   if (state.nickname.error !== null || state.nickname.value.length === 0) {
-    return false;
-  }
-  if (state.birthday.error !== null) {
     return false;
   }
   if (state.emailDuplicate === true) {
