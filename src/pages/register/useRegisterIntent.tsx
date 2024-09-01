@@ -1,8 +1,8 @@
 import { useToast } from '@chakra-ui/react';
+import { FormData } from 'entities';
 import { checkEmailForDuplicate, signUpWithEmailAndPassword } from 'features';
 import { useReducer } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FormData } from 'shared';
 
 type RegisterState = {
   loading: boolean;

@@ -1,6 +1,6 @@
 import { useDisclosure, useToast } from '@chakra-ui/react';
 import { Game, User } from 'entities';
-import { useAuth, useFetchGameList } from 'features';
+import { createLounge, useAuth, useFetchGameList } from 'features';
 import { useEffect, useReducer } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -73,10 +73,18 @@ export function useMainIntent() {
         onOpen();
         break;
       case 'ON_CLICK_CREATE_LOUNGE_BUTTON':
+        dispatch({ type: 'LOADING', loading: true });
+        if (state.selectedGame && user) {
+          const loungeId = await createLounge(state.selectedGame.id, user.id);
+          navigate(`/lounge/${loungeId}`);
+        }
         onCloseGameEntryModal();
+        dispatch({ type: 'LOADING', loading: false });
         break;
       case 'ON_CLICK_JOIN_LOUNGE_BUTTON':
+        dispatch({ type: 'LOADING', loading: true });
         onCloseGameEntryModal();
+        dispatch({ type: 'LOADING', loading: false });
         break;
       default:
         break;

@@ -114,9 +114,5 @@
     "shared/*": ["shared/*"],
     "assets/*": ["assets/*"]
   },
-  "include": ["./src/**/*"],
-  "exclude": [
-    "node_modules",
-    "**/*.(spec|test).ts"
-  ]
+  "exclude": ["node_modules"]
 }

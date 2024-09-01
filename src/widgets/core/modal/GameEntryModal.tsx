@@ -3,6 +3,7 @@ import { Game } from 'entities';
 import React, { useState } from 'react';
 
 type IProps = {
+  loading: boolean;
   modal: { isOpen: boolean; onOpen: () => void; onClose: () => void };
   game: Game;
   onClickCreateLoungeButton: () => void;
@@ -10,6 +11,7 @@ type IProps = {
 };
 
 const GameEntryModal: React.FC<IProps> = ({
+  loading,
   modal,
   game,
   onClickCreateLoungeButton,
@@ -27,7 +29,7 @@ const GameEntryModal: React.FC<IProps> = ({
           <Flex direction='row' width='100%' justify='Center' align='Center' gap='16'>
             <Flex direction='column' gap='4'>
               <Text>새로운 게임방을 생성하세요</Text>
-              <Button onClick={onClickCreateLoungeButton} colorScheme='blue'>게임방 생성</Button>
+              <Button onClick={onClickCreateLoungeButton} isDisabled={loading} colorScheme='blue'>게임방 생성</Button>
             </Flex>
             <Flex direction='column' gap='4'>
               <Text>또는 기존의 게임방에 참여하세요</Text>
@@ -35,8 +37,9 @@ const GameEntryModal: React.FC<IProps> = ({
                 placeholder='게임방 코드'
                 value={code}
                 onChange={(e) => setData(e.target.value)}
+                isDisabled={loading}
               />
-              <Button onClick={() => onClickJoinLoungeButton(code)} colorScheme='blue'>게임방 참여</Button>
+              <Button onClick={() => onClickJoinLoungeButton(code)} isDisabled={loading} colorScheme='blue'>게임방 참여</Button>
             </Flex>
           </Flex>
         </ModalBody>

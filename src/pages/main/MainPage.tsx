@@ -24,6 +24,7 @@ const MainPage: React.FC = () => {
       }
       {state.selectedGame &&
         <GameEntryModal 
+          loading={state.loading}
           modal={modal} 
           game={state.selectedGame} 
           onClickCreateLoungeButton={() => onEvent({ type: 'ON_CLICK_CREATE_LOUNGE_BUTTON' })}
