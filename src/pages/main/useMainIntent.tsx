@@ -1,7 +1,6 @@
 import { useToast } from '@chakra-ui/react';
-import { Game } from 'entities';
+import { Game, User } from 'entities';
 import { useAuth, useFetchGameList } from 'features';
-import { User } from 'firebase/auth';
 import { useEffect, useReducer } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -45,7 +44,6 @@ export function useMainIntent() {
   const toast = useToast();
 
   const { user, logout } = useAuth();
-
   const { data: gameList } = useFetchGameList();
 
   const onEvent = async (event: MainEvent) => {
@@ -65,7 +63,7 @@ export function useMainIntent() {
   };
 
   useEffect(() => {
-    dispatch({ type: 'USER', user });
+    if (user) dispatch({ type: 'USER', user });
     if (gameList) dispatch({ type: 'GAMES', gameList });
   }, [user, gameList]);
 

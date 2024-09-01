@@ -3,6 +3,7 @@ import React, { KeyboardEvent } from 'react';
 
 
 type IProps = FlexProps & {
+  loading: boolean;
   email: string;
   password: string;
   onEmailChange: (email: string) => void;
@@ -11,6 +12,7 @@ type IProps = FlexProps & {
 };
 
 const LoginFields: React.FC<IProps> = ({ 
+  loading,
   email,
   password,
   onEmailChange,
@@ -35,7 +37,7 @@ const LoginFields: React.FC<IProps> = ({
         <FormLabel>Password</FormLabel>
         <Input type="password" placeholder="비밀번호를 입력하세요" value={password} onChange={(e) => onPasswordChange(e.target.value)} onKeyDown={handleKeyDown} />
       </FormControl>
-      <Button onClick={onClickLoginButton} colorScheme="blue" size="lg">로그인</Button>
+      <Button onClick={onClickLoginButton} isDisabled={loading} colorScheme="blue" size="lg">로그인</Button>
     </Flex>
   );
 }

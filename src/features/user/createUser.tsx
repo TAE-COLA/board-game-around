@@ -1,14 +1,14 @@
 import { User } from 'entities';
 import { firestore } from 'features';
-import { addDoc, collection as fCollection } from 'firebase/firestore';
+import { doc as fDocument, setDoc } from 'firebase/firestore';
 
 const USER_COLLECTION = 'Users';
 
 const createUser = async (user: User): Promise<string> => {
-  const collection = fCollection(firestore, USER_COLLECTION);
-  const documents = await addDoc(collection, user);
+  const document = fDocument(firestore, USER_COLLECTION, user.id);
+  await setDoc(document, user);
   
-  return documents.id;
+  return user.id;
 };
 
 export default createUser;

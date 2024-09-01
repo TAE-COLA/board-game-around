@@ -11,6 +11,7 @@ const LoginPage: React.FC = () => {
         onClickRegisterButton={() => onEvent({ type: 'ON_CLICK_REGISTER_BUTTON'} )}
       >
         <LoginFields
+          loading={state.loading}
           email={state.email}
           password={state.password}
           onEmailChange={(email) => onEvent({ type: 'ON_EMAIL_CHANGE', email })}

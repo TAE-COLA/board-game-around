@@ -56,17 +56,8 @@ export function useLoginIntent() {
         break;
       case 'ON_CLICK_LOGIN_BUTTON':
         dispatch({ type: 'LOADING', loading: true });
-        try {
-          await login(state.email, state.password);
-          dispatch({ type: 'LOADING', loading: false });
-
-          navigate('/main', { replace: true });
-          toast({ title: '로그인 완료', description: '로그인이 완료되었습니다.', status: 'success', duration: 9000, isClosable: true });
-        } catch (error) {
-          dispatch({ type: 'LOADING', loading: false });
-
-          toast({ title: '로그인 실패', description: '로그인에 실패했습니다.', status: 'error', duration: 9000, isClosable: true });
-        }
+        await login(state.email, state.password, () => { navigate('/main', { replace: true }) });
+        dispatch({ type: 'LOADING', loading: false });
         break;
       case 'ON_CLICK_REGISTER_BUTTON':
         navigate('/register');
