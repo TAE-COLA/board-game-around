@@ -5,7 +5,14 @@ import { useQuery } from 'react-query';
 
 const fetchGameList = async (): Promise<Game[]> => {
   const querySnapshot = await getDocs(collection(firestore, "Games"));
-  const data = querySnapshot.docs.map(doc => doc.data() as Game);
+  const data = querySnapshot.docs.map(doc => {
+    return {
+      id: doc.id,
+      name: doc.data().name,
+      description: doc.data().description,
+      image: doc.data().image,
+    }
+  });
 
   return data;
 };

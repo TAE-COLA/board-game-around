@@ -6,11 +6,12 @@ const LoginPage: React.FC = () => {
   const { state, onEvent } = useLoginIntent();
 
   return (
-    <Page height="100vh">
+    <Page loading= {state.loading} height="100vh">
       <LoginContainer 
         onClickRegisterButton={() => onEvent({ type: 'ON_CLICK_REGISTER_BUTTON'} )}
       >
         <LoginFields
+          loading={state.loading}
           email={state.email}
           password={state.password}
           onEmailChange={(email) => onEvent({ type: 'ON_EMAIL_CHANGE', email })}

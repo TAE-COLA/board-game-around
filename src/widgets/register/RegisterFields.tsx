@@ -1,7 +1,7 @@
 import { CheckIcon } from '@chakra-ui/icons';
 import { Button, Flex, FlexProps } from '@chakra-ui/react';
+import { FormData } from 'entities';
 import React from 'react';
-import { FormData } from 'shared';
 import { FormInput } from 'widgets';
 
 type IProps = FlexProps & {
