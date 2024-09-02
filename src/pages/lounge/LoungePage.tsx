@@ -1,14 +1,10 @@
 import { Flex } from '@chakra-ui/react';
 import { useLoungeIntent } from 'pages';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { LoungeBody, LoungeHeader, Page } from 'widgets';
 
 const LoungePage: React.FC = () => {
   const { state, onEvent } = useLoungeIntent();
-
-  useEffect(() => {
-    onEvent({ type: 'SCREEN_INITIALIZE' });
-  }, []);
 
   return (
     <Page loading= {state.loading} height='100vh'>

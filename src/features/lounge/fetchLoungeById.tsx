@@ -1,13 +1,18 @@
 import { Lounge } from 'entities';
 import { database } from 'features';
-import { ref as fRefrence, onValue } from 'firebase/database';
+import { child, ref as fRefrence, onValue } from 'firebase/database';
 
-const LOUNGE_REFERENCE = 'Lounge/';
+const LOUNGE_REFERENCE = 'Lounge';
 
-export const fetchLoungeById = async (id: string, setData: (data: Lounge) => void) => {
-  const reference = fRefrence(database, LOUNGE_REFERENCE + id);
-  onValue(reference, (snapshot) => {
-    const data = snapshot.val();
+export const fetchLoungeById = (id: string, setData: (data: Lounge) => void, onCrash: () => void) => {
+  const reference = child(fRefrence(database), LOUNGE_REFERENCE);
+  const loungeReference = child(reference, id);
+  const unsubscribe = onValue(loungeReference, (snapshot) => {
+    const data = { id: snapshot.key, ...snapshot.val() };
+    if (!data || !data.ownerId || !data.memberIds) {
+      unsubscribe();
+      onCrash();
+    }
     setData(data);
   });
 };

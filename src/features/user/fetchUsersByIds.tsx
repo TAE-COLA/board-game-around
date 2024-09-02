@@ -5,6 +5,10 @@ import { collection as fCollection, query as fQuery, getDocs, where } from 'fire
 const USER_COLLECTION = 'Users';
 
 export const fetchUsersByIds = async (ids: string[]): Promise<User[]> => {
+  if (!ids) {
+    return [];
+  }
+
   const collection = fCollection(firestore, USER_COLLECTION);
   const query = fQuery(collection, where('__name__', 'in', ids));
   const snapshots = await getDocs(query);

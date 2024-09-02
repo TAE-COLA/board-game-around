@@ -2,12 +2,12 @@ import { Lounge } from 'entities';
 import { database } from 'features';
 import { child, equalTo, query as fQuery, ref as fRefrence, get, orderByChild, set } from 'firebase/database';
 
-const LOUNGE_REFERENCE = 'Lounge/';
+const LOUNGE_REFERENCE = 'Lounge';
 
-const LOUNGE_CODE = 'code/';
+const LOUNGE_CODE = 'code';
 
 export const joinLounge = async (code: string, gameId: string, userId: string): Promise<string | null> => {
-  const reference = fRefrence(database, LOUNGE_REFERENCE);
+  const reference = child(fRefrence(database), LOUNGE_REFERENCE);
   const query = fQuery(reference, orderByChild(LOUNGE_CODE), equalTo(code));
   const snapshot = await get(query)
   const data = snapshot.val();
@@ -19,7 +19,10 @@ export const joinLounge = async (code: string, gameId: string, userId: string): 
     throw new Error('Not this game');
   }
 
-  const loungeReference = child(reference, loungeId + '/');
+  const loungeReference = child(reference, loungeId);
+  if (!lounge || !lounge.memberIds || !lounge.ownerId) {
+    throw new Error('Invalid Lounge');
+  }
   await set(loungeReference, { ...lounge, memberIds: [...lounge.memberIds, userId] });
 
   return lounge.id;
