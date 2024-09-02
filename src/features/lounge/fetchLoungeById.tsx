@@ -12,7 +12,8 @@ export const fetchLoungeById = (id: string, setData: (data: Lounge) => void, onC
     if (!data || !data.ownerId || !data.memberIds) {
       unsubscribe();
       onCrash();
+    } else {
+      setData(data);
     }
-    setData(data);
   });
 };

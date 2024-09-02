@@ -70,7 +70,7 @@ export function useLoungeIntent() {
         dispatch({ type: 'LOADING', loading: true });
         fetchLoungeById(loungeId!, async (lounge) => {
           dispatch({ type: 'LOUNGE', lounge });
-
+          
           const game = await fetchGameById(lounge.gameId);
           dispatch({ type: 'GAME', game });
 

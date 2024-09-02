@@ -19,11 +19,12 @@ export const joinLounge = async (code: string, gameId: string, userId: string): 
     throw new Error('Not this game');
   }
 
-  const loungeReference = child(reference, loungeId);
   if (!lounge || !lounge.memberIds || !lounge.ownerId) {
     throw new Error('Invalid Lounge');
   }
+
+  const loungeReference = child(reference, loungeId);
   await set(loungeReference, { ...lounge, memberIds: [...lounge.memberIds, userId] });
 
-  return lounge.id;
+  return loungeId;
 };
