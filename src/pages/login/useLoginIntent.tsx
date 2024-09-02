@@ -56,11 +56,11 @@ export function useLoginIntent() {
         dispatch({ type: 'PASSWORD', password: event.password });
         break;
       case 'ON_CLICK_LOGIN_BUTTON':
-        await launch(async () => {
+        await launch(loading => dispatch({ type: 'LOADING', loading }), async () => {
           await login(state.email, state.password, () => { 
             navigate('/main', { replace: true }) 
           });
-        }, loading => dispatch({ type: 'LOADING', loading }));
+        });
         break;
       case 'ON_CLICK_REGISTER_BUTTON':
         navigate('/register');

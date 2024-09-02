@@ -68,7 +68,7 @@ export function useLoungeIntent() {
     switch (event.type) {
       case 'SCREEN_INITIALIZE':
         if (loungeId) {
-          await launch(async () => {
+          await launch(loading => dispatch({ type: 'LOADING', loading }), async () => {
             await fetchLoungeById(loungeId, async (lounge) => {
               dispatch({ type: 'LOUNGE', lounge });
 
@@ -83,7 +83,7 @@ export function useLoungeIntent() {
               
               dispatch({ type: 'LOADING', loading: false });
             });
-          }, loading => dispatch({ type: 'LOADING', loading }));
+          });
         }
         break;
       case 'ON_CLICK_EXIT_BUTTON':

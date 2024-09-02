@@ -1,6 +1,5 @@
-export async function launch(task: () => void, setLoading: (loading: boolean) => void) {
+export async function launch(setLoading: (loading: boolean) => void, task: () => void) {
   setLoading(true);
-  await new Promise(resolve => setTimeout(resolve, 1000));
   await task();
   setLoading(false);
 }

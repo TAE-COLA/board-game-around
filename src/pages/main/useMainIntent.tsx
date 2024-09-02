@@ -64,15 +64,15 @@ export function useMainIntent() {
   const onEvent = async (event: MainEvent) => {
     switch (event.type) {
       case 'SCREEN_INITIALIZE':
-        await launch(async () => {
+        await launch(loading => dispatch({ type: 'LOADING', loading }), async () => {
           const gameList = await fetchAllGames();
           dispatch({ type: 'GAME_LIST', gameList });
-        }, loading => dispatch({ type: 'LOADING', loading }));
+        });
         break;
       case 'ON_CLICK_LOGOUT_BUTTON':
-        await launch(async () => {
+        await launch(loading => dispatch({ type: 'LOADING', loading }), async () => {
           logout();
-        }, loading => dispatch({ type: 'LOADING', loading }));
+        });
         navigate('/login', { replace: true });
         toast({ title: '로그아웃', description: '정상적으로 로그아웃되었습니다.', status: 'info', duration: 2000, isClosable: true });
         break;
@@ -81,16 +81,16 @@ export function useMainIntent() {
         onOpen();
         break;
       case 'ON_CLICK_CREATE_LOUNGE_BUTTON':
-        await launch(async () => {
+        await launch(loading => dispatch({ type: 'LOADING', loading }), async () => {
           if (state.selectedGame && user) {
             const loungeId = await createLounge(state.selectedGame.id, user.id);
             navigate('/lounge/' + loungeId);
           }
-        }, loading => dispatch({ type: 'LOADING', loading }));
+        });
         onCloseGameEntryModal();
         break;
       case 'ON_CLICK_JOIN_LOUNGE_BUTTON':
-        await launch(async () => {
+        await launch(loading => dispatch({ type: 'LOADING', loading }), async () => {
           try {
             if (state.selectedGame && user) {
               const loungeId = await joinLounge(event.code, state.selectedGame.id, user.id);
@@ -100,7 +100,7 @@ export function useMainIntent() {
             toast({ title: '실패', description: '유효하지 않은 코드거나 게임이 다릅니다.', status: 'error', duration: 2000, isClosable: true });
             throw error;
           }
-        }, loading => dispatch({ type: 'LOADING', loading }));
+        });
         onCloseGameEntryModal();
         break;
       default:
