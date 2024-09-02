@@ -75,7 +75,7 @@ export function useLoginIntent() {
     
     if (user) { 
       navigate('/main', { replace: true });
-      toast({ title: '로그인', description: '이미 로그인되어 있습니다.', status: 'info', duration: 2000, isClosable: true });
+      toast({ title: '이미 로그인되어 있습니다.', duration: 2000 });
     }
   }, [user, loading]);
 

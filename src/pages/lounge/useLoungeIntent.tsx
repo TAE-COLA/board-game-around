@@ -91,10 +91,10 @@ export function useLoungeIntent() {
         break;
       case 'ON_CLICK_COPY_BUTTON':
         navigator.clipboard.writeText(state.lounge?.code || '');
-        toast({ title: '게임방 코드가 복사되었습니다.', status: 'success', duration: 2000, isClosable: true });
+        toast({ title: '게임방 코드가 복사되었습니다.', status: 'success', duration: 2000 });
         break;
       case 'ON_CLICK_START_BUTTON':
-        toast({ title: '미구현', status: 'info', duration: 2000, isClosable: true });
+        toast({ title: '미구현', duration: 2000 });
         break;
       default:
         break;

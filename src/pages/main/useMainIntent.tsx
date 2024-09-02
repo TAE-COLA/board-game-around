@@ -74,7 +74,7 @@ export function useMainIntent() {
           logout();
         });
         navigate('/login', { replace: true });
-        toast({ title: '로그아웃', description: '정상적으로 로그아웃되었습니다.', status: 'info', duration: 2000, isClosable: true });
+        toast({ title: '정상적으로 로그아웃되었습니다.', duration: 2000 });
         break;
       case 'ON_CLICK_GAME_PLAY_BUTTON':
         dispatch({ type: 'SELECTED_GAME', selectedGame: event.game });
@@ -97,7 +97,7 @@ export function useMainIntent() {
               navigate('/lounge/' + loungeId);
             }
           } catch (error) {
-            toast({ title: '실패', description: '유효하지 않은 코드거나 게임이 다릅니다.', status: 'error', duration: 2000, isClosable: true });
+            toast({ title: '유효하지 않은 코드거나 게임이 다릅니다.', status: 'error', duration: 2000 });
             throw error;
           }
         });
