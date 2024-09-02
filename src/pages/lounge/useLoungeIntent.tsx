@@ -1,32 +1,47 @@
 import { useToast } from '@chakra-ui/react';
-import { Lounge, User } from 'entities';
-import { fetchLoungeById, useAuth } from 'features';
+import { Game, Lounge, User } from 'entities';
+import { fetchGameById, fetchLoungeById, fetchUserById, fetchUsersByIds, useAuth } from 'features';
 import { useEffect, useReducer } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { createDummy, launch } from 'shared';
 
 type LoungeState = {
   loading: boolean;
-  lounge?: Lounge;
-  user?: User;
+  user: User;
+  lounge: Lounge;
+    game: Game;
+    owner: User;
+    members: User[];
 };
 
 type LoungeEvent =
   | { type: 'SCREEN_INITIALIZE' }
-  | { type: 'ON_CLICK_BACK_BUTTON' };
+  | { type: 'ON_CLICK_EXIT_BUTTON' }
+  | { type: 'ON_CLICK_COPY_BUTTON' }
+  | { type: 'ON_CLICK_START_BUTTON' };
 
 type LoungeReduce =
   | { type: 'LOADING'; loading: boolean }
+  | { type: 'USER'; user: User }
   | { type: 'LOUNGE'; lounge: Lounge }
-  | { type: 'USER'; user: User };
+  | { type: 'GAME'; game: Game }
+  | { type: 'OWNER'; owner: User }
+  | { type: 'MEMBERS'; members: User[] };
 
 function handleLoungeReduce(state: LoungeState, reduce: LoungeReduce): LoungeState {
   switch (reduce.type) {
     case 'LOADING':
       return { ...state, loading: reduce.loading };
-    case 'LOUNGE':
-      return { ...state, lounge: reduce.lounge };
     case 'USER':
       return { ...state, user: reduce.user };
+    case 'LOUNGE':
+      return { ...state, lounge: reduce.lounge };
+    case 'GAME':
+      return { ...state, game: reduce.game };
+    case 'OWNER':
+      return { ...state, owner: reduce.owner };
+    case 'MEMBERS':
+      return { ...state, members: reduce.members };
     default:
       return state;
   }
@@ -34,7 +49,12 @@ function handleLoungeReduce(state: LoungeState, reduce: LoungeReduce): LoungeSta
 
 export function useLoungeIntent() {
   const initialState: LoungeState = {
-    loading: false
+    loading: false,
+    user: createDummy<User>(),
+    lounge: createDummy<Lounge>(),
+    game: createDummy<Game>(),
+    owner: createDummy<User>(),
+    members: [],
   };
   const [state, dispatch] = useReducer(handleLoungeReduce, initialState);
 
@@ -47,17 +67,34 @@ export function useLoungeIntent() {
   const onEvent = async (event: LoungeEvent) => {
     switch (event.type) {
       case 'SCREEN_INITIALIZE':
-        dispatch({ type: 'LOADING', loading: true });
         if (loungeId) {
-          await fetchLoungeById(loungeId, (lounge) => {
-            console.log(lounge);
-            dispatch({ type: 'LOUNGE', lounge });
-          });
+          await launch(async () => {
+            await fetchLoungeById(loungeId, async (lounge) => {
+              dispatch({ type: 'LOUNGE', lounge });
+
+              const game = await fetchGameById(lounge.gameId);
+              dispatch({ type: 'GAME', game });
+
+              const owner = await fetchUserById(lounge.ownerId);
+              dispatch({ type: 'OWNER', owner: owner });
+
+              const members = await fetchUsersByIds(lounge.memberIds);
+              dispatch({ type: 'MEMBERS', members });
+              
+              dispatch({ type: 'LOADING', loading: false });
+            });
+          }, loading => dispatch({ type: 'LOADING', loading }));
         }
-        dispatch({ type: 'LOADING', loading: false });
         break;
-      case 'ON_CLICK_BACK_BUTTON':
+      case 'ON_CLICK_EXIT_BUTTON':
         navigate(-1)
+        break;
+      case 'ON_CLICK_COPY_BUTTON':
+        navigator.clipboard.writeText(state.lounge?.code || '');
+        toast({ title: '게임방 코드가 복사되었습니다.', status: 'success', duration: 2000, isClosable: true });
+        break;
+      case 'ON_CLICK_START_BUTTON':
+        toast({ title: '미구현', status: 'info', duration: 2000, isClosable: true });
         break;
       default:
         break;

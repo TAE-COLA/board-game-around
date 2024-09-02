@@ -2,6 +2,7 @@ import { useToast } from '@chakra-ui/react';
 import { useAuth } from 'features';
 import { useEffect, useReducer } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { launch } from 'shared';
 
 type LoginState = {
   loading: boolean;
@@ -55,9 +56,11 @@ export function useLoginIntent() {
         dispatch({ type: 'PASSWORD', password: event.password });
         break;
       case 'ON_CLICK_LOGIN_BUTTON':
-        dispatch({ type: 'LOADING', loading: true });
-        await login(state.email, state.password, () => { navigate('/main', { replace: true }) });
-        dispatch({ type: 'LOADING', loading: false });
+        await launch(async () => {
+          await login(state.email, state.password, () => { 
+            navigate('/main', { replace: true }) 
+          });
+        }, loading => dispatch({ type: 'LOADING', loading }));
         break;
       case 'ON_CLICK_REGISTER_BUTTON':
         navigate('/register');
@@ -72,7 +75,7 @@ export function useLoginIntent() {
     
     if (user) { 
       navigate('/main', { replace: true });
-      toast({ title: '로그인', description: '이미 로그인되어 있습니다.', status: 'info', duration: 9000, isClosable: true });
+      toast({ title: '로그인', description: '이미 로그인되어 있습니다.', status: 'info', duration: 2000, isClosable: true });
     }
   }, [user, loading]);
 

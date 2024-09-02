@@ -1,13 +1,17 @@
 import { Box } from '@chakra-ui/react';
 import { useMainIntent } from 'pages';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { GameCardGrid, GameEntryModal, GreetingUser, Header, Page } from 'widgets';
 
 const MainPage: React.FC = () => {
   const { state, modal, onEvent } = useMainIntent();
 
+  useEffect(() => {
+    onEvent({ type: 'SCREEN_INITIALIZE' });
+  }, []);
+
   return (
-    <Page>
+    <Page loading= {state.loading}>
       <Header>
         <GreetingUser
           user={state.user}

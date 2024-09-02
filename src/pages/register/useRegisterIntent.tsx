@@ -3,6 +3,7 @@ import { FormData } from 'entities';
 import { checkEmailForDuplicate, signUpWithEmailAndPassword } from 'features';
 import { useReducer } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { launch } from 'shared';
 
 type RegisterState = {
   loading: boolean;
@@ -92,8 +93,10 @@ export function useRegisterIntent() {
         dispatch({ type: 'VALID', valid: checkValid(state) });
         break;
       case 'ON_CLICK_SUBMIT_BUTTON':
-        await signUpWithEmailAndPassword(state.email.value, state.password.value, state.nickname.value)
-        toast({ title: '회원가입 완료', description: '회원가입이 완료됐습니다.', status: 'success', duration: 5000, isClosable: true });
+        await launch(async () => {
+          await signUpWithEmailAndPassword(state.email.value, state.password.value, state.nickname.value)
+        }, loading => dispatch({ type: 'LOADING', loading }));
+        toast({ title: '회원가입 완료', description: '회원가입이 완료됐습니다.', status: 'success', duration: 2000, isClosable: true });
         navigate('/main', { replace: true });
         break;
       default:

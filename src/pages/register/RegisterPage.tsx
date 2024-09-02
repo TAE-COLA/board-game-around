@@ -6,7 +6,7 @@ const RegisterPage: React.FC = () => {
   const { state, onEvent } = useRegisterIntent();
 
   return (
-    <Page height="100vh">
+    <Page loading= {state.loading} height="100vh">
       <RegisterContainer>
         <RegisterFields
           email={state.email}

@@ -10,7 +10,7 @@ const fetchGameList = async (): Promise<Game[]> => {
       id: doc.id,
       name: doc.data().name,
       description: doc.data().description,
-      image: doc.data().imageUrl,
+      image: doc.data().image,
     }
   });
 

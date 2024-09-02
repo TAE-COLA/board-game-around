@@ -28,10 +28,10 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const data = await fetchUserById(userCredential.user.uid);
       if (data) setUser(data);
-      toast({ title: '로그인 완료', description: '로그인이 완료되었습니다.', status: 'success', duration: 9000, isClosable: true });
+      toast({ title: '로그인 완료', description: '로그인이 완료되었습니다.', status: 'success', duration: 2000, isClosable: true });
       callback();
     } catch (error) {
-      toast({ title: '로그인 실패', description: '로그인에 실패했습니다.', status: 'error', duration: 9000, isClosable: true });
+      toast({ title: '로그인 실패', description: '로그인에 실패했습니다.', status: 'error', duration: 2000, isClosable: true });
     }
   };
 
