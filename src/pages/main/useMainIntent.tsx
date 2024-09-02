@@ -64,13 +64,13 @@ export function useMainIntent() {
   const onEvent = async (event: MainEvent) => {
     switch (event.type) {
       case 'SCREEN_INITIALIZE':
-        await launch(loading => dispatch({ type: 'LOADING', loading }), async () => {
+        await launch(dispatch, async () => {
           const gameList = await fetchAllGames();
           dispatch({ type: 'GAME_LIST', gameList });
         });
         break;
       case 'ON_CLICK_LOGOUT_BUTTON':
-        await launch(loading => dispatch({ type: 'LOADING', loading }), async () => {
+        await launch(dispatch, async () => {
           logout();
         });
         navigate('/login', { replace: true });
@@ -81,7 +81,7 @@ export function useMainIntent() {
         onOpen();
         break;
       case 'ON_CLICK_CREATE_LOUNGE_BUTTON':
-        await launch(loading => dispatch({ type: 'LOADING', loading }), async () => {
+        await launch(dispatch, async () => {
           if (state.selectedGame && user) {
             const loungeId = await createLounge(state.selectedGame.id, user.id);
             navigate('/lounge/' + loungeId);
@@ -90,7 +90,7 @@ export function useMainIntent() {
         onCloseGameEntryModal();
         break;
       case 'ON_CLICK_JOIN_LOUNGE_BUTTON':
-        await launch(loading => dispatch({ type: 'LOADING', loading }), async () => {
+        await launch(dispatch, async () => {
           try {
             if (state.selectedGame && user) {
               const loungeId = await joinLounge(event.code, state.selectedGame.id, user.id);

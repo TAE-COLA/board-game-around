@@ -93,7 +93,7 @@ export function useRegisterIntent() {
         dispatch({ type: 'VALID', valid: checkValid(state) });
         break;
       case 'ON_CLICK_SUBMIT_BUTTON':
-        await launch(loading => dispatch({ type: 'LOADING', loading }), async () => {
+        await launch(dispatch, async () => {
           await signUpWithEmailAndPassword(state.email.value, state.password.value, state.nickname.value)
         });
         toast({ title: '회원가입 완료', description: '회원가입이 완료됐습니다.', status: 'success', duration: 2000, isClosable: true });

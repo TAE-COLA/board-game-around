@@ -56,7 +56,7 @@ export function useLoginIntent() {
         dispatch({ type: 'PASSWORD', password: event.password });
         break;
       case 'ON_CLICK_LOGIN_BUTTON':
-        await launch(loading => dispatch({ type: 'LOADING', loading }), async () => {
+        await launch(dispatch, async () => {
           await login(state.email, state.password, () => { 
             navigate('/main', { replace: true }) 
           });
