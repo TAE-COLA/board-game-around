@@ -65,10 +65,8 @@ export function useLoungeIntent() {
   const { loungeId } = useParams();
 
   const onEvent = async (event: LoungeEvent) => {
-    console.log('event', event);
     switch (event.type) {
       case 'SCREEN_INITIALIZE':
-        console.log('loungeId', loungeId);
         dispatch({ type: 'LOADING', loading: true });
         fetchLoungeById(loungeId!, async (lounge) => {
           dispatch({ type: 'LOUNGE', lounge });
@@ -114,7 +112,6 @@ export function useLoungeIntent() {
   }, [user]);
 
   useEffect(() => {
-    console.log('useEffect');
     onEvent({ type: 'SCREEN_INITIALIZE' });
   }, []);
 
