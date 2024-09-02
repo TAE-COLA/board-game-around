@@ -22,7 +22,7 @@ export const exitLounge = async (loungeId: string, userId: string): Promise<void
     gameId: lounge.gameId,
     code: lounge.code,
     memberIds: lounge.memberIds.filter((id: string) => id !== userId),
-    ownerId: lounge.ownerId === userId ? lounge.memberIds[0] : lounge.ownerId,
+    ownerId: lounge.ownerId === userId ? lounge.memberIds.filter((id: string) => id !== userId)[0] : lounge.ownerId,
     createdAt: lounge.createdAt,
   };
   await set(loungeReference, newLounge);
