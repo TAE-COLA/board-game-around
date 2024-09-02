@@ -47,11 +47,14 @@ export function useLoungeIntent() {
   const onEvent = async (event: LoungeEvent) => {
     switch (event.type) {
       case 'SCREEN_INITIALIZE':
+        dispatch({ type: 'LOADING', loading: true });
         if (loungeId) {
-          fetchLoungeById(loungeId, (lounge) => {
+          await fetchLoungeById(loungeId, (lounge) => {
+            console.log(lounge);
             dispatch({ type: 'LOUNGE', lounge });
           });
         }
+        dispatch({ type: 'LOADING', loading: false });
         break;
       case 'ON_CLICK_BACK_BUTTON':
         navigate(-1)

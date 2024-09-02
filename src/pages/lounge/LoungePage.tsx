@@ -7,10 +7,11 @@ const LoungePage: React.FC = () => {
 
   useEffect(() => {
     onEvent({ type: 'SCREEN_INITIALIZE' });
-  });
+  }, []);
 
   return (
     <Page>
+      loading: {state.loading ? 'true' : 'false'}
       loungeId: {state.lounge?.id}
     </Page>
   )

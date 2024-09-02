@@ -1,6 +1,6 @@
 import { useDisclosure, useToast } from '@chakra-ui/react';
 import { Game, User } from 'entities';
-import { createLounge, useAuth, useFetchGameList } from 'features';
+import { createLounge, joinLounge, useAuth, useFetchGameList } from 'features';
 import { useEffect, useReducer } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -76,13 +76,22 @@ export function useMainIntent() {
         dispatch({ type: 'LOADING', loading: true });
         if (state.selectedGame && user) {
           const loungeId = await createLounge(state.selectedGame.id, user.id);
-          navigate(`/lounge/${loungeId}`);
+          navigate('/lounge/' + loungeId);
         }
         onCloseGameEntryModal();
         dispatch({ type: 'LOADING', loading: false });
         break;
       case 'ON_CLICK_JOIN_LOUNGE_BUTTON':
         dispatch({ type: 'LOADING', loading: true });
+        try {
+          if (state.selectedGame && user) {
+            const loungeId = await joinLounge(event.code, state.selectedGame.id, user.id);
+            navigate('/lounge/' + loungeId);
+          }
+        } catch (error) {
+          toast({ title: '실패', description: '유효하지 않은 코드거나 게임이 다릅니다.', status: 'error', duration: 9000, isClosable: true });
+          throw error;
+        }
         onCloseGameEntryModal();
         dispatch({ type: 'LOADING', loading: false });
         break;
