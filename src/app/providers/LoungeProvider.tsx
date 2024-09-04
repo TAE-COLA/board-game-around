@@ -1,8 +1,8 @@
 import { Game, User } from 'entities';
-import { LoungeContext, exitLounge, fetchGameById, fetchMembersByLoungeId, fetchUserById, onLoungeStateChanged } from 'features';
+import { LoungeContext, exitLounge, fetchGameById, fetchLoungeIdByUserId, fetchMembersByLoungeId, fetchUserById, onLoungeStateChanged, useAuth } from 'features';
 import { serverTimestamp } from 'firebase/database';
 import React, { useEffect, useState } from 'react';
-import { Outlet, useParams } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import { createDummy } from 'shared';
 
 const LoungeProvider: React.FC = () => {
@@ -15,29 +15,39 @@ const LoungeProvider: React.FC = () => {
   const [createdAt, setCreatedAt] = useState<object>(serverTimestamp());
   const [deletedAt, setDeletedAt] = useState<object>();
 
-  const { loungeId } = useParams();
+  const { user } = useAuth();
 
   useEffect(() => {
-    if (!loungeId) return;
-
-    setId(loungeId);
-    const unsubscribe = onLoungeStateChanged(loungeId, async (lounge) => {
-      const game = await fetchGameById(lounge.gameId);
-      setGame(game);
-      if (lounge.ownerId) {
-        const owner = await fetchUserById(lounge.ownerId);
-        setOwner(owner);
-      }
-      setCode(lounge.code);
-      const members = await fetchMembersByLoungeId(loungeId);
-      setMembers(members);
-      setCreatedAt(lounge.createdAt);
-      setDeletedAt(lounge.deletedAt);
+    if (!user) {
       setLoading(false);
-    });
+      return;
+    }
 
-    return () => unsubscribe();
-  }, [loungeId]);
+    fetchLoungeIdByUserId(user.id).then((loungeId) => {
+      if (!loungeId) {
+        setLoading(false);
+        return;
+      }
+
+      setId(loungeId)
+      const unsubscribe = onLoungeStateChanged(loungeId, async (lounge) => {
+        const game = await fetchGameById(lounge.gameId);
+        setGame(game);
+        if (lounge.ownerId) {
+          const owner = await fetchUserById(lounge.ownerId);
+          setOwner(owner);
+        }
+        setCode(lounge.code);
+        const members = await fetchMembersByLoungeId(loungeId);
+        setMembers(members);
+        setCreatedAt(lounge.createdAt);
+        setDeletedAt(lounge.deletedAt);
+        setLoading(false);
+      });
+
+      return () => unsubscribe();
+    });
+  }, [user]);
 
   const exit = async (userId: string) => {
     setLoading(true);

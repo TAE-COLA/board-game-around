@@ -84,7 +84,7 @@ export function useMainIntent() {
         await launch(dispatch, async () => {
           if (state.selectedGame && user) {
             const loungeId = await createLounge(state.selectedGame.id, user.id);
-            navigate('/lounge/' + loungeId);
+            navigate('/lounge');
           }
         });
         onCloseGameEntryModal();
@@ -94,7 +94,7 @@ export function useMainIntent() {
           try {
             if (state.selectedGame && user) {
               const loungeId = await joinLounge(event.code, state.selectedGame.id, user.id);
-              navigate('/lounge/' + loungeId);
+              navigate('/lounge');
             }
           } catch (error) {
             toast({ title: '유효하지 않은 코드거나 게임이 다릅니다.', status: 'error', duration: 2000 });

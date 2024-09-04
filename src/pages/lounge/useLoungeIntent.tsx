@@ -53,7 +53,7 @@ function handleLoungeReduce(state: LoungeState, reduce: LoungeReduce): LoungeSta
 
 export function useLoungeIntent() {
   const initialState: LoungeState = {
-    loading: false,
+    loading: true,
     user: createDummy<User>(),
     loungeId: '',
     game: createDummy<Game>(),
@@ -110,7 +110,7 @@ export function useLoungeIntent() {
       toast({ title: '게임방이 존재하지 않습니다.', status: 'error', duration: 2000 });
       navigate('/main', { replace: true });
     }
-  }, [lounge, loungeLoading]);
+  }, [navigate, toast, lounge.game, lounge.code, lounge.owner, lounge.members, lounge.deletedAt, loungeLoading]);
 
   return {
     state,
