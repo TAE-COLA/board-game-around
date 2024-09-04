@@ -17,6 +17,10 @@ const YachtDicePage: React.FC = () => {
           dice={state.dice}
           keep={state.keep}
           rolls={state.rolls}
+          rolling={state.rolling}
+          onClickRollButton={() => onEvent({ type: 'ON_CLICK_ROLL_BUTTON' })}
+          onRollFinish={(values) => onEvent({ type: 'ON_ROLL_FINISH', values })}
+          onClickEndTurnButton={() => onEvent({ type: 'ON_CLICK_END_TURN_BUTTON' })}
           flex='1'
         />
       </Flex>

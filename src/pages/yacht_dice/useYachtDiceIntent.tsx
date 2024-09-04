@@ -16,10 +16,14 @@ type YachtDiceState = {
   dice: number[];
   keep: boolean[];
   rolls: number;
+  rolling: boolean;
 };
 
 type YachtDiceEvent =
-  | { type: 'ON_CLICK_EXIT_BUTTON' };
+  | { type: 'ON_CLICK_EXIT_BUTTON' }
+  | { type: 'ON_CLICK_ROLL_BUTTON' }
+  | { type: 'ON_ROLL_FINISH'; values: number[] }
+  | { type: 'ON_CLICK_END_TURN_BUTTON' };
 
 type YachtDiceReduce =
   | { type: 'LOADING'; loading: boolean }
@@ -29,7 +33,8 @@ type YachtDiceReduce =
   | { type: 'TURN'; turn: User }
   | { type: 'DICE'; dice: number[] }
   | { type: 'KEEP'; keep: boolean[] }
-  | { type: 'ROLLS'; rolls: number };
+  | { type: 'ROLLS'; rolls: number }
+  | { type: 'ROLLING'; rolling: boolean };
 
 function handleYachtDiceReduce(state: YachtDiceState, reduce: YachtDiceReduce): YachtDiceState {
   switch (reduce.type) {
@@ -49,6 +54,8 @@ function handleYachtDiceReduce(state: YachtDiceState, reduce: YachtDiceReduce): 
       return { ...state, keep: reduce.keep };
     case 'ROLLS':
       return { ...state, rolls: reduce.rolls };
+    case 'ROLLING':
+      return { ...state, rolling: reduce.rolling };
     default:
       return state;
   }
@@ -63,7 +70,8 @@ export function useYachtDiceIntent() {
     turn: createDummy<User>(),
     dice: [0, 0, 0, 0, 0],
     keep: [false, false, false, false, false],
-    rolls: 0
+    rolls: 0,
+    rolling: false
   };
   const [state, dispatch] = useReducer(handleYachtDiceReduce, initialState);
 
@@ -76,6 +84,15 @@ export function useYachtDiceIntent() {
   const onEvent = async (event: YachtDiceEvent) => {
     switch (event.type) {
       case 'ON_CLICK_EXIT_BUTTON':
+        break;
+      case 'ON_CLICK_ROLL_BUTTON':
+        dispatch({ type: 'ROLLING', rolling: true });
+        break;
+      case 'ON_ROLL_FINISH':
+        dispatch({ type: 'ROLLING', rolling: false });
+        // TODO: 결과 전솔
+        break;
+      case 'ON_CLICK_END_TURN_BUTTON':
         break;
       default:
         break;
