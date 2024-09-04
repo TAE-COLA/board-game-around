@@ -6,7 +6,6 @@ const LOUNGE_REFERENCE = 'Lounge';
 const USER_REFERENCE = 'User-lounge';
 
 const LOUNGE_CODE = 'code';
-const LOUNGE_MEMBER_IDS = 'memberIds';
 
 const USER_LOUNGE_ID = 'loungeId';
 

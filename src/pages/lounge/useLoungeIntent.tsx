@@ -81,7 +81,7 @@ export function useLoungeIntent() {
         toast({ title: '게임방 코드가 복사되었습니다.', status: 'success', duration: 2000 });
         break;
       case 'ON_CLICK_START_BUTTON':
-        toast({ title: '미구현', duration: 2000 });
+        navigate('/' + state.game.name, { replace: true });
         break;
       default:
         break;
@@ -110,7 +110,7 @@ export function useLoungeIntent() {
       toast({ title: '게임방이 존재하지 않습니다.', status: 'error', duration: 2000 });
       navigate('/main', { replace: true });
     }
-  }, [navigate, toast, lounge.game, lounge.code, lounge.owner, lounge.members, lounge.deletedAt, loungeLoading]);
+  }, [navigate, toast, lounge.game, lounge.code, lounge.owner, lounge.members, lounge.deletedAt, lounge, loungeLoading]);
 
   return {
     state,

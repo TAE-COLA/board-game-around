@@ -15,7 +15,7 @@ const PageRouter: React.FC = () => {
         <Route path="/main" element={ <MainPage /> } />
         <Route element={ <LoungeProvider /> }>
           <Route path="/lounge" element={ <LoungePage /> } />
-          <Route path="/lounge/YachtDice" element={ <YachtDicePage /> } />
+          <Route path="/요트다이스" element={ <YachtDicePage /> } />
         </Route>
       </Route>
       <Route path="*" element={ <div>404 Not Found</div> } />

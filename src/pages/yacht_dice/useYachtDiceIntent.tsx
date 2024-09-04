@@ -12,7 +12,7 @@ type YachtDiceState = {
 };
 
 type YachtDiceEvent =
-  | { type: 'ON_CLICK_EXIT_BUTTON'; email: string };
+  | { type: 'ON_CLICK_EXIT_BUTTON' };
 
 type YachtDiceReduce =
   | { type: 'LOADING'; loading: boolean }
@@ -68,13 +68,14 @@ export function useYachtDiceIntent() {
   useEffect(() => {
     if (loungeLoading) return;
 
-    if (lounge && lounge.owner && lounge.members && !lounge.deletedAt) {
+    if (lounge && lounge.owner && lounge.members && !lounge.deletedAt && lounge.game.name === '요트다이스') {
       dispatch({ type: 'MEMBERS', members: lounge.members });
     } else {
       toast({ title: '게임방이 존재하지 않습니다.', status: 'error', duration: 2000 });
       navigate('/main', { replace: true });
     }
-  }, [lounge, loungeLoading]);
+  }, [lounge.owner, lounge.members, lounge.deletedAt, lounge.game.name, loungeLoading]);
+  
   return {
     state,
     onEvent

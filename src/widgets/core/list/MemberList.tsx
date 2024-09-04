@@ -5,10 +5,10 @@ import { MemberCard } from 'widgets';
 
 type IProps = FlexProps & {
   members: User[];
-  owner: User;
+  owner?: User;
 };
 
-const MemberColumnFlex: React.FC<IProps> = ({
+const MemberList: React.FC<IProps> = ({
   members,
   owner,
   ...props
@@ -16,10 +16,10 @@ const MemberColumnFlex: React.FC<IProps> = ({
   return (
     <Flex direction='column' gap='4' {...props}>
       {members.map((member) => (
-        <MemberCard key={member.id} member={member} isOwner={member.id === owner.id} />
+        <MemberCard key={member.id} member={member} isOwner={owner && owner.id === member.id} />
       ))}
     </Flex>
   )
 }
 
-export default MemberColumnFlex;
+export default MemberList;

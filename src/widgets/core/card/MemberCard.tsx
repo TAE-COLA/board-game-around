@@ -5,12 +5,12 @@ import React from 'react';
 
 type IProps = CardProps & {
   member: User;
-  isOwner: boolean;
+  isOwner?: boolean;
 };
 
 const MemberCard: React.FC<IProps> = ({
   member,
-  isOwner,
+  isOwner = false,
   ...props
 }) => {
   return (
