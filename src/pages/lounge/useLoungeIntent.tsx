@@ -1,17 +1,18 @@
 import { useToast } from '@chakra-ui/react';
-import { Game, Lounge, User } from 'entities';
-import { exitLounge, fetchGameById, fetchLoungeById, fetchUserById, fetchUsersByIds, useAuth } from 'features';
+import { Game, User } from 'entities';
+import { useAuth, useLounge } from 'features';
 import { useEffect, useReducer } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { createDummy, launch } from 'shared';
+import { useNavigate } from 'react-router-dom';
+import { createDummy } from 'shared';
 
 type LoungeState = {
   loading: boolean;
   user: User;
-  lounge: Lounge;
-    game: Game;
-    owner: User;
-    members: User[];
+  loungeId: string;
+  game: Game;
+  code: string;
+  owner: User;
+  members: User[];
 };
 
 type LoungeEvent =
@@ -23,8 +24,9 @@ type LoungeEvent =
 type LoungeReduce =
   | { type: 'LOADING'; loading: boolean }
   | { type: 'USER'; user: User }
-  | { type: 'LOUNGE'; lounge: Lounge }
+  | { type: 'LOUNGE_ID'; loungeId: string }
   | { type: 'GAME'; game: Game }
+  | { type: 'CODE'; code: string }
   | { type: 'OWNER'; owner: User }
   | { type: 'MEMBERS'; members: User[] };
 
@@ -34,10 +36,12 @@ function handleLoungeReduce(state: LoungeState, reduce: LoungeReduce): LoungeSta
       return { ...state, loading: reduce.loading };
     case 'USER':
       return { ...state, user: reduce.user };
-    case 'LOUNGE':
-      return { ...state, lounge: reduce.lounge };
+    case 'LOUNGE_ID':
+      return { ...state, loungeId: reduce.loungeId };
     case 'GAME':
       return { ...state, game: reduce.game };
+    case 'CODE':
+      return { ...state, code: reduce.code };
     case 'OWNER':
       return { ...state, owner: reduce.owner };
     case 'MEMBERS':
@@ -51,52 +55,29 @@ export function useLoungeIntent() {
   const initialState: LoungeState = {
     loading: false,
     user: createDummy<User>(),
-    lounge: createDummy<Lounge>(),
+    loungeId: '',
     game: createDummy<Game>(),
+    code: '',
     owner: createDummy<User>(),
-    members: [],
+    members: []
   };
   const [state, dispatch] = useReducer(handleLoungeReduce, initialState);
 
   const navigate = useNavigate();
   const toast = useToast();
 
-  const { user } = useAuth();
-  const { loungeId } = useParams();
+  const { user, loading: authLoading } = useAuth();
+  const { loading: loungeLoading, exit,  ...lounge } = useLounge();
 
   const onEvent = async (event: LoungeEvent) => {
     switch (event.type) {
-      case 'SCREEN_INITIALIZE':
-        dispatch({ type: 'LOADING', loading: true });
-        fetchLoungeById(loungeId!, async (lounge) => {
-          dispatch({ type: 'LOUNGE', lounge });
-          
-          const game = await fetchGameById(lounge.gameId);
-          dispatch({ type: 'GAME', game });
-
-          if (lounge.ownerId) {
-            const owner = await fetchUserById(lounge.ownerId);
-            dispatch({ type: 'OWNER', owner });
-          }
-          if (lounge.memberIds) {
-            const members = await fetchUsersByIds(lounge.memberIds!);
-            dispatch({ type: 'MEMBERS', members });
-          }
-          dispatch({ type: 'LOADING', loading: false });
-        }, () => {
-          toast({ title: '게임방이 존재하지 않습니다.', status: 'error', duration: 2000 });
-          navigate('/main', { replace: true });
-        });
-        break;
       case 'ON_CLICK_EXIT_BUTTON':
-        await launch(dispatch, async () => {
-          await exitLounge(state.lounge.id, state.user.id);
-        });
+        await exit(state.user.id);
         toast({ title: '게임방을 나왔습니다.', duration: 2000 });
         navigate('/main', { replace: true });
         break;
       case 'ON_CLICK_COPY_BUTTON':
-        navigator.clipboard.writeText(state.lounge?.code || '');
+        navigator.clipboard.writeText(state.code);
         toast({ title: '게임방 코드가 복사되었습니다.', status: 'success', duration: 2000 });
         break;
       case 'ON_CLICK_START_BUTTON':
@@ -108,12 +89,28 @@ export function useLoungeIntent() {
   };
 
   useEffect(() => {
-    if (user) dispatch({ type: 'USER', user });
-  }, [user]);
+    dispatch({ type: 'LOADING', loading: authLoading || loungeLoading });
+  }, [authLoading, loungeLoading]);
 
   useEffect(() => {
-    onEvent({ type: 'SCREEN_INITIALIZE' });
-  }, []);
+    if (authLoading) return;
+
+    if (user) dispatch({ type: 'USER', user });
+  }, [user, authLoading]);
+
+  useEffect(() => {
+    if (loungeLoading) return;
+
+    dispatch({ type: 'GAME', game: lounge.game });
+    dispatch({ type: 'CODE', code: lounge.code });
+    if (lounge && lounge.owner && lounge.members && !lounge.deletedAt) {
+      dispatch({ type: 'OWNER', owner: lounge.owner });
+      dispatch({ type: 'MEMBERS', members: lounge.members });
+    } else {
+      toast({ title: '게임방이 존재하지 않습니다.', status: 'error', duration: 2000 });
+      navigate('/main', { replace: true });
+    }
+  }, [lounge, loungeLoading]);
 
   return {
     state,

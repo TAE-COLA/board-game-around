@@ -10,7 +10,7 @@ const LoungePage: React.FC = () => {
     <Page loading= {state.loading} height='100vh'>
       <Flex direction='column' width='100%' height='100%' gap='8'>
           <LoungeHeader
-            code={state.lounge.code}
+            code={state.code}
             onClickCopyButton={() => onEvent({ type: 'ON_CLICK_COPY_BUTTON' })}
             onClickExitButton={() => onEvent({ type: 'ON_CLICK_EXIT_BUTTON' })}
           />
