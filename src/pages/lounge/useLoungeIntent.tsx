@@ -1,9 +1,9 @@
 import { useToast } from '@chakra-ui/react';
 import { Game, User } from 'entities';
-import { useAuth, useLounge } from 'features';
+import { startYachtDice, useAuth, useLounge } from 'features';
 import { useEffect, useReducer } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createDummy } from 'shared';
+import { createDummy, launch } from 'shared';
 
 type LoungeState = {
   loading: boolean;
@@ -81,6 +81,9 @@ export function useLoungeIntent() {
         toast({ title: '게임방 코드가 복사되었습니다.', status: 'success', duration: 2000 });
         break;
       case 'ON_CLICK_START_BUTTON':
+        await launch(dispatch, async () => {
+          await startYachtDice(state.loungeId);
+        })
         navigate('/' + state.game.name, { replace: true });
         break;
       default:
@@ -101,6 +104,7 @@ export function useLoungeIntent() {
   useEffect(() => {
     if (loungeLoading) return;
 
+    dispatch({ type: 'LOUNGE_ID', loungeId: lounge.id });
     dispatch({ type: 'GAME', game: lounge.game });
     dispatch({ type: 'CODE', code: lounge.code });
     if (lounge && lounge.owner && lounge.players && !lounge.deletedAt) {

@@ -12,10 +12,18 @@ type IProps = CardProps & {
 const PlayerCard: React.FC<IProps> = ({
   player,
   isOwner = false,
+  isPlayerTurn = true,
   ...props
 }) => {
   return (
-    <Card direction={{ base: 'column', sm: 'row' }} align='center' {...props}>
+    <Card 
+      direction={{ base: 'column', sm: 'row' }} 
+      align='center' 
+      size={isPlayerTurn ? 'md' : 'sm'} 
+      opacity={isPlayerTurn ? '1' : '0.5'} 
+      marginStart={isPlayerTurn ? '0' : '4'}
+      {...props}
+    >
       <CardBody>
         <Text>{player.name}</Text>
       </CardBody>

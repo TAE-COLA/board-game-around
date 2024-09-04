@@ -16,7 +16,10 @@ const PlayerList: React.FC<IProps> = ({
   return (
     <Flex direction='column' gap='4' {...props}>
       {players.map((player) => (
-        <PlayerCard key={player.id} player={player} isOwner={owner && owner.id === player.id} />
+        <PlayerCard key={player.id} 
+          player={player} 
+          isOwner={owner && owner.id === player.id} 
+        />
       ))}
     </Flex>
   )

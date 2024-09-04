@@ -1,6 +1,6 @@
 import { useToast } from '@chakra-ui/react';
-import { User } from 'entities';
-import { useAuth, useLounge } from 'features';
+import { User, YachtDiceBoard } from 'entities';
+import { fetchUserById, fetchUsersByIds, onYachtDiceStateChanged, useAuth, useLounge } from 'features';
 import { useEffect, useReducer } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createDummy } from 'shared';
@@ -9,6 +9,13 @@ type YachtDiceState = {
   loading: boolean;
   user: User;
   players: User[];
+  boards: {
+    [key: string]: YachtDiceBoard;
+  };
+  turn: User;
+  dice: number[];
+  keep: boolean[];
+  rolls: number;
 };
 
 type YachtDiceEvent =
@@ -17,7 +24,12 @@ type YachtDiceEvent =
 type YachtDiceReduce =
   | { type: 'LOADING'; loading: boolean }
   | { type: 'USER'; user: User }
-  | { type: 'PLAYERS'; players: User[] };
+  | { type: 'PLAYERS'; players: User[] }
+  | { type: 'BOARDS'; boards: { [key: string]: YachtDiceBoard } }
+  | { type: 'TURN'; turn: User }
+  | { type: 'DICE'; dice: number[] }
+  | { type: 'KEEP'; keep: boolean[] }
+  | { type: 'ROLLS'; rolls: number };
 
 function handleYachtDiceReduce(state: YachtDiceState, reduce: YachtDiceReduce): YachtDiceState {
   switch (reduce.type) {
@@ -27,6 +39,16 @@ function handleYachtDiceReduce(state: YachtDiceState, reduce: YachtDiceReduce): 
       return { ...state, user: reduce.user };
     case 'PLAYERS':
       return { ...state, players: reduce.players };
+    case 'BOARDS':
+      return { ...state, boards: reduce.boards };
+    case 'TURN':
+      return { ...state, turn: reduce.turn };
+    case 'DICE':
+      return { ...state, dice: reduce.dice };
+    case 'KEEP':
+      return { ...state, keep: reduce.keep };
+    case 'ROLLS':
+      return { ...state, rolls: reduce.rolls };
     default:
       return state;
   }
@@ -34,9 +56,14 @@ function handleYachtDiceReduce(state: YachtDiceState, reduce: YachtDiceReduce): 
 
 export function useYachtDiceIntent() {
   const initialState: YachtDiceState = {
-    loading: false,
+    loading: true,
     user: createDummy<User>(),
     players: [],
+    boards: {},
+    turn: createDummy<User>(),
+    dice: [0, 0, 0, 0, 0],
+    keep: [false, false, false, false, false],
+    rolls: 0
   };
   const [state, dispatch] = useReducer(handleYachtDiceReduce, initialState);
 
@@ -56,10 +83,6 @@ export function useYachtDiceIntent() {
   };
 
   useEffect(() => {
-    dispatch({ type: 'LOADING', loading: authLoading || loungeLoading });
-  }, [authLoading, loungeLoading]);
-
-  useEffect(() => {
     if (authLoading) return;
 
     if (user) dispatch({ type: 'USER', user });
@@ -75,6 +98,26 @@ export function useYachtDiceIntent() {
       navigate('/main', { replace: true });
     }
   }, [lounge.owner, lounge.players, lounge.deletedAt, lounge.game.name, loungeLoading]);
+
+  useEffect(() => {
+    if (loungeLoading) return;
+
+    const unsubscribe = onYachtDiceStateChanged(lounge.id, async (yachtDice) => {
+      if (yachtDice.playerIds) {
+        const players = await fetchUsersByIds(yachtDice.playerIds);
+        dispatch({ type: 'PLAYERS', players });
+      }
+      dispatch({ type: 'BOARDS', boards: yachtDice.boards });
+      const turn = await fetchUserById(yachtDice.turn);
+      dispatch({ type: 'TURN', turn });
+      dispatch({ type: 'DICE', dice: yachtDice.dice });
+      dispatch({ type: 'KEEP', keep: yachtDice.keep });
+      dispatch({ type: 'ROLLS', rolls: yachtDice.rolls });
+      dispatch({ type: 'LOADING', loading: false });
+    });
+
+    return () => unsubscribe();
+  }, [lounge.id, loungeLoading]);
   
   return {
     state,
