@@ -1,5 +1,5 @@
 import { LoungeProvider } from 'app';
-import { LoginPage, LoungePage, MainPage, ProtectedRoute, RegisterPage } from 'pages';
+import { LoginPage, LoungePage, MainPage, ProtectedRoute, RegisterPage, YachtDicePage } from 'pages';
 import React from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 
@@ -15,6 +15,7 @@ const PageRouter: React.FC = () => {
         <Route path="/main" element={ <MainPage /> } />
         <Route path="/lounge" element={ <LoungeProvider /> } >
           <Route path=":loungeId" element={ <LoungePage /> } />
+          <Route path=":loungeId/YachtDice" element={ <YachtDicePage /> } />
         </Route>
       </Route>
       <Route path="*" element={ <div>404 Not Found</div> } />

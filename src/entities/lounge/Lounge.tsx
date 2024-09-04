@@ -3,7 +3,7 @@ export default interface Lounge {
   gameId: string;
   code: string;
   ownerId?: string;
-  memberIds?: string[];
+  memberIds?: object;
   createdAt: object;
   deletedAt?: object;
 }

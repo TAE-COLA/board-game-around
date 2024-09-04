@@ -4,6 +4,10 @@ import { child, ref as fRefrence, get, serverTimestamp, set } from 'firebase/dat
 
 const LOUNGE_REFERENCE = 'Lounge';
 
+const LOUNGE_OWNER_ID = 'ownerId';
+const LOUNGE_MEMBER_IDS = 'memberIds';
+const LOUNGE_DELETED_AT = 'deletedAt';
+
 export const exitLounge = async (loungeId: string, userId: string): Promise<void> => {
   const reference = child(fRefrence(database), LOUNGE_REFERENCE);
   const loungeReference = child(reference, loungeId);
@@ -13,17 +17,16 @@ export const exitLounge = async (loungeId: string, userId: string): Promise<void
     return;
   }
 
-  const newLounge = lounge.memberIds.length === 1 ? {
-    gameId: lounge.gameId,
-    code: lounge.code,
-    createdAt: lounge.createdAt,
-    deletedAt: serverTimestamp()
-  } : {
-    gameId: lounge.gameId,
-    code: lounge.code,
-    memberIds: lounge.memberIds.filter((id: string) => id !== userId),
-    ownerId: lounge.ownerId === userId ? lounge.memberIds.filter((id: string) => id !== userId)[0] : lounge.ownerId,
-    createdAt: lounge.createdAt,
-  };
-  await set(loungeReference, newLounge);
+  const memberIdsReference = child(loungeReference, LOUNGE_MEMBER_IDS);
+  set(child(memberIdsReference, userId), null);
+
+  if (lounge.ownerId === userId) {
+    const newOwnerId = Object.keys(lounge.memberIds).find((id: string) => id !== userId);
+    if (newOwnerId) {
+      await set(child(loungeReference, LOUNGE_OWNER_ID), newOwnerId);
+    } else {
+      await set(child(loungeReference, LOUNGE_OWNER_ID), null);
+      await set(child(loungeReference, LOUNGE_DELETED_AT), serverTimestamp());
+    }
+  }
 };

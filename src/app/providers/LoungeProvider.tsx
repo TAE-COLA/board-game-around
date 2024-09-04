@@ -1,5 +1,5 @@
 import { Game, User } from 'entities';
-import { LoungeContext, exitLounge, fetchGameById, fetchUserById, fetchUsersByIds, onLoungeStateChanged } from 'features';
+import { LoungeContext, exitLounge, fetchGameById, fetchMembersByLoungeId, fetchUserById, onLoungeStateChanged } from 'features';
 import { serverTimestamp } from 'firebase/database';
 import React, { useEffect, useState } from 'react';
 import { Outlet, useParams } from 'react-router-dom';
@@ -18,12 +18,10 @@ const LoungeProvider: React.FC = () => {
   const { loungeId } = useParams();
 
   useEffect(() => {
-    if (!loungeId) {
-      return;
-    }
+    if (!loungeId) return;
 
     setId(loungeId);
-    const unsubscribe = onLoungeStateChanged(loungeId, async (lounge) => {        
+    const unsubscribe = onLoungeStateChanged(loungeId, async (lounge) => {
       const game = await fetchGameById(lounge.gameId);
       setGame(game);
       if (lounge.ownerId) {
@@ -31,10 +29,8 @@ const LoungeProvider: React.FC = () => {
         setOwner(owner);
       }
       setCode(lounge.code);
-      if (lounge.memberIds) {
-        const members = await fetchUsersByIds(lounge.memberIds!);
-        setMembers(members);
-      }
+      const members = await fetchMembersByLoungeId(loungeId);
+      setMembers(members);
       setCreatedAt(lounge.createdAt);
       setDeletedAt(lounge.deletedAt);
       setLoading(false);
