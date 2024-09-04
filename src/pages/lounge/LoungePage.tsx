@@ -16,7 +16,7 @@ const LoungePage: React.FC = () => {
           />
           <LoungeBody 
             game={state.game} 
-            members={state.members}
+            players={state.players}
             owner={state.owner}
             onClickStartButton={() => onEvent({ type: 'ON_CLICK_START_BUTTON' })}
             flex='1' 

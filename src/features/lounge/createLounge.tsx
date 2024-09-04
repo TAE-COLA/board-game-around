@@ -27,7 +27,7 @@ export const createLounge = async (gameId: string, ownerId: string): Promise<str
     gameId,
     code,
     ownerId,
-    memberIds: [ownerId],
+    playerIds: [ownerId],
     createdAt: serverTimestamp()
   }
 

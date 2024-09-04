@@ -6,7 +6,7 @@ export default interface LoungeContextType {
   game: Game;
   code: string;
   owner?: User;
-  members?: User[];
+  players?: User[];
   createdAt: object;
   deletedAt?: object;
   exit: (userId: string) => Promise<void>;

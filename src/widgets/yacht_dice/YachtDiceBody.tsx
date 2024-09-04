@@ -1,21 +1,21 @@
 import { Box, Flex, FlexProps } from '@chakra-ui/react';
 import { User } from 'entities';
 import React from 'react';
-import { MemberList } from 'widgets';
+import { PlayerList } from 'widgets';
 
 type IProps = FlexProps & {
-  members: User[];
+  players: User[];
 };
 
 const YachtDiceBody: React.FC<IProps> = ({
-  members,
+  players,
   ...props
 }) => {
   return (
     <Flex width='100%' gap='8' {...props}>
       <Box height='100%' flex='3' />
       <Flex direction='column' flex='1'>
-        <MemberList members={members} />
+        <PlayerList players={players} />
       </Flex>
     </Flex>
   )

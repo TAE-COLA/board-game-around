@@ -12,7 +12,7 @@ type LoungeState = {
   game: Game;
   code: string;
   owner: User;
-  members: User[];
+  players: User[];
 };
 
 type LoungeEvent =
@@ -28,7 +28,7 @@ type LoungeReduce =
   | { type: 'GAME'; game: Game }
   | { type: 'CODE'; code: string }
   | { type: 'OWNER'; owner: User }
-  | { type: 'MEMBERS'; members: User[] };
+  | { type: 'PLAYERS'; players: User[] };
 
 function handleLoungeReduce(state: LoungeState, reduce: LoungeReduce): LoungeState {
   switch (reduce.type) {
@@ -44,8 +44,8 @@ function handleLoungeReduce(state: LoungeState, reduce: LoungeReduce): LoungeSta
       return { ...state, code: reduce.code };
     case 'OWNER':
       return { ...state, owner: reduce.owner };
-    case 'MEMBERS':
-      return { ...state, members: reduce.members };
+    case 'PLAYERS':
+      return { ...state, players: reduce.players };
     default:
       return state;
   }
@@ -59,7 +59,7 @@ export function useLoungeIntent() {
     game: createDummy<Game>(),
     code: '',
     owner: createDummy<User>(),
-    members: []
+    players: []
   };
   const [state, dispatch] = useReducer(handleLoungeReduce, initialState);
 
@@ -103,14 +103,14 @@ export function useLoungeIntent() {
 
     dispatch({ type: 'GAME', game: lounge.game });
     dispatch({ type: 'CODE', code: lounge.code });
-    if (lounge && lounge.owner && lounge.members && !lounge.deletedAt) {
+    if (lounge && lounge.owner && lounge.players && !lounge.deletedAt) {
       dispatch({ type: 'OWNER', owner: lounge.owner });
-      dispatch({ type: 'MEMBERS', members: lounge.members });
+      dispatch({ type: 'PLAYERS', players: lounge.players });
     } else {
       toast({ title: '게임방이 존재하지 않습니다.', status: 'error', duration: 2000 });
       navigate('/main', { replace: true });
     }
-  }, [navigate, toast, lounge.game, lounge.code, lounge.owner, lounge.members, lounge.deletedAt, lounge, loungeLoading]);
+  }, [navigate, toast, lounge.game, lounge.code, lounge.owner, lounge.players, lounge.deletedAt, lounge, loungeLoading]);
 
   return {
     state,

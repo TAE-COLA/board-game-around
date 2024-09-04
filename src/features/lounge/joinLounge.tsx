@@ -6,7 +6,7 @@ const LOUNGE_REFERENCE = 'Lounge';
 const USER_REFERENCE = 'User-lounge';
 
 const LOUNGE_CODE = 'code';
-const LOUNGE_MEMBER_IDS = 'memberIds';
+const LOUNGE_PLAYER_IDS = 'playerIds';
 
 const USER_LOUNGE_ID = 'loungeId';
 
@@ -23,12 +23,12 @@ export const joinLounge = async (code: string, gameId: string, userId: string): 
     throw new Error('Not this game');
   }
 
-  if (!lounge || !lounge.memberIds || !lounge.ownerId) {
+  if (!lounge || !lounge.playerIds || !lounge.ownerId) {
     throw new Error('Invalid Lounge');
   }
 
   const updates = {
-    [`/${LOUNGE_REFERENCE}/${loungeId}/${LOUNGE_MEMBER_IDS}`]: [...lounge.memberIds, userId],
+    [`/${LOUNGE_REFERENCE}/${loungeId}/${LOUNGE_PLAYER_IDS}`]: [...lounge.playerIds, userId],
     [`/${USER_REFERENCE}/${userId}/${USER_LOUNGE_ID}`]: loungeId
   };
 

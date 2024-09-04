@@ -1,25 +1,25 @@
 import { Flex, FlexProps } from '@chakra-ui/react';
 import { User } from 'entities';
 import React from 'react';
-import { MemberCard } from 'widgets';
+import { PlayerCard } from 'widgets';
 
 type IProps = FlexProps & {
-  members: User[];
+  players: User[];
   owner?: User;
 };
 
-const MemberList: React.FC<IProps> = ({
-  members,
+const PlayerList: React.FC<IProps> = ({
+  players,
   owner,
   ...props
 }) => {
   return (
     <Flex direction='column' gap='4' {...props}>
-      {members.map((member) => (
-        <MemberCard key={member.id} member={member} isOwner={owner && owner.id === member.id} />
+      {players.map((player) => (
+        <PlayerCard key={player.id} player={player} isOwner={owner && owner.id === player.id} />
       ))}
     </Flex>
   )
 }
 
-export default MemberList;
+export default PlayerList;

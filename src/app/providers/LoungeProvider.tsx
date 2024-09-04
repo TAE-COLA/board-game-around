@@ -11,7 +11,7 @@ const LoungeProvider: React.FC = () => {
   const [game, setGame] = useState(createDummy<Game>());
   const [code, setCode] = useState('');
   const [owner, setOwner] = useState<User>();
-  const [members, setMembers] = useState<User[]>([]);
+  const [players, setplayers] = useState<User[]>([]);
   const [createdAt, setCreatedAt] = useState<object>(serverTimestamp());
   const [deletedAt, setDeletedAt] = useState<object>();
 
@@ -42,9 +42,9 @@ const LoungeProvider: React.FC = () => {
           setOwner(owner);
         }
         setCode(lounge.code);
-        if (lounge.memberIds) {
-          const members = await fetchUsersByIds(lounge.memberIds);
-          setMembers(members);
+        if (lounge.playerIds) {
+          const players = await fetchUsersByIds(lounge.playerIds);
+          setplayers(players);
         }
         setCreatedAt(lounge.createdAt);
         setDeletedAt(lounge.deletedAt);
@@ -62,7 +62,7 @@ const LoungeProvider: React.FC = () => {
   };
 
   return (
-    <LoungeContext.Provider value={{ id, loading, game, code, owner, members, createdAt, deletedAt, exit }}>
+    <LoungeContext.Provider value={{ id, loading, game, code, owner, players, createdAt, deletedAt, exit }}>
       <Outlet />
     </LoungeContext.Provider>
   );

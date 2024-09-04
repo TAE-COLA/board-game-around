@@ -10,7 +10,7 @@ const YachtDicePage: React.FC = () => {
     <Page loading={state.loading}>
       <Flex direction='column' width='100%' height='100%' gap='8'>
         <YachtDiceHeader onClickExitButton={() => onEvent({ type: 'ON_CLICK_EXIT_BUTTON' })} />
-        <YachtDiceBody members={state.members} />
+        <YachtDiceBody players={state.players} />
       </Flex>
     </Page>
   );

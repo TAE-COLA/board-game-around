@@ -9,7 +9,7 @@ export const fetchLoungeById = (id: string, setData: (data: Lounge) => void, onC
   const loungeReference = child(reference, LOUNGE_REFERENCE);
   const unsubscribe = onValue(child(loungeReference, id), (snapshot) => {
     const data = { id: snapshot.key, ...snapshot.val() };
-    if (!data || !data.ownerId || !data.memberIds) {
+    if (!data || !data.ownerId || !data.playerIds) {
       unsubscribe();
       onCrash();
     } else {

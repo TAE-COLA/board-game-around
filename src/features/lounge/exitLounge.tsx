@@ -6,7 +6,7 @@ const LOUNGE_REFERENCE = 'Lounge';
 const USER_REFERENCE = 'User-lounge';
 
 const LOUNGE_OWNER_ID = 'ownerId';
-const LOUNGE_MEMBER_IDS = 'memberIds';
+const LOUNGE_PLAYER_IDS = 'playerIds';
 const LOUNGE_DELETED_AT = 'deletedAt';
 
 export const exitLounge = async (loungeId: string, userId: string): Promise<void> => {
@@ -15,15 +15,15 @@ export const exitLounge = async (loungeId: string, userId: string): Promise<void
   const loungeReference = child(child(reference, LOUNGE_REFERENCE), loungeId);
   const lounge = (await get(loungeReference)).val() as Lounge;
 
-  if (!lounge || !lounge.memberIds || !lounge.ownerId) {
+  if (!lounge || !lounge.playerIds || !lounge.ownerId) {
     return;
   }
 
-  const filteredMemberIds = lounge.memberIds.filter((id: string) => id !== userId);
+  const filteredPlayerIds = lounge.playerIds.filter((id: string) => id !== userId);
   const updates = {
-    [`/${LOUNGE_REFERENCE}/${loungeId}/${LOUNGE_OWNER_ID}`]: filteredMemberIds.length === 0 ? null : filteredMemberIds[0],
-    [`/${LOUNGE_REFERENCE}/${loungeId}/${LOUNGE_MEMBER_IDS}`]: filteredMemberIds,
-    [`/${LOUNGE_REFERENCE}/${loungeId}/${LOUNGE_DELETED_AT}`]: filteredMemberIds.length === 0 ? serverTimestamp() : null,
+    [`/${LOUNGE_REFERENCE}/${loungeId}/${LOUNGE_OWNER_ID}`]: filteredPlayerIds.length === 0 ? null : filteredPlayerIds[0],
+    [`/${LOUNGE_REFERENCE}/${loungeId}/${LOUNGE_PLAYER_IDS}`]: filteredPlayerIds,
+    [`/${LOUNGE_REFERENCE}/${loungeId}/${LOUNGE_DELETED_AT}`]: filteredPlayerIds.length === 0 ? serverTimestamp() : null,
     [`/${USER_REFERENCE}/${userId}`]: null
   };
 

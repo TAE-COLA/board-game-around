@@ -8,7 +8,7 @@ import { createDummy } from 'shared';
 type YachtDiceState = {
   loading: boolean;
   user: User;
-  members: User[];
+  players: User[];
 };
 
 type YachtDiceEvent =
@@ -17,7 +17,7 @@ type YachtDiceEvent =
 type YachtDiceReduce =
   | { type: 'LOADING'; loading: boolean }
   | { type: 'USER'; user: User }
-  | { type: 'MEMBERS'; members: User[] };
+  | { type: 'PLAYERS'; players: User[] };
 
 function handleYachtDiceReduce(state: YachtDiceState, reduce: YachtDiceReduce): YachtDiceState {
   switch (reduce.type) {
@@ -25,8 +25,8 @@ function handleYachtDiceReduce(state: YachtDiceState, reduce: YachtDiceReduce): 
       return { ...state, loading: reduce.loading };
     case 'USER':
       return { ...state, user: reduce.user };
-    case 'MEMBERS':
-      return { ...state, members: reduce.members };
+    case 'PLAYERS':
+      return { ...state, players: reduce.players };
     default:
       return state;
   }
@@ -36,7 +36,7 @@ export function useYachtDiceIntent() {
   const initialState: YachtDiceState = {
     loading: false,
     user: createDummy<User>(),
-    members: [],
+    players: [],
   };
   const [state, dispatch] = useReducer(handleYachtDiceReduce, initialState);
 
@@ -68,13 +68,13 @@ export function useYachtDiceIntent() {
   useEffect(() => {
     if (loungeLoading) return;
 
-    if (lounge && lounge.owner && lounge.members && !lounge.deletedAt && lounge.game.name === '요트다이스') {
-      dispatch({ type: 'MEMBERS', members: lounge.members });
+    if (lounge && lounge.owner && lounge.players && !lounge.deletedAt && lounge.game.name === '요트다이스') {
+      dispatch({ type: 'PLAYERS', players: lounge.players });
     } else {
       toast({ title: '게임방이 존재하지 않습니다.', status: 'error', duration: 2000 });
       navigate('/main', { replace: true });
     }
-  }, [lounge.owner, lounge.members, lounge.deletedAt, lounge.game.name, loungeLoading]);
+  }, [lounge.owner, lounge.players, lounge.deletedAt, lounge.game.name, loungeLoading]);
   
   return {
     state,
