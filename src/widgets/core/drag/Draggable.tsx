@@ -6,6 +6,7 @@ type IProps = FlexProps & {
   children: React.ReactNode;
   type: string;
   index: number;
+  isDisabled?: boolean;
   onDropOutside?: (index: number) => void;
 };
 
@@ -13,6 +14,7 @@ const Draggable: React.FC<IProps> = ({
   children,
   type,
   index,
+  isDisabled = false,
   onDropOutside = () => {},
   ...props
 }) => {
@@ -31,7 +33,7 @@ const Draggable: React.FC<IProps> = ({
   }));
 
   return (
-    <Flex ref={drag} opacity={isDragging ? 0.5 : 1} {...props}>
+    <Flex ref={!isDisabled ? drag : null} opacity={isDragging ? 0.5 : 1} {...props}>
       {children}
     </Flex>
   )

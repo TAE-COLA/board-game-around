@@ -45,7 +45,7 @@ const RollableDice: React.FC<IProps> = ({
   return (
     <Flex gap='2' {...props}>
       {values.map((value, index) => (
-        <Draggable type='DIE' index={index}>
+        <Draggable type='DIE' index={index} isDisabled={keep.includes(index)}>
           <Die key={index} value={value} fixed={keep.includes(index)} {...props}/>
         </Draggable>
       ))}
