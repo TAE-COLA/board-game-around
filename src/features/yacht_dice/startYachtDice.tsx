@@ -45,7 +45,7 @@ export const startYachtDice = async (loungeId: string): Promise<void> => {
     }, {} as { [key: string]: YachtDiceBoard }),
     turn: shuffledPlayerIds[0],
     dice: [1, 1, 1, 1, 1],
-    keep: [false, false, false, false, false],
+    keep: [],
     rolls: 3
   };
 

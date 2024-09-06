@@ -8,6 +8,6 @@ export default interface YachtDice {
   };
   turn: string;
   dice: number[];
-  keep: boolean[];
+  keep: number[];
   rolls: number;
 }

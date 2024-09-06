@@ -1,6 +1,6 @@
 import { useToast } from '@chakra-ui/react';
 import { User, YachtDiceBoard } from 'entities';
-import { fetchUserById, fetchUsersByIds, onYachtDiceStateChanged, useAuth, useLounge } from 'features';
+import { fetchUserById, fetchUsersByIds, onYachtDiceStateChanged, updateYachtDiceState, useAuth, useLounge } from 'features';
 import { useEffect, useReducer } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createDummy } from 'shared';
@@ -14,7 +14,7 @@ type YachtDiceState = {
   };
   turn: User;
   dice: number[];
-  keep: boolean[];
+  keep: number[];
   rolls: number;
   rolling: boolean;
 };
@@ -23,6 +23,8 @@ type YachtDiceEvent =
   | { type: 'ON_CLICK_EXIT_BUTTON' }
   | { type: 'ON_CLICK_ROLL_BUTTON' }
   | { type: 'ON_ROLL_FINISH'; values: number[] }
+  | { type: 'ON_ADD_DICE_TO_KEEP'; index: number }
+  | { type: 'ON_REMOVE_DICE_TO_KEEP'; index: number }
   | { type: 'ON_CLICK_END_TURN_BUTTON' };
 
 type YachtDiceReduce =
@@ -32,7 +34,9 @@ type YachtDiceReduce =
   | { type: 'BOARDS'; boards: { [key: string]: YachtDiceBoard } }
   | { type: 'TURN'; turn: User }
   | { type: 'DICE'; dice: number[] }
-  | { type: 'KEEP'; keep: boolean[] }
+  | { type: 'KEEP'; keep: number[] }
+  | { type: 'ADD_KEEP'; index: number }
+  | { type: 'REMOVE_KEEP'; index: number }
   | { type: 'ROLLS'; rolls: number }
   | { type: 'ROLLING'; rolling: boolean };
 
@@ -52,6 +56,10 @@ function handleYachtDiceReduce(state: YachtDiceState, reduce: YachtDiceReduce): 
       return { ...state, dice: reduce.dice };
     case 'KEEP':
       return { ...state, keep: reduce.keep };
+    case 'ADD_KEEP':
+      return { ...state, keep: [...state.keep, reduce.index] };
+    case 'REMOVE_KEEP':
+      return { ...state, keep: state.keep.filter((index) => index !== reduce.index) };
     case 'ROLLS':
       return { ...state, rolls: reduce.rolls };
     case 'ROLLING':
@@ -69,7 +77,7 @@ export function useYachtDiceIntent() {
     boards: {},
     turn: createDummy<User>(),
     dice: [0, 0, 0, 0, 0],
-    keep: [false, false, false, false, false],
+    keep: [],
     rolls: 0,
     rolling: false
   };
@@ -90,7 +98,13 @@ export function useYachtDiceIntent() {
         break;
       case 'ON_ROLL_FINISH':
         dispatch({ type: 'ROLLING', rolling: false });
-        // TODO: 결과 전솔
+        updateYachtDiceState(lounge.id, 'dice', event.values);
+        break;
+      case 'ON_ADD_DICE_TO_KEEP':
+        updateYachtDiceState(lounge.id, 'keep-add', event.index);
+        break;
+      case 'ON_REMOVE_DICE_TO_KEEP':
+        updateYachtDiceState(lounge.id, 'keep-remove', event.index);
         break;
       case 'ON_CLICK_END_TURN_BUTTON':
         break;
@@ -128,7 +142,7 @@ export function useYachtDiceIntent() {
       const turn = await fetchUserById(yachtDice.turn);
       dispatch({ type: 'TURN', turn });
       dispatch({ type: 'DICE', dice: yachtDice.dice });
-      dispatch({ type: 'KEEP', keep: yachtDice.keep });
+      dispatch({ type: 'KEEP', keep: yachtDice.keep ?? [] });
       dispatch({ type: 'ROLLS', rolls: yachtDice.rolls });
       dispatch({ type: 'LOADING', loading: false });
     });

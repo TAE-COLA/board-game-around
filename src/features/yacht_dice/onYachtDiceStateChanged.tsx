@@ -16,7 +16,6 @@ export const onYachtDiceStateChanged = (loungeId: string, onChanged: (yachtDice:
   const yachtReference = child(child(reference, YACHT_DICE_REFERENCE), loungeId);
   return onValue(yachtReference, (snapshot) => {
     const data = snapshot.val() as YachtDice;
-    console.log('YachtDice', data);
     onChanged(data);
   });
 };

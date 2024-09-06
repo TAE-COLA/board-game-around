@@ -1,12 +1,14 @@
-import { Box, Flex, FlexProps, Text } from '@chakra-ui/react';
+import { Flex, FlexProps } from '@chakra-ui/react';
 import React from 'react';
-import { DiceRow } from 'widgets';
+import { KeptDice, RollableDice } from 'widgets';
 
 type IProps = FlexProps & {
   dice: number[];
-  keep: boolean[];
+  keep: number[];
   rolling: boolean;
   onResult: (values: number[]) => void;
+  onAddDiceToKeep: (index: number) => void;
+  onRemoveDiceToKeep: (index: number) => void;
 };
 
 const YachtDiceField: React.FC<IProps> = ({
@@ -14,15 +16,26 @@ const YachtDiceField: React.FC<IProps> = ({
   keep,
   rolling,
   onResult,
+  onAddDiceToKeep,
+  onRemoveDiceToKeep,
   ...props
 }) => {
   return (
     <Flex direction='column' align='center' gap='10' {...props}>
-      <DiceRow dice={dice} keep={keep} rolling={rolling} onResult={onResult} />
-      <Flex direction='column' align='center' gap='4'>
-        <Box width='400px' height='80px' border='2px' borderColor='black' borderRadius='md' borderStyle='dashed' />
-        <Text>고정하고 싶은 주사위를 아래로 드래그해주세요.</Text>
-      </Flex>
+      <RollableDice 
+        key={dice.join(',')} 
+        dice={dice} 
+        keep={keep} 
+        rolling={rolling} 
+        onResult={onResult}
+      />
+      <KeptDice 
+        key={keep.join(',')} 
+        dice={dice} 
+        keep={keep} 
+        onAddDiceToKeep={onAddDiceToKeep} 
+        onRemoveDiceToKeep={onRemoveDiceToKeep}
+      />
     </Flex>
   );
 }

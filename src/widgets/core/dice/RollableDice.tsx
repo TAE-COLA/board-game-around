@@ -1,38 +1,40 @@
-import { FlexProps } from '@chakra-ui/react';
+import { Flex, FlexProps } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
-import { Die } from 'widgets';
+import { Die, Draggable } from 'widgets';
 
 type IProps = FlexProps & {
-  initial?: number;
-  rolling: boolean;
-  seconds?: number;
-  onResult: (value: number) => void;
+  dice: number[],
+  keep: number[],
+  rolling?: boolean;
+  onResult?: (values: number[]) => void;
 };
 
-const RollableDice: React.FC<IProps> = ({ 
-  initial = 1,
-  rolling,
-  seconds = 3,
-  onResult,
-  ...props 
+const RollableDice: React.FC<IProps> = ({
+  dice,
+  keep,
+  rolling = false,
+  onResult = () => {},
+  ...props
 }) => {
-  const [value, setValue] = useState<number>(initial);
+  const [values, setValues] = useState<number[]>(dice);
+  function randomize(values: number[]): number[] {
+    return values.map((value, index) => {
+      const random = keep.includes(index) ? value : Math.floor(Math.random() * 6) + 1
+      return random
+    })
+  }
 
   useEffect(() => {
     if (!rolling) return;
 
-    let currentIndex = initial;
     const rollInterval = setInterval(() => {
-      currentIndex = Math.floor(Math.random() * 6) + 1;
-      setValue(currentIndex);
+      setValues(randomize(values));
     }, 100);
 
     const timeoutId = setTimeout(() => {
       clearInterval(rollInterval);
-      const finalValue = Math.floor(Math.random() * 6) + 1;
-      setValue(finalValue);
-      onResult(finalValue);
-    }, seconds * 1000);
+      onResult(randomize(values));
+    }, 3000);
 
     return () => {
       clearInterval(rollInterval);
@@ -41,8 +43,14 @@ const RollableDice: React.FC<IProps> = ({
   }, [rolling, onResult]);
 
   return (
-    <Die value={value} width='64px' height='64px' background='gray.100' borderRadius='md' {...props}/>
+    <Flex gap='2' {...props}>
+      {values.map((value, index) => (
+        <Draggable type='DIE' index={index}>
+          <Die key={index} value={value} fixed={keep.includes(index)} {...props}/>
+        </Draggable>
+      ))}
+    </Flex>
   );
-};
+}
 
 export default RollableDice;
