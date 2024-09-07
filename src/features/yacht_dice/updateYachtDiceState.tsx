@@ -11,42 +11,53 @@ const YACHT_DICE_DICE = 'dice';
 const YACHT_DICE_KEEP = 'keep';
 const YACHT_DICE_ROLLS = 'rolls';
 
+type Payloads = {
+  'boards'?: { [key: string]: YachtDiceBoard };
+  'turn'?: string;
+  'dice'?: number[];
+  'keep-add'?: number;
+  'keep-remove'?: number;
+  'rolls-decrease'?: number;
+};
+
 export const updateYachtDiceState = async (
   loungeId: string, 
-  key: 'boards' | 'turn' | 'dice' | 'keep-add' | 'keep-remove' | 'rolls', 
-  value: number | string | number[] | { [key: string]: YachtDiceBoard }
+  payloads: Payloads
 ): Promise<void> => {
   const reference = fReference(database);
   const loungeReference = child(reference, `${YACHT_DICE_REFERENCE}/${loungeId}`);
 
   const updates: { [key: string]: any } = {};
 
-  switch (key) {
-    case 'boards':
-      updates[`/${YACHT_DICE_REFERENCE}/${loungeId}/${YACHT_DICE_BOARDS}`] = value;
-      break;
-    case 'turn':
-      updates[`/${YACHT_DICE_REFERENCE}/${loungeId}/${YACHT_DICE_TURN}`] = value;
-      break;
-    case 'dice':
-      updates[`/${YACHT_DICE_REFERENCE}/${loungeId}/${YACHT_DICE_DICE}`] = value;
-      break;
-      case 'keep-add': {
-        const currentKeep = (await get(child(loungeReference, YACHT_DICE_KEEP))).val() || [];
-        const newKeep = [...currentKeep, value];
-        updates[`/${YACHT_DICE_REFERENCE}/${loungeId}/${YACHT_DICE_KEEP}`] = newKeep;
+  Object.entries(payloads).forEach(async ([key, value]) => {
+    switch (key) {
+      case 'boards':
+        updates[`/${YACHT_DICE_REFERENCE}/${loungeId}/${YACHT_DICE_BOARDS}`] = value;
         break;
-      }
-      case 'keep-remove': {
-        const currentKeep = (await get(child(loungeReference, YACHT_DICE_KEEP))).val() || [];
-        const newKeep = currentKeep.filter((index: number) => index !== value);
-        updates[`/${YACHT_DICE_REFERENCE}/${loungeId}/${YACHT_DICE_KEEP}`] = newKeep;
+      case 'turn':
+        updates[`/${YACHT_DICE_REFERENCE}/${loungeId}/${YACHT_DICE_TURN}`] = value;
         break;
-      }
-    case 'rolls':
-      updates[`/${YACHT_DICE_REFERENCE}/${loungeId}/${YACHT_DICE_ROLLS}`] = value;
-      break;
-  }
-
+      case 'dice':
+        updates[`/${YACHT_DICE_REFERENCE}/${loungeId}/${YACHT_DICE_DICE}`] = value;
+        break;
+        case 'keep-add': {
+          const currentKeep = (await get(child(loungeReference, YACHT_DICE_KEEP))).val() || [];
+          const newKeep = [...currentKeep, value];
+          updates[`/${YACHT_DICE_REFERENCE}/${loungeId}/${YACHT_DICE_KEEP}`] = newKeep;
+          break;
+        }
+        case 'keep-remove': {
+          const currentKeep = (await get(child(loungeReference, YACHT_DICE_KEEP))).val() || [];
+          const newKeep = currentKeep.filter((index: number) => index !== value);
+          updates[`/${YACHT_DICE_REFERENCE}/${loungeId}/${YACHT_DICE_KEEP}`] = newKeep;
+          break;
+        }
+      case 'rolls-decrease':
+        const currentRolls = (await get(child(loungeReference, YACHT_DICE_ROLLS))).val() || 0;
+        updates[`/${YACHT_DICE_REFERENCE}/${loungeId}/${YACHT_DICE_ROLLS}`] = currentRolls - 1;
+        break;
+    }
+  });
+  
   await update(reference, updates);
 };

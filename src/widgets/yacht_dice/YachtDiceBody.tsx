@@ -1,7 +1,7 @@
-import { Button, Flex, FlexProps } from '@chakra-ui/react';
+import { Flex, FlexProps } from '@chakra-ui/react';
 import { User, YachtDiceBoard } from 'entities';
 import React from 'react';
-import { PlayerList, YachtBoard, YachtDiceField } from 'widgets';
+import { PlayerList, YachtBoard, YachtDiceButtons, YachtDiceField } from 'widgets';
 
 type IProps = FlexProps & {
   players: User[];
@@ -52,10 +52,12 @@ const YachtDiceBody: React.FC<IProps> = ({
       />
       <Flex direction='column' gap='4' flex='1'>
         <PlayerList players={players} flex='1' />
-        <Flex width='100%' gap='4'>
-          <Button onClick={onClickRollButton} colorScheme='blue' flex='1'>주사위 굴리기!</Button>
-          <Button onClick={onClickEndTurnButton} flex='1'>턴 종료</Button>
-        </Flex>
+        <YachtDiceButtons 
+          rolls={rolls} 
+          rolling={rolling}
+          onClickRollButton={onClickRollButton} 
+          onClickEndTurnButton={onClickEndTurnButton} 
+        />
       </Flex>
     </Flex>
   )

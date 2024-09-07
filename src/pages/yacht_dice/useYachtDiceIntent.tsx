@@ -98,13 +98,13 @@ export function useYachtDiceIntent() {
         break;
       case 'ON_ROLL_FINISH':
         dispatch({ type: 'ROLLING', rolling: false });
-        updateYachtDiceState(lounge.id, 'dice', event.values);
+        updateYachtDiceState(lounge.id, { 'dice': event.values, 'rolls-decrease': 0});
         break;
       case 'ON_ADD_DICE_TO_KEEP':
-        updateYachtDiceState(lounge.id, 'keep-add', event.index);
+        updateYachtDiceState(lounge.id, { 'keep-add': event.index });
         break;
       case 'ON_REMOVE_DICE_TO_KEEP':
-        updateYachtDiceState(lounge.id, 'keep-remove', event.index);
+        updateYachtDiceState(lounge.id, { 'keep-remove': event.index });
         break;
       case 'ON_CLICK_END_TURN_BUTTON':
         break;
