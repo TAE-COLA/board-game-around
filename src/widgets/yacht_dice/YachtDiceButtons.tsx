@@ -19,7 +19,7 @@ const YachtDiceButtons: React.FC<IProps> = ({
     <Flex width='100%' gap='4' align='end' {...props}>
       <Flex direction='column' gap='2' align='center' flex='1'>
         <Text>남은 횟수: {rolls}</Text>
-        <Button onClick={onClickRollButton} width='100%' colorScheme='blue' isDisabled={rolling}>주사위 굴리기!</Button>
+        <Button onClick={onClickRollButton} width='100%' colorScheme='blue' isDisabled={rolling || rolls === 0}>주사위 굴리기!</Button>
       </Flex>
       <Button onClick={onClickEndTurnButton} flex='1' isDisabled={rolling}>턴 종료</Button>
     </Flex>

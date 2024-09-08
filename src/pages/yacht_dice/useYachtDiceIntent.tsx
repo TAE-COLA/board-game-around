@@ -98,13 +98,23 @@ export function useYachtDiceIntent() {
         break;
       case 'ON_ROLL_FINISH':
         dispatch({ type: 'ROLLING', rolling: false });
-        updateYachtDiceState(lounge.id, { 'dice': event.values, 'rolls-decrease': 0});
+        await updateYachtDiceState(lounge.id, { 'dice': event.values, 'rolls-decrease': 1 })
+          .catch((error) => {
+            if (error.message === 'No more rolls left') {
+              toast({ title: '남은 횟수가 없습니다.', status: 'error', duration: 2000 });
+            }
+          });
         break;
       case 'ON_ADD_DICE_TO_KEEP':
-        updateYachtDiceState(lounge.id, { 'keep-add': event.index });
+        await updateYachtDiceState(lounge.id, { 'keep-add': event.index });
         break;
       case 'ON_REMOVE_DICE_TO_KEEP':
-        updateYachtDiceState(lounge.id, { 'keep-remove': event.index });
+        await updateYachtDiceState(lounge.id, { 'keep-remove': event.index })
+          .catch((error) => {
+            if (error.message === 'No more rolls left') {
+              toast({ title: '남은 횟수가 없기 때문에 고정을 해제할 수 없습니다.', status: 'error', duration: 2000 });
+            }
+          });
         break;
       case 'ON_CLICK_END_TURN_BUTTON':
         break;
