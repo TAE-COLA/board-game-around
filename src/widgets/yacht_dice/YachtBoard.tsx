@@ -15,12 +15,12 @@ const YachtBoard: React.FC<IProps> = ({
   ...props
 }) => {
   const orderedBoard = {
-    aces: { ...board.aces, name: 'Aces' },
-    deuces: { ...board.deuces, name: 'Deuces' },
-    threes: { ...board.threes, name: 'Threes' },
-    fours: { ...board.fours, name: 'Fours' },
-    fives: { ...board.fives, name: 'Fives' },
-    sixes: { ...board.sixes, name: 'Sixes' },
+    ace: { ...board.ace, name: 'Ace' },
+    double: { ...board.double, name: 'Double' },
+    triple: { ...board.triple, name: 'Triple' },
+    quadra: { ...board.quadra, name: 'Quadra' },
+    penta: { ...board.penta, name: 'Penta' },
+    hexa: { ...board.hexa, name: 'Hexa' },
     bonus: { ...board.bonus, name: 'Bonus' },
     choice: { ...board.choice, name: 'Choice' },
     fourKind: { ...board.fourKind, name: 'Four of a Kind' },

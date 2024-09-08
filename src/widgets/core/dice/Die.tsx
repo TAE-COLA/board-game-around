@@ -16,14 +16,14 @@ const Die: React.FC<IProps> = ({
   const flexProps = {
     width: size === 'sm' ? '32px' : size === 'md' ? '64px' : '128px',
     height: size === 'sm' ? '32px' : size === 'md' ? '64px' : '128px',
-    padding: size === 'sm' ? '2px' : size === 'md' ? '6px' : '14px',
+    padding: size === 'sm' ? '3px' : size === 'md' ? '7px' : '14px',
     background: 'gray.100',
     border: '2px',
     borderColor: fixed ? 'red' : '',
     borderRadius: 'md',
     ...props
   }
-  const circleSize = size === 'sm' ? '8px' : size === 'md' ? '12px' : '16px';
+  const circleSize = size === 'sm' ? '6px' : size === 'md' ? '12px' : '16px';
 
   switch (value) {
     case 1:

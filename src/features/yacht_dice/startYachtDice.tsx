@@ -21,12 +21,12 @@ export const startYachtDice = async (loungeId: string): Promise<void> => {
   if (!lounge || !lounge.playerIds || !lounge.ownerId) return;
 
   const initialYachtDiceBoard: YachtDiceBoard = {
-    aces: { value: 0, marked: false },
-    deuces: { value: 0, marked: false },
-    threes: { value: 0, marked: false },
-    fours: { value: 0, marked: false },
-    fives: { value: 0, marked: false },
-    sixes: { value: 0, marked: false },
+    ace: { value: 0, marked: false },
+    double: { value: 0, marked: false },
+    triple: { value: 0, marked: false },
+    quadra: { value: 0, marked: false },
+    penta: { value: 0, marked: false },
+    hexa: { value: 0, marked: false },
     bonus: { value: 0, marked: false },
     choice: { value: 0, marked: false },
     fourKind: { value: 0, marked: false },

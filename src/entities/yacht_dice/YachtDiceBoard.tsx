@@ -1,10 +1,10 @@
 export default interface YachtDiceBoard {
-  aces: { value: number; marked: boolean };
-  deuces: { value: number; marked: boolean };
-  threes: { value: number; marked: boolean };
-  fours: { value: number; marked: boolean };
-  fives: { value: number; marked: boolean };
-  sixes: { value: number; marked: boolean };
+  ace: { value: number; marked: boolean };
+  double: { value: number; marked: boolean };
+  triple: { value: number; marked: boolean };
+  quadra: { value: number; marked: boolean };
+  penta: { value: number; marked: boolean };
+  hexa: { value: number; marked: boolean };
   bonus: { value: number; marked: boolean };
   choice: { value: number; marked: boolean };
   fourKind: { value: number; marked: boolean };
