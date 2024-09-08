@@ -10,40 +10,41 @@ type IProps = FlexProps & {
 };
 
 const YachtDiceHandRanking: React.FC<IProps> = ({
+  board,
   dice,
   keep,
   ...props
 }) => {
   const keptDice = dice.filter((_, index) => keep.includes(index));
   const handRankings = {
-    'Ace': checkAce(keptDice),
-    'Double': checkDouble(keptDice),
-    'Triple': checkTriple(keptDice),
-    'Quadra': checkQuadra(keptDice),
-    'Penta': checkPenta(keptDice),
-    'Hexa': checkHexa(keptDice),
-    'Four of a Kind': checkFourOfAKind(keptDice),
-    'Full House': checkFullHouse(keptDice),
-    'Small Straight': checkSmallStraight(keptDice),
-    'Large Straight': checkLargeStraight(keptDice),
-    'Yacht': checkYacht(keptDice),
+    ace: { name: 'Ace', check: checkAce(keptDice), marked: board.ace.marked },
+    double: { name: 'Double', check: checkDouble(keptDice), marked: board.double.marked },
+    triple: { name: 'Triple', check: checkTriple(keptDice), marked: board.triple.marked },
+    quadra: { name: 'Quadra', check: checkQuadra(keptDice), marked: board.quadra.marked },
+    penta: { name: 'Penta', check: checkPenta(keptDice), marked: board.penta.marked },
+    hexa: { name: 'Hexa', check: checkHexa(keptDice), marked: board.hexa.marked },
+    fourKind: { name: 'Four of a Kind', check: checkFourOfAKind(keptDice), marked: board.fourKind.marked },
+    fullHouse: { name: 'Full House', check: checkFullHouse(keptDice), marked: board.fullHouse.marked },
+    smStraight: { name: 'Small Straight', check: checkSmallStraight(keptDice), marked: board.smStraight.marked },
+    lgStraight: { name: 'Large Straight', check: checkLargeStraight(keptDice), marked: board.lgStraight.marked },
+    yacht: { name: 'Yacht', check: checkYacht(keptDice), marked: board.yacht.marked },
   };
 
-  const availableHandRankings = Object.entries(handRankings).filter(([_, value]) => value.dice.length > 0);
-  const unavailableHandRankings = Object.entries(handRankings).filter(([_, value]) => value.dice.length === 0);
+  const availableHandRankings = Object.entries(handRankings).filter(([_, value]) => value.check.dice.length > 0);
+  const unavailableHandRankings = Object.entries(handRankings).filter(([_, value]) => value.check.dice.length === 0);
 
   return (
     <Flex direction='column' justify='end' gap='4' {...props}>
       <Divider text='선택 가능한 족보' />
       {availableHandRankings.length > 0 ? 
-        <Grid templateColumns='repeat(4, 1fr)' gap='4'>
-          {availableHandRankings.map(([key, values]) => (
-            <GridItem colSpan={values.dice.length >= 4 ? 3 : 1}>
+        <Grid templateColumns='repeat(6, 1fr)' gap='4'>
+          {availableHandRankings.map(([key, value]) => (
+            <GridItem key={key} colSpan={value.check.dice.length >= 4 ? 3 : 2}>
               <YachtDiceHandButton 
-                key={key}
-                dice={values.dice} 
-                name={key} 
-                score={values.score}
+                dice={value.check.dice} 
+                name={value.name} 
+                score={value.check.score}
+                isDisabled={value.marked}
               />
             </GridItem>
           ))}
@@ -54,12 +55,12 @@ const YachtDiceHandRanking: React.FC<IProps> = ({
       }
       <Divider text='또는' />
       <Grid templateColumns='repeat(4, 1fr)' gap='4'>
-        {unavailableHandRankings.map(([key, _]) => (
-          <GridItem>
+        {unavailableHandRankings.map(([key, value]) => (
+          <GridItem key={key}>
             <YachtDiceHandButton 
-              key={key}
-              name={key} 
+              name={value.name} 
               score={0} 
+              isDisabled={value.marked}
             />
           </GridItem>
         ))}

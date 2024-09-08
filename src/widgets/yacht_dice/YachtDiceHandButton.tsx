@@ -22,7 +22,7 @@ const YachtDiceHandButton: React.FC<IProps> = ({
   return (
     <Card 
       variant={variant} 
-      opacity={isDisabled ? 0.7 : 1} 
+      opacity={isDisabled ? 0.5 : 1} 
       onMouseEnter={() => setVariant('filled')} 
       onMouseLeave={() => !isDisabled ? setVariant('elevated') : null}
       {...props}
@@ -36,8 +36,8 @@ const YachtDiceHandButton: React.FC<IProps> = ({
               ))}
             </Flex>
           }
-          <Text fontWeight='bold'>{name}</Text>
-          <Text>{score}점</Text>
+          <Text fontSize='sm' as={isDisabled ? 's' : 'b'}>{name}</Text>
+          <Text fontSize='sm' as={isDisabled ? 's' : 'b'}>{score}점</Text>
         </Flex>
       </CardBody>
     </Card>

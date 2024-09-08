@@ -50,7 +50,14 @@ const YachtDiceBody: React.FC<IProps> = ({
           onAddDiceToKeep={onAddDiceToKeep} 
           onRemoveDiceToKeep={onRemoveDiceToKeep}
         />
-        <YachtDiceHandRanking board={boards[turn.id]} dice={dice} keep={keep} flex='1' />
+        {!rolling && rolls !== 3 && 
+          <YachtDiceHandRanking 
+            board={boards[turn.id]} 
+            dice={dice} 
+            keep={keep} 
+            flex='1' 
+          />
+        }
       </Flex>
       <Flex direction='column' gap='4' flex='1'>
         <PlayerList players={players} flex='1' />
