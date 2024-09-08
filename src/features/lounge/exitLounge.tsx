@@ -10,7 +10,6 @@ const LOUNGE_PLAYER_IDS = 'playerIds';
 const LOUNGE_DELETED_AT = 'deletedAt';
 
 export const exitLounge = async (loungeId: string, userId: string): Promise<void> => {
-  console.log('exitLounge', loungeId, userId);
   const reference = fRefrence(database);
   const loungeReference = child(child(reference, LOUNGE_REFERENCE), loungeId);
   const lounge = (await get(loungeReference)).val() as Lounge;

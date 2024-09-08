@@ -23,14 +23,12 @@ const YachtDiceField: React.FC<IProps> = ({
   return (
     <Flex direction='column' align='center' gap='10' {...props}>
       <RollableDice 
-        key={dice.join(',')} 
         dice={dice} 
         keep={keep} 
         rolling={rolling} 
         onResult={onResult}
       />
       <KeptDice 
-        key={keep.join(',')} 
         dice={dice} 
         keep={keep} 
         onAddDiceToKeep={onAddDiceToKeep} 

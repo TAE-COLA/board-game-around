@@ -17,7 +17,7 @@ type IProps = FlexProps & {
   onRollFinish: (values: number[]) => void;
   onAddDiceToKeep: (index: number) => void;
   onRemoveDiceToKeep: (index: number) => void;
-  onClickEndTurnButton: () => void;
+  onClickSelectHandButton: (key: string, value: number) => void;
 };
 
 const YachtDiceBody: React.FC<IProps> = ({
@@ -32,7 +32,7 @@ const YachtDiceBody: React.FC<IProps> = ({
   onRollFinish,
   onAddDiceToKeep,
   onRemoveDiceToKeep,
-  onClickEndTurnButton,
+  onClickSelectHandButton,
   ...props
 }) => {
   const boardOf = () => boards[turn.id];
@@ -55,6 +55,7 @@ const YachtDiceBody: React.FC<IProps> = ({
             board={boards[turn.id]} 
             dice={dice} 
             keep={keep} 
+            onClickSelectHandButton={onClickSelectHandButton}
             flex='1' 
           />
         }
@@ -64,8 +65,7 @@ const YachtDiceBody: React.FC<IProps> = ({
         <YachtDiceButtons 
           rolls={rolls} 
           rolling={rolling}
-          onClickRollButton={onClickRollButton} 
-          onClickEndTurnButton={onClickEndTurnButton} 
+          onClickRollButton={onClickRollButton}
         />
       </Flex>
     </Flex>

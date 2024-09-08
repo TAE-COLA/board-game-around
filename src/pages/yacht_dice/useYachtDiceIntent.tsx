@@ -25,7 +25,8 @@ type YachtDiceEvent =
   | { type: 'ON_ROLL_FINISH'; values: number[] }
   | { type: 'ON_ADD_DICE_TO_KEEP'; index: number }
   | { type: 'ON_REMOVE_DICE_TO_KEEP'; index: number }
-  | { type: 'ON_CLICK_END_TURN_BUTTON' };
+  | { type: 'ON_CLICK_SELECT_HAND_BUTTON'; key: string; value: number }
+  | { type: 'ON_CLICK_WHEN_NOT_MY_TURN' };
 
 type YachtDiceReduce =
   | { type: 'LOADING'; loading: boolean }
@@ -94,6 +95,10 @@ export function useYachtDiceIntent() {
       case 'ON_CLICK_EXIT_BUTTON':
         break;
       case 'ON_CLICK_ROLL_BUTTON':
+        if (state.user.id !== state.turn.id) {
+          onEvent({ type: 'ON_CLICK_WHEN_NOT_MY_TURN' });
+          return;
+        }
         dispatch({ type: 'ROLLING', rolling: true });
         break;
       case 'ON_ROLL_FINISH':
@@ -106,17 +111,28 @@ export function useYachtDiceIntent() {
           });
         break;
       case 'ON_ADD_DICE_TO_KEEP':
+        if (state.user.id !== state.turn.id) {
+          onEvent({ type: 'ON_CLICK_WHEN_NOT_MY_TURN' });
+          return;
+        }
         await updateYachtDiceState(lounge.id, { 'keep-add': event.index });
         break;
       case 'ON_REMOVE_DICE_TO_KEEP':
-        await updateYachtDiceState(lounge.id, { 'keep-remove': event.index })
-          .catch((error) => {
-            if (error.message === 'No more rolls left') {
-              toast({ title: '남은 횟수가 없기 때문에 고정을 해제할 수 없습니다.', status: 'error', duration: 2000 });
-            }
-          });
+        if (state.user.id !== state.turn.id) {
+          onEvent({ type: 'ON_CLICK_WHEN_NOT_MY_TURN' });
+          return;
+        }
+        await updateYachtDiceState(lounge.id, { 'keep-remove': event.index });
         break;
-      case 'ON_CLICK_END_TURN_BUTTON':
+      case 'ON_CLICK_SELECT_HAND_BUTTON':
+        if (state.user.id !== state.turn.id) {
+          onEvent({ type: 'ON_CLICK_WHEN_NOT_MY_TURN' });
+          return;
+        }
+        await updateYachtDiceState(lounge.id, { 'boards': { key: event.key, value: event.value } });
+        break;
+      case 'ON_CLICK_WHEN_NOT_MY_TURN':
+        toast({ title: '내 차례가 아닙니다.', status: 'error', duration: 2000 });
         break;
       default:
         break;

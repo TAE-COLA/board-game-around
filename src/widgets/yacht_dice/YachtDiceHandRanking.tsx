@@ -7,12 +7,14 @@ type IProps = FlexProps & {
   board: YachtDiceBoard;
   dice: number[];
   keep: number[];
+  onClickSelectHandButton: (key: string, value: number) => void;
 };
 
 const YachtDiceHandRanking: React.FC<IProps> = ({
   board,
   dice,
   keep,
+  onClickSelectHandButton,
   ...props
 }) => {
   const keptDice = dice.filter((_, index) => keep.includes(index));
@@ -45,6 +47,7 @@ const YachtDiceHandRanking: React.FC<IProps> = ({
                 name={value.name} 
                 score={value.check.score}
                 isDisabled={value.marked}
+                onClick={() => onClickSelectHandButton(key, value.check.score)}
               />
             </GridItem>
           ))}
@@ -61,6 +64,7 @@ const YachtDiceHandRanking: React.FC<IProps> = ({
               name={value.name} 
               score={0} 
               isDisabled={value.marked}
+              onClick={() => onClickSelectHandButton(key, value.check.score)}
             />
           </GridItem>
         ))}
@@ -69,7 +73,9 @@ const YachtDiceHandRanking: React.FC<IProps> = ({
       <YachtDiceHandButton 
         name='주사위 전부 선택하기'
         dice={dice}
-        score={dice.reduce((acc, value) => acc + value, 0)} 
+        score={dice.reduce((acc, value) => acc + value, 0)}
+        onClick={() => onClickSelectHandButton('choice', dice.reduce((acc, value) => acc + value, 0))}
+        isDisabled={board.choice.marked}
       />
     </Flex>
   );

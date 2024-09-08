@@ -7,6 +7,7 @@ type IProps = CardProps & {
   name: string;
   score: number;
   isDisabled?: boolean;
+  onClick: () => void;
 };
 
 const YachtDiceHandButton: React.FC<IProps> = ({
@@ -14,6 +15,7 @@ const YachtDiceHandButton: React.FC<IProps> = ({
   name,
   score,
   isDisabled,
+  onClick,
   ...props
 }) => {
   const [variant, setVariant] = React.useState<'filled' | 'elevated'>(isDisabled ? 'filled' : 'elevated');
@@ -25,6 +27,7 @@ const YachtDiceHandButton: React.FC<IProps> = ({
       opacity={isDisabled ? 0.5 : 1} 
       onMouseEnter={() => setVariant('filled')} 
       onMouseLeave={() => !isDisabled ? setVariant('elevated') : null}
+      onClick={() => !isDisabled ? onClick() : null}
       {...props}
     >
       <CardBody>

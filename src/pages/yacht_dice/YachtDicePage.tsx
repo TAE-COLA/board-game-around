@@ -22,7 +22,7 @@ const YachtDicePage: React.FC = () => {
           onRollFinish={(values) => onEvent({ type: 'ON_ROLL_FINISH', values })}
           onAddDiceToKeep={(index) => onEvent({ type: 'ON_ADD_DICE_TO_KEEP', index })}
           onRemoveDiceToKeep={(index) => onEvent({ type: 'ON_REMOVE_DICE_TO_KEEP', index })}
-          onClickEndTurnButton={() => onEvent({ type: 'ON_CLICK_END_TURN_BUTTON' })}
+          onClickSelectHandButton={(key, value) => onEvent({ type: 'ON_CLICK_SELECT_HAND_BUTTON', key, value })}
           flex='1'
         />
       </Flex>
