@@ -8,6 +8,7 @@ type IProps = FlexProps & {
   rolling?: boolean;
   isDisabled?: boolean;
   onResult?: (values: number[]) => void;
+  onAddDiceToKeep: (index: number) => void;
 };
 
 const RollableDice: React.FC<IProps> = ({
@@ -16,6 +17,7 @@ const RollableDice: React.FC<IProps> = ({
   rolling = false,
   isDisabled = false,
   onResult = () => {},
+  onAddDiceToKeep,
   ...props
 }) => {
   const [values, setValues] = useState<number[]>(dice);
@@ -52,7 +54,7 @@ const RollableDice: React.FC<IProps> = ({
     <Flex gap='2' {...props}>
       {values.map((value, index) => (
         <Draggable key={index} type='DIE' index={index} isDisabled={isDisabled || keep.includes(index)}>
-          <Die value={value} fixed={keep.includes(index)} {...props}/>
+          <Die value={value} fixed={keep.includes(index)} onClick={() => onAddDiceToKeep(index)} {...props}/>
         </Draggable>
       ))}
     </Flex>

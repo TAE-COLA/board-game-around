@@ -32,7 +32,7 @@ const KeptDice: React.FC<IProps> = ({
       <Flex ref={drop} width='384px' height='96px' padding='16px' gap='8px' border='2px' borderColor='black' borderRadius='md' borderStyle='dashed'>
         {dice.map((value, index) => (
           keep.includes(index) ? 
-            <Draggable key={index} type='DIE' index={index} onDropOutside={onRemoveDiceToKeep}>
+            <Draggable key={index} type='DIE' index={index} onDropOutside={onRemoveDiceToKeep} onClick={() => onRemoveDiceToKeep(index)}>
               <Die value={value} />
             </Draggable> : null
         ))}
