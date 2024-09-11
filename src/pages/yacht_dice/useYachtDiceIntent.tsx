@@ -171,6 +171,10 @@ export function useYachtDiceIntent() {
       dispatch({ type: 'BOARDS', boards: yachtDice.boards });
       const turn = await fetchUserById(yachtDice.turn);
       dispatch({ type: 'TURN', turn });
+      if (yachtDice.turn === state.user.id) {
+        toast({ title: '내 차례입니다.', status: 'info', duration: 2000 });
+      }
+
       dispatch({ type: 'DICE', dice: yachtDice.dice });
       dispatch({ type: 'KEEP', keep: yachtDice.keep ?? [] });
       dispatch({ type: 'ROLLS', rolls: yachtDice.rolls });
