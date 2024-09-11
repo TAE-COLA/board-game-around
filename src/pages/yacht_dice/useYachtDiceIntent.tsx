@@ -97,9 +97,9 @@ export function useYachtDiceIntent() {
       case 'ON_CLICK_ROLL_BUTTON':
         if (state.user.id !== state.turn.id) {
           onEvent({ type: 'ON_CLICK_WHEN_NOT_MY_TURN' });
-          return;
+        } else {
+          dispatch({ type: 'ROLLING', rolling: true });
         }
-        dispatch({ type: 'ROLLING', rolling: true });
         break;
       case 'ON_ROLL_FINISH':
         dispatch({ type: 'ROLLING', rolling: false });
@@ -111,25 +111,28 @@ export function useYachtDiceIntent() {
           });
         break;
       case 'ON_ADD_DICE_TO_KEEP':
-        if (state.user.id !== state.turn.id) {
-          onEvent({ type: 'ON_CLICK_WHEN_NOT_MY_TURN' });
-          return;
-        }
-        await updateYachtDiceState(lounge.id, { 'keep-add': event.index });
+        await updateYachtDiceState(lounge.id, { 'keep-add': event.index })
+          .catch((error) => {
+            if (error.code === 'PERMISSION_DENIED') {
+              toast({ title: '내 차례가 아닙니다.', status: 'error', duration: 2000 });
+            }
+          });
         break;
       case 'ON_REMOVE_DICE_TO_KEEP':
-        if (state.user.id !== state.turn.id) {
-          onEvent({ type: 'ON_CLICK_WHEN_NOT_MY_TURN' });
-          return;
-        }
-        await updateYachtDiceState(lounge.id, { 'keep-remove': event.index });
+        await updateYachtDiceState(lounge.id, { 'keep-remove': event.index })
+          .catch((error) => {
+            if (error.code === 'PERMISSION_DENIED') {
+              toast({ title: '내 차례가 아닙니다.', status: 'error', duration: 2000 });
+            }
+          });
         break;
       case 'ON_CLICK_SELECT_HAND_BUTTON':
-        if (state.user.id !== state.turn.id) {
-          onEvent({ type: 'ON_CLICK_WHEN_NOT_MY_TURN' });
-          return;
-        }
-        await updateYachtDiceState(lounge.id, { 'boards': { key: event.key, value: event.value } });
+        await updateYachtDiceState(lounge.id, { 'boards': { key: event.key, value: event.value } })
+          .catch((error) => {
+            if (error.code === 'PERMISSION_DENIED') {
+              toast({ title: '내 차례가 아닙니다.', status: 'error', duration: 2000 });
+            }
+          });
         break;
       case 'ON_CLICK_WHEN_NOT_MY_TURN':
         toast({ title: '내 차례가 아닙니다.', status: 'error', duration: 2000 });
@@ -160,6 +163,7 @@ export function useYachtDiceIntent() {
     if (loungeLoading) return;
 
     const unsubscribe = onYachtDiceStateChanged(lounge.id, async (yachtDice) => {
+      console.log('yachtDice', yachtDice);
       if (yachtDice.playerIds) {
         const players = await fetchUsersByIds(yachtDice.playerIds);
         dispatch({ type: 'PLAYERS', players });

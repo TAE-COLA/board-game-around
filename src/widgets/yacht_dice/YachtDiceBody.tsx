@@ -35,16 +35,18 @@ const YachtDiceBody: React.FC<IProps> = ({
   onClickSelectHandButton,
   ...props
 }) => {
-  const boardOf = () => boards[turn.id];
-  const scoreOf = (player: User) => 0;
-
   return (
     <Flex width='100%' gap='8' {...props}>
-      <YachtBoard player={turn} board={boards[turn.id]} score={scoreOf(turn)}/>
+      <YachtBoard 
+        player={turn} 
+        board={boards[turn.id]} 
+        score={Object.values(boards[turn.id]).reduce((acc, value: { value: number; marked: boolean }) => acc + value.value, 0)}
+      />
       <Flex direction='column' gap='4' flex='2'>
         <YachtDiceField 
           dice={dice} 
           keep={keep} 
+          rolls={rolls}
           rolling={rolling} 
           onResult={onRollFinish}
           onAddDiceToKeep={onAddDiceToKeep} 

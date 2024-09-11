@@ -5,6 +5,7 @@ import { KeptDice, RollableDice } from 'widgets';
 type IProps = FlexProps & {
   dice: number[];
   keep: number[];
+  rolls: number;
   rolling: boolean;
   onResult: (values: number[]) => void;
   onAddDiceToKeep: (index: number) => void;
@@ -14,6 +15,7 @@ type IProps = FlexProps & {
 const YachtDiceField: React.FC<IProps> = ({
   dice,
   keep,
+  rolls,
   rolling,
   onResult,
   onAddDiceToKeep,
@@ -26,6 +28,7 @@ const YachtDiceField: React.FC<IProps> = ({
         dice={dice} 
         keep={keep} 
         rolling={rolling} 
+        isDisabled={rolls === 3}
         onResult={onResult}
       />
       <KeptDice 
