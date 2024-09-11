@@ -63,7 +63,7 @@ const YachtDiceBody: React.FC<IProps> = ({
         }
       </Flex>
       <Flex direction='column' gap='4' flex='1'>
-        <PlayerList players={players} flex='1' />
+        <PlayerList players={players} turn={turn} flex='1' />
         <YachtDiceButtons 
           rolls={rolls} 
           rolling={rolling}
