@@ -51,6 +51,9 @@ const LoungeProvider: React.FC = () => {
         }
         setCode(lounge.code);
         setStatus(lounge.status);
+        if (lounge.status === 'PLAYING') {
+          navigate('/' + game.name, { replace: true });
+        }
         setCreatedAt(lounge.createdAt);
         setLoading(false);
       });
