@@ -4,6 +4,7 @@ export default interface Lounge {
   code: string;
   ownerId?: string;
   playerIds?: string[];
+  status: 'WAITING' | 'PLAYING' | 'END';
   createdAt: object;
   deletedAt?: object;
 }

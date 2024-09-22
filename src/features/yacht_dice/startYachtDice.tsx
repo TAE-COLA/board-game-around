@@ -12,6 +12,8 @@ const YACHT_DICE_DICE = 'dice';
 const YACHT_DICE_KEEP = 'keep';
 const YACHT_DICE_ROLLS = 'rolls';
 
+const LOUNGE_STATUS = 'status';
+
 export const startYachtDice = async (loungeId: string): Promise<void> => {
   const reference = fReference(database);
 
@@ -50,6 +52,7 @@ export const startYachtDice = async (loungeId: string): Promise<void> => {
   };
 
   const updates = {
+    [`/${LOUNGE_REFERENCE}/${loungeId}/${LOUNGE_STATUS}`]: 'PLAYING',
     [`/${YACHT_DICE_REFERENCE}/${loungeId}`]: yachtDice
   };
 

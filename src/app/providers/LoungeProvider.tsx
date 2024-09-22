@@ -1,8 +1,9 @@
+import { useToast } from '@chakra-ui/react';
 import { Game, User } from 'entities';
 import { LoungeContext, exitLounge, fetchGameById, fetchLoungeIdByUserId, fetchUserById, fetchUsersByIds, onLoungeStateChanged, useAuth } from 'features';
 import { serverTimestamp } from 'firebase/database';
 import React, { useEffect, useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { createDummy } from 'shared';
 
 const LoungeProvider: React.FC = () => {
@@ -10,12 +11,14 @@ const LoungeProvider: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [game, setGame] = useState(createDummy<Game>());
   const [code, setCode] = useState('');
-  const [owner, setOwner] = useState<User>();
+  const [owner, setOwner] = useState<User>(createDummy<User>());
   const [players, setplayers] = useState<User[]>([]);
+  const [status, setStatus] = useState<'WAITING' | 'PLAYING' | 'END'>('WAITING');
   const [createdAt, setCreatedAt] = useState<object>(serverTimestamp());
-  const [deletedAt, setDeletedAt] = useState<object>();
 
   const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+  const toast = useToast();
 
   useEffect(() => {
     if (authLoading) {
@@ -37,17 +40,18 @@ const LoungeProvider: React.FC = () => {
       const unsubscribe = onLoungeStateChanged(loungeId, async (lounge) => {
         const game = await fetchGameById(lounge.gameId);
         setGame(game);
-        if (lounge.ownerId) {
+        if (lounge.ownerId && lounge.playerIds && !lounge.deletedAt) {
           const owner = await fetchUserById(lounge.ownerId);
           setOwner(owner);
-        }
-        setCode(lounge.code);
-        if (lounge.playerIds) {
           const players = await fetchUsersByIds(lounge.playerIds);
           setplayers(players);
+        } else {
+          toast({ title: '게임방이 존재하지 않습니다.', status: 'error', duration: 2000 });
+          navigate('/main', { replace: true });
         }
+        setCode(lounge.code);
+        setStatus(lounge.status);
         setCreatedAt(lounge.createdAt);
-        setDeletedAt(lounge.deletedAt);
         setLoading(false);
       });
 
@@ -55,14 +59,16 @@ const LoungeProvider: React.FC = () => {
     });
   }, [user, authLoading]);
 
-  const exit = async (userId: string) => {
+  const exit = async () => {
     setLoading(true);
-    await exitLounge(id, userId);
+    if (user) {
+      await exitLounge(id, user.id);
+    }
     setLoading(false);
   };
 
   return (
-    <LoungeContext.Provider value={{ id, loading, game, code, owner, players, createdAt, deletedAt, exit }}>
+    <LoungeContext.Provider value={{ id, loading, game, code, owner, players, status, createdAt, exit }}>
       <Outlet />
     </LoungeContext.Provider>
   );

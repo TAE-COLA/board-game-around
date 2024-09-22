@@ -53,8 +53,8 @@ const RollableDice: React.FC<IProps> = ({
   return (
     <Flex gap='2' {...props}>
       {values.map((value, index) => (
-        <Draggable key={index} type='DIE' index={index} isDisabled={isDisabled || keep.includes(index)}>
-          <Die value={value} fixed={keep.includes(index)} onClick={() => onAddDiceToKeep(index)} {...props}/>
+        <Draggable key={index} type='DIE' index={index} isDisabled={isDisabled || keep.includes(index)} opacity={isDisabled ? 0.5 : 1}>
+          <Die value={value} fixed={keep.includes(index)} onClick={() => isDisabled || onAddDiceToKeep(index)} {...props}/>
         </Draggable>
       ))}
     </Flex>

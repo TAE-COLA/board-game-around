@@ -5,9 +5,9 @@ export default interface LoungeContextType {
   loading: boolean;
   game: Game;
   code: string;
-  owner?: User;
-  players?: User[];
+  owner: User;
+  players: User[];
+  status: 'WAITING' | 'PLAYING' | 'END';
   createdAt: object;
-  deletedAt?: object;
-  exit: (userId: string) => Promise<void>;
+  exit: () => Promise<void>;
 }
