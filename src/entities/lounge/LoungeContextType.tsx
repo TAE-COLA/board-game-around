@@ -9,5 +9,4 @@ export default interface LoungeContextType {
   players: User[];
   status: 'WAITING' | 'PLAYING' | 'END';
   createdAt: object;
-  exit: () => Promise<void>;
 }

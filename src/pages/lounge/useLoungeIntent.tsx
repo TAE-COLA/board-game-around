@@ -1,11 +1,10 @@
 import { useToast } from '@chakra-ui/react';
-import { startYachtDice, useAuthContext, useLoungeContext } from 'features';
+import { exitLounge, startYachtDice, useAuthContext, useLoungeContext } from 'features';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { launch } from 'shared';
 
 type LoungeEvent =
-  | { type: 'SCREEN_INITIALIZE' }
   | { type: 'ON_CLICK_EXIT_BUTTON' }
   | { type: 'ON_CLICK_COPY_BUTTON' }
   | { type: 'ON_CLICK_START_BUTTON' };
@@ -21,12 +20,11 @@ export function useLoungeIntent() {
 
   const onEvent = async (event: LoungeEvent) => {
     switch (event.type) {
-      case 'SCREEN_INITIALIZE':
-        setLoading(false);
-        break;
       case 'ON_CLICK_EXIT_BUTTON':
         await launch(setLoading, async () => {
-          await lounge.exit();
+          await exitLounge(lounge.id, auth.id);
+          toast({ title: '게임방을 나왔습니다.', duration: 2000 });
+          navigate('/main', { replace: true });
         });
         break;
       case 'ON_CLICK_COPY_BUTTON':
@@ -48,16 +46,10 @@ export function useLoungeIntent() {
   }, [auth.loading, lounge.loading]);
 
   useEffect(() => {
-    if (lounge.loading) return;
-
     if (lounge?.status === 'PLAYING') {
       navigate('/' + lounge.game.name, { replace: true });
     }
-  }, [lounge.id, lounge.loading]);
-
-  useEffect(() => {
-    onEvent({ type: 'SCREEN_INITIALIZE' });
-  }, []);
+  }, [lounge.status]);
 
   return {
     loading,

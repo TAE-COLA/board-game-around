@@ -1,10 +1,10 @@
 import { useToast } from '@chakra-ui/react';
 import { Game, User } from 'entities';
-import { LoungeContext, exitLounge, fetchGameById, fetchLoungeIdByUserId, fetchUserById, fetchUsersByIds, onLoungeStateChanged, useAuthContext } from 'features';
+import { LoungeContext, fetchGameById, fetchLoungeIdByUserId, fetchUserById, fetchUsersByIds, onLoungeStateChanged, useAuthContext } from 'features';
 import { serverTimestamp } from 'firebase/database';
 import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
-import { createDummy, launch } from 'shared';
+import { createDummy } from 'shared';
 
 const LoungeProvider: React.FC = () => {
   const [id, setId] = useState('');
@@ -24,6 +24,8 @@ const LoungeProvider: React.FC = () => {
   const toast = useToast();
 
   useEffect(() => {
+    if (auth.loading) return;
+
     fetchLoungeIdByUserId(auth.id).then((loungeId) => {
       if (!loungeId) {
         navigate('/main', { replace: true });
@@ -43,9 +45,6 @@ const LoungeProvider: React.FC = () => {
           setplayers(players);
           setCode(lounge.code);
           setStatus(lounge.status);
-          if (lounge.status === 'PLAYING') {
-            navigate('/' + game.name, { replace: true });
-          }
           setCreatedAt(lounge.createdAt);
           setLoading(false);
         } else {
@@ -57,14 +56,6 @@ const LoungeProvider: React.FC = () => {
     });
   }, [auth]);
 
-  const exit = async () => {
-    await launch(setLoading, async () => {
-      await exitLounge(id, auth.id);
-      toast({ title: '게임방을 나왔습니다.', duration: 2000 });
-      navigate('/main', { replace: true });
-    });
-  };
-
   useEffect(() => {
     if (!loading && !isLoungeAvailable) {
       navigate('/main', { replace: true });
@@ -73,7 +64,7 @@ const LoungeProvider: React.FC = () => {
   }, [loading, isLoungeAvailable]);
 
   return (
-    <LoungeContext.Provider value={{ loading, id, game, code, owner, players, status, createdAt, exit }}>
+    <LoungeContext.Provider value={{ loading, id, game, code, owner, players, status, createdAt }}>
       <Outlet />
     </LoungeContext.Provider>
   );

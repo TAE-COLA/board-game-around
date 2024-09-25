@@ -4,7 +4,7 @@ import React from 'react';
 import { LoungeBody, LoungeHeader, Page } from 'widgets';
 
 const LoungePage: React.FC = () => {
-  const { loading, onEvent} = useLoungeIntent();
+  const { loading, onEvent } = useLoungeIntent();
 
   return (
     <Page loading={loading} height='100vh'>
