@@ -7,7 +7,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import { createDummy } from 'shared';
 
 const AuthProvider: React.FC = () => {
-  const [user, setUser] = useState<User>(createDummy<User>());
+  const [user, setUser] = useState(createDummy<User>());
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
@@ -34,7 +34,7 @@ const AuthProvider: React.FC = () => {
   }, [user, loading]);
 
   return (
-    <AuthContext.Provider value={{ loading, user }}>
+    <AuthContext.Provider value={{ loading, ...user }}>
       <Outlet />
     </AuthContext.Provider>
   );

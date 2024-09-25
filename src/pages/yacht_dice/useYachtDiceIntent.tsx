@@ -85,7 +85,7 @@ export function useYachtDiceIntent() {
       case 'ON_CLICK_EXIT_BUTTON':
         break;
       case 'ON_CLICK_ROLL_BUTTON':
-        if (auth.user.id !== state.turn.id) {
+        if (auth.id !== state.turn.id) {
           onEvent({ type: 'ON_CLICK_WHEN_NOT_MY_TURN' });
         } else {
           dispatch({ type: 'ROLLING', rolling: true });
@@ -152,7 +152,7 @@ export function useYachtDiceIntent() {
       dispatch({ type: 'KEEP', keep: yachtDice.keep ?? [] });
       dispatch({ type: 'ROLLS', rolls: yachtDice.rolls });
 
-      if (yachtDice.turn === auth.user.id && yachtDice.rolls === 3) {
+      if (yachtDice.turn === auth.id && yachtDice.rolls === 3) {
         toast({ title: '내 차례입니다.', status: 'info', duration: 2000 });
       }
     });
@@ -167,8 +167,6 @@ export function useYachtDiceIntent() {
   return {
     state,
     loading,
-    auth,
-    lounge,
     onEvent
   };
 }

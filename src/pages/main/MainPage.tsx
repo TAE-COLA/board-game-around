@@ -4,31 +4,28 @@ import React from 'react';
 import { GameCardGrid, GameEntryModal, GreetingUser, Header, Page } from 'widgets';
 
 const MainPage: React.FC = () => {
-  const intent = useMainIntent();
+  const { state, loading, modal, onEvent } = useMainIntent();
 
   return (
-    <Page loading= {intent.loading}>
+    <Page loading= {loading}>
       <Header>
-        <GreetingUser
-          user={intent.auth.user}
-          onClickLogoutButton={() => intent.onEvent({ type: 'ON_CLICK_LOGOUT_BUTTON' })}
-        />
+        <GreetingUser onClickLogoutButton={() => onEvent({ type: 'ON_CLICK_LOGOUT_BUTTON' })} />
       </Header>
-      {!intent.state.gameList || intent.state.gameList.length === 0 ? 
+      {!state.gameList || state.gameList.length === 0 ? 
         <Box>No games found.</Box> : 
         <GameCardGrid 
-          gameList={intent.state.gameList} 
-          onClickGamePlayButton={game => intent.onEvent({ type: 'ON_CLICK_GAME_PLAY_BUTTON', game })}
+          gameList={state.gameList} 
+          onClickGamePlayButton={game => onEvent({ type: 'ON_CLICK_GAME_PLAY_BUTTON', game })}
           marginTop='32px'
         />
       }
-      {intent.state.selectedGame &&
+      {state.selectedGame &&
         <GameEntryModal 
-          loading={intent.loading}
-          modal={intent.modal} 
-          game={intent.state.selectedGame} 
-          onClickCreateLoungeButton={() => intent.onEvent({ type: 'ON_CLICK_CREATE_LOUNGE_BUTTON' })}
-          onClickJoinLoungeButton={code => intent.onEvent({ type: 'ON_CLICK_JOIN_LOUNGE_BUTTON', code })}
+          loading={loading}
+          modal={modal} 
+          game={state.selectedGame} 
+          onClickCreateLoungeButton={() => onEvent({ type: 'ON_CLICK_CREATE_LOUNGE_BUTTON' })}
+          onClickJoinLoungeButton={code => onEvent({ type: 'ON_CLICK_JOIN_LOUNGE_BUTTON', code })}
         />
       }
     </Page>

@@ -75,8 +75,8 @@ export function useMainIntent() {
         break;
       case 'ON_CLICK_CREATE_LOUNGE_BUTTON':
         await launch(setLoading, async () => {
-          if (state.selectedGame && auth.user) {
-            await createLounge(state.selectedGame.id, auth.user.id);
+          if (state.selectedGame) {
+            await createLounge(state.selectedGame.id, auth.id);
             navigate('/lounge');
           }
         });
@@ -85,8 +85,8 @@ export function useMainIntent() {
       case 'ON_CLICK_JOIN_LOUNGE_BUTTON':
         await launch(setLoading, async () => {
           try {
-            if (state.selectedGame && auth.user) {
-              await joinLounge(event.code, state.selectedGame.id, auth.user.id);
+            if (state.selectedGame) {
+              await joinLounge(event.code, state.selectedGame.id, auth.id);
               navigate('/lounge');
             }
           } catch (error) {
@@ -111,7 +111,6 @@ export function useMainIntent() {
   return {
     state,
     loading,
-    auth,
     modal,
     onEvent
   };

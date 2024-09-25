@@ -1,6 +1,8 @@
-import { User } from 'entities';
 
 export default interface AuthContextType {
   loading: boolean;
-  user: User;
+  id: string;
+  name: string;
+  email: string;
+  createdAt: Date;
 }

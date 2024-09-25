@@ -4,7 +4,6 @@ import React from 'react';
 import { PlayerList, YachtBoard, YachtDiceButtons, YachtDiceField, YachtDiceHandRanking } from 'widgets';
 
 type IProps = FlexProps & {
-  players: User[];
   boards: {
     [key: string]: YachtDiceBoard;
   };
@@ -21,7 +20,6 @@ type IProps = FlexProps & {
 };
 
 const YachtDiceBody: React.FC<IProps> = ({
-  players,
   boards,
   turn,
   dice,
@@ -63,7 +61,7 @@ const YachtDiceBody: React.FC<IProps> = ({
         }
       </Flex>
       <Flex direction='column' gap='4' flex='1'>
-        <PlayerList players={players} turn={turn} flex='1' />
+        <PlayerList turn={turn} flex='1' />
         <YachtDiceButtons 
           rolls={rolls} 
           rolling={rolling}

@@ -61,8 +61,6 @@ export function useLoungeIntent() {
 
   return {
     loading,
-    auth,
-    lounge,
     onEvent
   };
 }
