@@ -1,12 +1,8 @@
 import { useToast } from '@chakra-ui/react';
-import { startYachtDice, useAuth, useLounge } from 'features';
-import { useEffect, useReducer } from 'react';
+import { startYachtDice, useAuthContext, useLoungeContext } from 'features';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { launch } from 'shared';
-
-type LoungeState = {
-  loading: boolean;
-};
 
 type LoungeEvent =
   | { type: 'SCREEN_INITIALIZE' }
@@ -14,34 +10,22 @@ type LoungeEvent =
   | { type: 'ON_CLICK_COPY_BUTTON' }
   | { type: 'ON_CLICK_START_BUTTON' };
 
-type LoungeReduce =
-  | { type: 'LOADING'; loading: boolean };
-
-function handleLoungeReduce(state: LoungeState, reduce: LoungeReduce): LoungeState {
-  switch (reduce.type) {
-    case 'LOADING':
-      return { ...state, loading: reduce.loading };
-    default:
-      return state;
-  }
-}
-
 export function useLoungeIntent() {
-  const initialState: LoungeState = {
-    loading: true
-  };
-  const [state, dispatch] = useReducer(handleLoungeReduce, initialState);
+  const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
   const toast = useToast();
 
-  const { user, loading: authLoading } = useAuth();
-  const { loading: loungeLoading, exit,  ...lounge } = useLounge();
+  const auth = useAuthContext();
+  const lounge = useLoungeContext();
 
   const onEvent = async (event: LoungeEvent) => {
     switch (event.type) {
+      case 'SCREEN_INITIALIZE':
+        setLoading(false);
+        break;
       case 'ON_CLICK_EXIT_BUTTON':
-        await exit();
+        await lounge.exit();
         toast({ title: '게임방을 나왔습니다.', duration: 2000 });
         navigate('/main', { replace: true });
         break;
@@ -50,7 +34,7 @@ export function useLoungeIntent() {
         toast({ title: '게임방 코드가 복사되었습니다.', status: 'success', duration: 2000 });
         break;
       case 'ON_CLICK_START_BUTTON':
-        await launch(dispatch, async () => {
+        await launch(setLoading, async () => {
           await startYachtDice(lounge.id);
         })
         break;
@@ -60,19 +44,25 @@ export function useLoungeIntent() {
   };
 
   useEffect(() => {
-    dispatch({ type: 'LOADING', loading: authLoading || loungeLoading });
-  }, [authLoading, loungeLoading]);
+    setLoading(auth.loading || lounge.loading);
+  }, [auth.loading, lounge.loading]);
 
   useEffect(() => {
-    if (loungeLoading) return;
+    if (lounge.loading) return;
 
     if (lounge?.status === 'PLAYING') {
       navigate('/' + lounge.game.name, { replace: true });
     }
-  }, [lounge.id, loungeLoading]);
+  }, [lounge.id, lounge.loading]);
+
+  useEffect(() => {
+    onEvent({ type: 'SCREEN_INITIALIZE' });
+  }, []);
 
   return {
-    state,
-    onEvent,
+    loading,
+    auth,
+    lounge,
+    onEvent
   };
 }

@@ -1,5 +1,4 @@
 import { ChakraBaseProvider, theme as chakraTheme, extendBaseTheme } from '@chakra-ui/react';
-import { AuthProvider } from 'app';
 import React from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -15,9 +14,7 @@ const Providers: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     <QueryClientProvider client={queryClient}>
       <ChakraBaseProvider theme={theme}>
         <DndProvider backend={HTML5Backend}>
-          <AuthProvider>
-            { children }
-          </AuthProvider>
+          { children }
         </DndProvider>
       </ChakraBaseProvider>
     </QueryClientProvider>

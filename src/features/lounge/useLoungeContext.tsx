@@ -1,10 +1,10 @@
 import { LoungeContext } from 'features';
 import { useContext } from 'react';
 
-export const useLounge = () => {
+export const useLoungeContext = () => {
   const context = useContext(LoungeContext);
   if (context === undefined) {
-    throw new Error('useLounge must be used within an LoungeProvider');
+    throw new Error('useLoungeContext must be used within an LoungeProvider');
   }
   return context;
 };

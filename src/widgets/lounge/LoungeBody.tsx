@@ -4,6 +4,7 @@ import React from 'react';
 import { PlayerList, RuleBox } from 'widgets';
 
 type IProps = FlexProps & {
+  user: User;
   game: Game;
   players: User[];
   owner: User;
@@ -11,6 +12,7 @@ type IProps = FlexProps & {
 };
 
 const LoungeBody: React.FC<IProps> = ({
+  user,
   game,
   players,
   owner,
@@ -22,7 +24,7 @@ const LoungeBody: React.FC<IProps> = ({
       <RuleBox game={game} flex='2' />
       <Flex direction='column' flex='1'>
         <PlayerList players={players} owner={owner} flex='1'/>
-        <Button onClick={onClickStartButton} size='lg' colorScheme='pink'>시작하기</Button>
+        <Button onClick={onClickStartButton} size='lg' colorScheme='pink' isDisabled={user.id !== owner.id}>시작하기</Button>
       </Flex>
     </Flex>
   )

@@ -1,6 +1,6 @@
 import { useToast } from '@chakra-ui/react';
 import { Game, User } from 'entities';
-import { LoungeContext, exitLounge, fetchGameById, fetchLoungeIdByUserId, fetchUserById, fetchUsersByIds, onLoungeStateChanged, useAuth } from 'features';
+import { LoungeContext, exitLounge, fetchGameById, fetchLoungeIdByUserId, fetchUserById, fetchUsersByIds, onLoungeStateChanged, useAuthContext } from 'features';
 import { serverTimestamp } from 'firebase/database';
 import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
@@ -16,7 +16,7 @@ const LoungeProvider: React.FC = () => {
   const [status, setStatus] = useState<'WAITING' | 'PLAYING' | 'END'>('WAITING');
   const [createdAt, setCreatedAt] = useState<object>(serverTimestamp());
 
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuthContext();
   const navigate = useNavigate();
   const toast = useToast();
 

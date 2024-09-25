@@ -1,12 +1,11 @@
 import { useToast } from '@chakra-ui/react';
 import { User, YachtDiceBoard } from 'entities';
-import { fetchUserById, onYachtDiceStateChanged, updateYachtDiceState, useAuth, useLounge } from 'features';
-import { useEffect, useReducer } from 'react';
+import { fetchUserById, onYachtDiceStateChanged, updateYachtDiceState, useAuthContext, useLoungeContext } from 'features';
+import { useEffect, useReducer, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createDummy } from 'shared';
 
 type YachtDiceState = {
-  loading: boolean;
   boards: {
     [key: string]: YachtDiceBoard;
   };
@@ -18,6 +17,7 @@ type YachtDiceState = {
 };
 
 type YachtDiceEvent =
+  | { type: 'SCREEN_INITIALIZE' }
   | { type: 'ON_CLICK_EXIT_BUTTON' }
   | { type: 'ON_CLICK_ROLL_BUTTON' }
   | { type: 'ON_ROLL_FINISH'; values: number[] }
@@ -27,7 +27,6 @@ type YachtDiceEvent =
   | { type: 'ON_CLICK_WHEN_NOT_MY_TURN' };
 
 type YachtDiceReduce =
-  | { type: 'LOADING'; loading: boolean }
   | { type: 'BOARDS'; boards: { [key: string]: YachtDiceBoard } }
   | { type: 'TURN'; turn: User }
   | { type: 'DICE'; dice: number[] }
@@ -39,8 +38,6 @@ type YachtDiceReduce =
 
 function handleYachtDiceReduce(state: YachtDiceState, reduce: YachtDiceReduce): YachtDiceState {
   switch (reduce.type) {
-    case 'LOADING':
-      return { ...state, loading: reduce.loading };
     case 'BOARDS':
       return { ...state, boards: reduce.boards };
     case 'TURN':
@@ -64,7 +61,6 @@ function handleYachtDiceReduce(state: YachtDiceState, reduce: YachtDiceReduce): 
 
 export function useYachtDiceIntent() {
   const initialState: YachtDiceState = {
-    loading: true,
     boards: {},
     turn: createDummy<User>(),
     dice: [0, 0, 0, 0, 0],
@@ -73,19 +69,23 @@ export function useYachtDiceIntent() {
     rolling: false
   };
   const [state, dispatch] = useReducer(handleYachtDiceReduce, initialState);
+  const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
   const toast = useToast();
 
-  const { user, loading: authLoading } = useAuth();
-  const { loading: loungeLoading, exit,  ...lounge } = useLounge();
+  const auth = useAuthContext();
+  const lounge = useLoungeContext();
 
   const onEvent = async (event: YachtDiceEvent) => {
     switch (event.type) {
+      case 'SCREEN_INITIALIZE':
+        setLoading(false);
+        break;
       case 'ON_CLICK_EXIT_BUTTON':
         break;
       case 'ON_CLICK_ROLL_BUTTON':
-        if (user?.id !== state.turn.id) {
+        if (auth.user.id !== state.turn.id) {
           onEvent({ type: 'ON_CLICK_WHEN_NOT_MY_TURN' });
         } else {
           dispatch({ type: 'ROLLING', rolling: true });
@@ -133,16 +133,16 @@ export function useYachtDiceIntent() {
   };
 
   useEffect(() => {
-    if (loungeLoading) return;
+    if (lounge.loading) return;
 
     if (lounge.game.name !== '요트다이스') {
       toast({ title: '게임방이 존재하지 않습니다.', status: 'error', duration: 2000 });
       navigate('/main', { replace: true });
     }
-  }, [lounge.owner, lounge.players, lounge.game.name, loungeLoading]);
+  }, [lounge.owner, lounge.players, lounge.game.name, lounge.loading]);
 
   useEffect(() => {
-    if (loungeLoading) return;
+    if (lounge.loading) return;
 
     const unsubscribe = onYachtDiceStateChanged(lounge.id, async (yachtDice) => {
       dispatch({ type: 'BOARDS', boards: yachtDice.boards });
@@ -152,17 +152,23 @@ export function useYachtDiceIntent() {
       dispatch({ type: 'KEEP', keep: yachtDice.keep ?? [] });
       dispatch({ type: 'ROLLS', rolls: yachtDice.rolls });
 
-      if (yachtDice.turn === user?.id && yachtDice.rolls === 3) {
+      if (yachtDice.turn === auth.user.id && yachtDice.rolls === 3) {
         toast({ title: '내 차례입니다.', status: 'info', duration: 2000 });
       }
-      dispatch({ type: 'LOADING', loading: false });
     });
 
     return () => unsubscribe();
-  }, [lounge.id, loungeLoading]);
+  }, [lounge.id, lounge.loading]);
+
+  useEffect(() => {
+    onEvent({ type: 'SCREEN_INITIALIZE' });
+  }, []);
   
   return {
     state,
+    loading,
+    auth,
+    lounge,
     onEvent
   };
 }

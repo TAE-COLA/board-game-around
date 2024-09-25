@@ -1,10 +1,10 @@
 import { useToast } from '@chakra-ui/react';
-import { useAuth } from 'features';
+import { useAuthContext } from 'features';
 import React, { useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 
 const ProtectedRoute: React.FC = () => {
-  const { user, loading } = useAuth();
+  const { user, loading } = useAuthContext();
   const navigate = useNavigate();
   const toast = useToast();
 

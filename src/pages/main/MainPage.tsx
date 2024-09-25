@@ -1,38 +1,34 @@
 import { Box } from '@chakra-ui/react';
 import { useMainIntent } from 'pages';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { GameCardGrid, GameEntryModal, GreetingUser, Header, Page } from 'widgets';
 
 const MainPage: React.FC = () => {
-  const { state, modal, onEvent } = useMainIntent();
-
-  useEffect(() => {
-    onEvent({ type: 'SCREEN_INITIALIZE' });
-  }, []);
+  const intent = useMainIntent();
 
   return (
-    <Page loading= {state.loading}>
+    <Page loading= {intent.loading}>
       <Header>
         <GreetingUser
-          user={state.user}
-          onClickLogoutButton={() => onEvent({ type: 'ON_CLICK_LOGOUT_BUTTON' })}
+          user={intent.auth.user}
+          onClickLogoutButton={() => intent.onEvent({ type: 'ON_CLICK_LOGOUT_BUTTON' })}
         />
       </Header>
-      {!state.gameList || state.gameList.length === 0 ? 
+      {!intent.state.gameList || intent.state.gameList.length === 0 ? 
         <Box>No games found.</Box> : 
         <GameCardGrid 
-          gameList={state.gameList} 
-          onClickGamePlayButton={game => onEvent({ type: 'ON_CLICK_GAME_PLAY_BUTTON', game })}
+          gameList={intent.state.gameList} 
+          onClickGamePlayButton={game => intent.onEvent({ type: 'ON_CLICK_GAME_PLAY_BUTTON', game })}
           marginTop='32px'
         />
       }
-      {state.selectedGame &&
+      {intent.state.selectedGame &&
         <GameEntryModal 
-          loading={state.loading}
-          modal={modal} 
-          game={state.selectedGame} 
-          onClickCreateLoungeButton={() => onEvent({ type: 'ON_CLICK_CREATE_LOUNGE_BUTTON' })}
-          onClickJoinLoungeButton={code => onEvent({ type: 'ON_CLICK_JOIN_LOUNGE_BUTTON', code })}
+          loading={intent.loading}
+          modal={intent.modal} 
+          game={intent.state.selectedGame} 
+          onClickCreateLoungeButton={() => intent.onEvent({ type: 'ON_CLICK_CREATE_LOUNGE_BUTTON' })}
+          onClickJoinLoungeButton={code => intent.onEvent({ type: 'ON_CLICK_JOIN_LOUNGE_BUTTON', code })}
         />
       }
     </Page>

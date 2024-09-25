@@ -1,18 +1,21 @@
 import { useToast } from '@chakra-ui/react';
 import { User } from 'entities';
 import { AuthContext, fetchUserById } from 'features';
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import React, { useEffect, useState } from 'react';
+import { Outlet, useNavigate } from 'react-router-dom';
+import { createDummy } from 'shared';
 
-const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+const AuthProvider: React.FC = () => {
+  const [user, setUser] = useState<User>(createDummy<User>());
   const [loading, setLoading] = useState(true);
 
-  const auth = getAuth();
+  const navigate = useNavigate();
   const toast = useToast();
+  const firebaseAuth = getAuth();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    const unsubscribe = onAuthStateChanged(firebaseAuth, async (currentUser) => {
       if (currentUser) {
         const data = await fetchUserById(currentUser.uid);
         if (data) setUser(data);
@@ -21,28 +24,18 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     });
 
     return () => unsubscribe();
-  }, [auth]);
+  }, [firebaseAuth]);
 
-  const login = async (email: string, password: string, callback: () => void) => {
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const data = await fetchUserById(userCredential.user.uid);
-      if (data) setUser(data);
-      toast({ title: '로그인이 완료되었습니다.', status: 'success', duration: 2000 });
-      callback();
-    } catch (error) {
-      toast({ title: '로그인에 실패했습니다.', status: 'error', duration: 2000 });
+  useEffect(() => {
+    if (!loading && !firebaseAuth.currentUser) {
+      navigate('/login', { replace: true });
+      toast({ title: '로그인이 필요한 메뉴입니다. 로그인해주세요.', status: 'error' , duration: 2000 });
     }
-  };
-
-  const logout = async () => {
-    setUser(null);
-    await signOut(auth);
-  };
+  }, [user, loading]);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
-      { children }
+    <AuthContext.Provider value={{ loading, user }}>
+      <Outlet />
     </AuthContext.Provider>
   );
 };
