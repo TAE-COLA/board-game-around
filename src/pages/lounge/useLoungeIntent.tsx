@@ -25,9 +25,9 @@ export function useLoungeIntent() {
         setLoading(false);
         break;
       case 'ON_CLICK_EXIT_BUTTON':
-        await lounge.exit();
-        toast({ title: '게임방을 나왔습니다.', duration: 2000 });
-        navigate('/main', { replace: true });
+        await launch(setLoading, async () => {
+          await lounge.exit();
+        });
         break;
       case 'ON_CLICK_COPY_BUTTON':
         navigator.clipboard.writeText(lounge.code);

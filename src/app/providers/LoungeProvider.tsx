@@ -16,6 +16,8 @@ const LoungeProvider: React.FC = () => {
   const [status, setStatus] = useState<'WAITING' | 'PLAYING' | 'END'>('WAITING');
   const [createdAt, setCreatedAt] = useState(serverTimestamp());
 
+  const [isLoungeAvailable, setIsLoungeAvailable] = useState(false);
+
   const auth = useAuthContext();
 
   const navigate = useNavigate();
@@ -31,10 +33,8 @@ const LoungeProvider: React.FC = () => {
 
       setId(loungeId)
       const unsubscribe = onLoungeStateChanged(loungeId, async (lounge) => {
-        if (!lounge) {
-          navigate('/main', { replace: true });
-          toast({ title: '게임방이 존재하지 않습니다.', status: 'error', duration: 2000 });
-        } else {
+        if (lounge) {
+          setIsLoungeAvailable(true);
           const game = await fetchGameById(lounge.gameId);
           setGame(game);
           const owner = await fetchUserById(lounge.ownerId);
@@ -48,6 +48,8 @@ const LoungeProvider: React.FC = () => {
           }
           setCreatedAt(lounge.createdAt);
           setLoading(false);
+        } else {
+          setIsLoungeAvailable(false);
         }
       });
 
@@ -58,8 +60,17 @@ const LoungeProvider: React.FC = () => {
   const exit = async () => {
     await launch(setLoading, async () => {
       await exitLounge(id, auth.id);
+      toast({ title: '게임방을 나왔습니다.', duration: 2000 });
+      navigate('/main', { replace: true });
     });
   };
+
+  useEffect(() => {
+    if (!loading && !isLoungeAvailable) {
+      navigate('/main', { replace: true });
+        toast({ title: '게임방이 존재하지 않습니다.', status: 'error', duration: 2000 });
+    }
+  }, [loading, isLoungeAvailable]);
 
   return (
     <LoungeContext.Provider value={{ loading, id, game, code, owner, players, status, createdAt, exit }}>
