@@ -31,6 +31,7 @@ type YachtDiceReduce =
   | { type: 'TURN'; turn: User }
   | { type: 'DICE'; dice: number[] }
   | { type: 'SAVE_KEPT' }
+  | { type: 'CLEAR_KEPT' }
   | { type: 'KEEP'; keep: number[] }
   | { type: 'ADD_KEEP'; index: number }
   | { type: 'REMOVE_KEEP'; index: number }
@@ -47,6 +48,8 @@ function handleYachtDiceReduce(state: YachtDiceState, reduce: YachtDiceReduce): 
       return { ...state, dice: reduce.dice };
     case 'SAVE_KEPT':
       return { ...state, kept: state.keep };
+    case 'CLEAR_KEPT':
+      return { ...state, kept: [] };
     case 'KEEP':
       return { ...state, keep: reduce.keep };
     case 'ADD_KEEP':
@@ -158,6 +161,8 @@ export function useYachtDiceIntent() {
       dispatch({ type: 'ROLLS', rolls: yachtDice.rolls });
       if (yachtDice.rolls === 0) {
         dispatch({ type: 'SAVE_KEPT' });
+      } else if (yachtDice.rolls === 3) {
+        dispatch({ type: 'CLEAR_KEPT' });
       }
       setLoading(false);
 
