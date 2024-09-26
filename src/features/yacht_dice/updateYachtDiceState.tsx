@@ -60,7 +60,7 @@ export const updateYachtDiceState = async (
     }
     if (playerIndex === lounge.playerIds.length - 1) {
       updates[`/${YACHT_DICE_REFERENCE}/${loungeId}/${YACHT_DICE_ROUND}`] = lounge.round + 1;
-      if (lounge.round + 1 === 13) {
+      if (lounge.round + 1 === 12) {
         updates[`/${YACHT_DICE_REFERENCE}/${loungeId}/${YACHT_DICE_FINISHED_AT}`] = serverTimestamp();
       }
     }

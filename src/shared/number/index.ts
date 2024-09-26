@@ -1,0 +1,1 @@
+export { getOrdinal } from './getOrdinal';

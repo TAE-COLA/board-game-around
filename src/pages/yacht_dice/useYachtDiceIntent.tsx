@@ -1,11 +1,12 @@
-import { useToast } from '@chakra-ui/react';
+import { useDisclosure, useToast } from '@chakra-ui/react';
 import { User, YachtDiceBoard } from 'entities';
-import { exitLounge, exitYachtDice, fetchUserById, onYachtDiceStateChanged, updateYachtDiceState, useAuthContext, useLoungeContext } from 'features';
+import { exitLounge, exitYachtDice, fetchUserById, fetchUsersByIds, onYachtDiceStateChanged, updateYachtDiceState, useAuthContext, useLoungeContext } from 'features';
 import { useEffect, useReducer, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createDummy, launch } from 'shared';
 
 type YachtDiceState = {
+  players: User[];
   round: number;
   boards: {
     [key: string]: YachtDiceBoard;
@@ -16,7 +17,6 @@ type YachtDiceState = {
   keep: number[];
   rolls: number;
   rolling: boolean;
-  finished: boolean;
 };
 
 type YachtDiceEvent =
@@ -29,6 +29,7 @@ type YachtDiceEvent =
   | { type: 'ON_CLICK_WHEN_NOT_MY_TURN' };
 
 type YachtDiceReduce =
+  | { type: 'PLAYERS'; players: User[] }
   | { type: 'ROUND'; round: number }
   | { type: 'BOARDS'; boards: { [key: string]: YachtDiceBoard } }
   | { type: 'TURN'; turn: User }
@@ -39,11 +40,12 @@ type YachtDiceReduce =
   | { type: 'ADD_KEEP'; index: number }
   | { type: 'REMOVE_KEEP'; index: number }
   | { type: 'ROLLS'; rolls: number }
-  | { type: 'ROLLING'; rolling: boolean }
-  | { type: 'FINISHED'; finished: boolean };
+  | { type: 'ROLLING'; rolling: boolean };
 
 function handleYachtDiceReduce(state: YachtDiceState, reduce: YachtDiceReduce): YachtDiceState {
   switch (reduce.type) {
+    case 'PLAYERS':
+      return { ...state, players: reduce.players };
     case 'ROUND':
       return { ...state, round: reduce.round };
     case 'BOARDS':
@@ -66,8 +68,6 @@ function handleYachtDiceReduce(state: YachtDiceState, reduce: YachtDiceReduce): 
       return { ...state, rolls: reduce.rolls };
     case 'ROLLING':
       return { ...state, rolling: reduce.rolling };
-    case 'FINISHED':
-      return { ...state, finished: reduce.finished };
     default:
       return state;
   }
@@ -75,6 +75,7 @@ function handleYachtDiceReduce(state: YachtDiceState, reduce: YachtDiceReduce): 
 
 export function useYachtDiceIntent() {
   const initialState: YachtDiceState = {
+    players: [],
     round: 0,
     boards: {},
     turn: createDummy<User>(),
@@ -82,8 +83,7 @@ export function useYachtDiceIntent() {
     kept: [],
     keep: [],
     rolls: 0,
-    rolling: false,
-    finished: false
+    rolling: false
   };
   const [state, dispatch] = useReducer(handleYachtDiceReduce, initialState);
   const [loading, setLoading] = useState(true);
@@ -93,6 +93,13 @@ export function useYachtDiceIntent() {
 
   const auth = useAuthContext();
   const lounge = useLoungeContext();
+
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const onCloseResultModal = () => {
+    navigate('/main', { replace: true });
+    onClose();
+  };
+  const modal = { isOpen, onOpen, onClose: onCloseResultModal };
 
   const onEvent = async (event: YachtDiceEvent) => {
     switch (event.type) {
@@ -115,35 +122,19 @@ export function useYachtDiceIntent() {
       case 'ON_ROLL_FINISH':
         dispatch({ type: 'ROLLING', rolling: false });
         await updateYachtDiceState(lounge.id, { 'dice': event.values, 'rolls-decrease': 1 })
-          .catch((error) => {
-            if (error.message === 'No more rolls left') {
-              toast({ title: '남은 횟수가 없습니다.', status: 'error', duration: 2000 });
-            }
-          });
+          .catch((error) => { if (error.code === 'PERMISSION_DENIED') onEvent({ type: 'ON_CLICK_WHEN_NOT_MY_TURN' }) });
         break;
       case 'ON_ADD_DICE_TO_KEEP':
         await updateYachtDiceState(lounge.id, { 'keep-add': event.index })
-          .catch((error) => {
-            if (error.code === 'PERMISSION_DENIED') {
-              toast({ title: '내 차례가 아닙니다.', status: 'error', duration: 2000 });
-            }
-          });
+          .catch((error) => { if (error.code === 'PERMISSION_DENIED') onEvent({ type: 'ON_CLICK_WHEN_NOT_MY_TURN' }) });
         break;
       case 'ON_REMOVE_DICE_TO_KEEP':
         await updateYachtDiceState(lounge.id, { 'keep-remove': event.index })
-          .catch((error) => {
-            if (error.code === 'PERMISSION_DENIED') {
-              toast({ title: '내 차례가 아닙니다.', status: 'error', duration: 2000 });
-            }
-          });
+          .catch((error) => { if (error.code === 'PERMISSION_DENIED') onEvent({ type: 'ON_CLICK_WHEN_NOT_MY_TURN' }) });
         break;
       case 'ON_CLICK_SELECT_HAND_BUTTON':
         await updateYachtDiceState(lounge.id, { 'boards': { key: event.key, value: event.value } })
-          .catch((error) => {
-            if (error.code === 'PERMISSION_DENIED') {
-              toast({ title: '내 차례가 아닙니다.', status: 'error', duration: 2000 });
-            }
-          });
+          .catch((error) => { if (error.code === 'PERMISSION_DENIED') onEvent({ type: 'ON_CLICK_WHEN_NOT_MY_TURN' }) });
         break;
       case 'ON_CLICK_WHEN_NOT_MY_TURN':
         toast({ title: '내 차례가 아닙니다.', status: 'error', duration: 2000 });
@@ -163,6 +154,8 @@ export function useYachtDiceIntent() {
     }
 
     const unsubscribe = onYachtDiceStateChanged(lounge.id, async (yachtDice) => {
+      const players = await fetchUsersByIds(yachtDice.playerIds);
+      dispatch({ type: 'PLAYERS', players });
       dispatch({ type: 'ROUND', round: yachtDice.round });
       dispatch({ type: 'BOARDS', boards: yachtDice.boards });
       const turn = await fetchUserById(yachtDice.turn);
@@ -181,7 +174,7 @@ export function useYachtDiceIntent() {
         toast({ title: '내 차례입니다.', status: 'info', duration: 2000 });
       }
       if (yachtDice.finishedAt) {
-        dispatch({ type: 'FINISHED', finished: true });
+        onOpen();
       }
     });
 
@@ -191,6 +184,7 @@ export function useYachtDiceIntent() {
   return {
     state,
     loading,
+    modal,
     onEvent
   };
 }
