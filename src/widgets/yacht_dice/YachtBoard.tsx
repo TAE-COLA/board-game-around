@@ -42,9 +42,9 @@ const YachtBoard: React.FC<IProps> = ({
   return (
     <Flex direction='column' align='center' gap='8' padding='4' background='gray.100' borderRadius='md' {...props}>
       <Flex width='100%' align='center'>
-        {!isFirst && <ChevronLeftIcon onClick={onClickPrevBoardButton} cursor='pointer' />}
+        <ChevronLeftIcon onClick={() => isFirst || onClickPrevBoardButton()} cursor={isFirst ? undefined : 'pointer'} opacity={isFirst ? 0 : 1} />
         <Text fontWeight='bold' textAlign='center' flex='1'>{player.name}</Text>
-        {!isLast && <ChevronRightIcon onClick={onClickNextBoardButton} cursor='pointer' />}
+        <ChevronRightIcon onClick={() => isLast || onClickNextBoardButton()} cursor={isLast ? undefined : 'pointer'} opacity={isLast ? 0 : 1} />
       </Flex>
       <TableContainer>
         <Table size='sm'>
