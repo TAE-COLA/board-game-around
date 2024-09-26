@@ -9,6 +9,7 @@ type IProps = FlexProps & {
   };
   turn: User;
   dice: number[];
+  kept: number[];
   keep: number[];
   rolls: number;
   rolling: boolean;
@@ -23,6 +24,7 @@ const YachtDiceBody: React.FC<IProps> = ({
   boards,
   turn,
   dice,
+  kept,
   keep,
   rolls,
   rolling,
@@ -43,6 +45,7 @@ const YachtDiceBody: React.FC<IProps> = ({
       <Flex direction='column' gap='4' flex='2'>
         <YachtDiceField 
           dice={dice} 
+          kept={kept}
           keep={keep} 
           rolls={rolls}
           rolling={rolling} 

@@ -4,7 +4,8 @@ import { useDrop } from 'react-dnd';
 import { Die, Draggable } from 'widgets';
 
 type IProps = FlexProps & {
-  dice: number[],
+  dice: number[];
+  kept: number[];
   keep: number[];
   onAddDiceToKeep: (index: number) => void;
   onRemoveDiceToKeep: (index: number) => void;
@@ -12,6 +13,7 @@ type IProps = FlexProps & {
 
 const KeptDice: React.FC<IProps> = ({
   dice,
+  kept,
   keep,
   onAddDiceToKeep,
   onRemoveDiceToKeep,
@@ -27,12 +29,16 @@ const KeptDice: React.FC<IProps> = ({
     }),
   }));
 
+  const onRemove = (index: number) => {
+    if (!kept.includes(index)) onRemoveDiceToKeep(index);
+  }
+
   return (
     <Flex direction='column' align='center' gap='4' {...props}>
       <Flex ref={drop} width='384px' height='96px' padding='16px' gap='8px' border='2px' borderColor='black' borderRadius='md' borderStyle='dashed'>
         {dice.map((value, index) => (
           keep.includes(index) ? 
-            <Draggable key={index} type='DIE' index={index} onDropOutside={onRemoveDiceToKeep} onClick={() => onRemoveDiceToKeep(index)}>
+            <Draggable key={index} type='DIE' index={index} onDropOutside={onRemove} onClick={() => onRemove(index)} isDisabled={kept.includes(index)}>
               <Die value={value} />
             </Draggable> : null
         ))}

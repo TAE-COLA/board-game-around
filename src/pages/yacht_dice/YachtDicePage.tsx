@@ -14,6 +14,7 @@ const YachtDicePage: React.FC = () => {
           boards={state.boards}
           turn={state.turn}
           dice={state.dice}
+          kept={state.kept}
           keep={state.keep}
           rolls={state.rolls}
           rolling={state.rolling}

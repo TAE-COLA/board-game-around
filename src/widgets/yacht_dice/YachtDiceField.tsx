@@ -4,6 +4,7 @@ import { KeptDice, RollableDice } from 'widgets';
 
 type IProps = FlexProps & {
   dice: number[];
+  kept: number[];
   keep: number[];
   rolls: number;
   rolling: boolean;
@@ -14,6 +15,7 @@ type IProps = FlexProps & {
 
 const YachtDiceField: React.FC<IProps> = ({
   dice,
+  kept,
   keep,
   rolls,
   rolling,
@@ -33,7 +35,8 @@ const YachtDiceField: React.FC<IProps> = ({
         onAddDiceToKeep={onAddDiceToKeep}
       />
       <KeptDice 
-        dice={dice} 
+        dice={dice}
+        kept={kept} 
         keep={keep} 
         onAddDiceToKeep={onAddDiceToKeep} 
         onRemoveDiceToKeep={onRemoveDiceToKeep}

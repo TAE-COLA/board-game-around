@@ -11,6 +11,7 @@ type YachtDiceState = {
   };
   turn: User;
   dice: number[];
+  kept: number[];
   keep: number[];
   rolls: number;
   rolling: boolean;
@@ -29,6 +30,7 @@ type YachtDiceReduce =
   | { type: 'BOARDS'; boards: { [key: string]: YachtDiceBoard } }
   | { type: 'TURN'; turn: User }
   | { type: 'DICE'; dice: number[] }
+  | { type: 'SAVE_KEPT' }
   | { type: 'KEEP'; keep: number[] }
   | { type: 'ADD_KEEP'; index: number }
   | { type: 'REMOVE_KEEP'; index: number }
@@ -43,6 +45,8 @@ function handleYachtDiceReduce(state: YachtDiceState, reduce: YachtDiceReduce): 
       return { ...state, turn: reduce.turn };
     case 'DICE':
       return { ...state, dice: reduce.dice };
+    case 'SAVE_KEPT':
+      return { ...state, kept: state.keep };
     case 'KEEP':
       return { ...state, keep: reduce.keep };
     case 'ADD_KEEP':
@@ -63,6 +67,7 @@ export function useYachtDiceIntent() {
     boards: {},
     turn: createDummy<User>(),
     dice: [0, 0, 0, 0, 0],
+    kept: [],
     keep: [],
     rolls: 0,
     rolling: false
@@ -90,6 +95,7 @@ export function useYachtDiceIntent() {
         if (auth.id !== state.turn.id) {
           onEvent({ type: 'ON_CLICK_WHEN_NOT_MY_TURN' });
         } else {
+          dispatch({ type: 'SAVE_KEPT' });
           dispatch({ type: 'ROLLING', rolling: true });
         }
         break;
@@ -150,6 +156,9 @@ export function useYachtDiceIntent() {
       dispatch({ type: 'DICE', dice: yachtDice.dice });
       dispatch({ type: 'KEEP', keep: yachtDice.keep ?? [] });
       dispatch({ type: 'ROLLS', rolls: yachtDice.rolls });
+      if (yachtDice.rolls === 0) {
+        dispatch({ type: 'SAVE_KEPT' });
+      }
       setLoading(false);
 
       if (yachtDice.turn === auth.id && yachtDice.rolls === 3) {
