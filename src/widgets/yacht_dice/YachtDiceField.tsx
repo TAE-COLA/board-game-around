@@ -30,7 +30,7 @@ const YachtDiceField: React.FC<IProps> = ({
         dice={dice} 
         keep={keep} 
         rolling={rolling} 
-        isDisabled={rolls === 3}
+        isDisabled={rolls === 3 || rolling}
         onResult={onResult}
         onAddDiceToKeep={onAddDiceToKeep}
       />
