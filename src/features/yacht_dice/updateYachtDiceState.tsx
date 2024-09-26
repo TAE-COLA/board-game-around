@@ -1,15 +1,17 @@
 import { YachtDice, YachtDiceBoard } from 'entities';
 import { database } from 'features';
-import { child, ref as fReference, get, update } from 'firebase/database';
+import { child, ref as fReference, get, serverTimestamp, update } from 'firebase/database';
 
 const YACHT_DICE_REFERENCE = 'YachtDice';
 
 const YACHT_DICE_PLAYER_IDS = 'playerIds';
+const YACHT_DICE_ROUND = 'round';
 const YACHT_DICE_BOARDS = 'boards';
 const YACHT_DICE_TURN = 'turn';
 const YACHT_DICE_DICE = 'dice';
 const YACHT_DICE_KEEP = 'keep';
 const YACHT_DICE_ROLLS = 'rolls';
+const YACHT_DICE_FINISHED_AT = 'finishedAt';
 
 type Payloads = {
   'boards'?: { key: string; value: number };
@@ -30,10 +32,12 @@ export const updateYachtDiceState = async (
   const lounge = {
     playerIds: val[YACHT_DICE_PLAYER_IDS],
     boards: val[YACHT_DICE_BOARDS],
+    round: val[YACHT_DICE_ROUND],
     turn: val[YACHT_DICE_TURN],
     dice: val[YACHT_DICE_DICE],
     keep: val[YACHT_DICE_KEEP] ?? [],
     rolls: val[YACHT_DICE_ROLLS],
+    finishedAt: val[YACHT_DICE_FINISHED_AT],
   } as YachtDice;
 
   const updates: { [key: string]: any } = {};
@@ -53,6 +57,12 @@ export const updateYachtDiceState = async (
     const sum = afterBoard.ace.value + afterBoard.double.value + afterBoard.triple.value + afterBoard.quadra.value + afterBoard.penta.value + afterBoard.hexa.value;
     if (sum >= 63) {
       updates[`/${YACHT_DICE_REFERENCE}/${loungeId}/${YACHT_DICE_BOARDS}/${lounge.turn}/bonus`] = { value: 35, marked: true };
+    }
+    if (playerIndex === lounge.playerIds.length - 1) {
+      updates[`/${YACHT_DICE_REFERENCE}/${loungeId}/${YACHT_DICE_ROUND}`] = lounge.round + 1;
+      if (lounge.round + 1 === 13) {
+        updates[`/${YACHT_DICE_REFERENCE}/${loungeId}/${YACHT_DICE_FINISHED_AT}`] = serverTimestamp();
+      }
     }
   }
   if (payloads['dice'] !== undefined) {

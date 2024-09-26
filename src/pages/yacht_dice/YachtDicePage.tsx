@@ -10,7 +10,8 @@ const YachtDicePage: React.FC = () => {
     <Page loading={loading} height='100vh'>
       <Flex direction='column' width='100%' height='100%' gap='8'>
         <YachtDiceHeader onClickExitButton={() => onEvent({ type: 'ON_CLICK_EXIT_BUTTON' })} />
-        <YachtDiceBody 
+        <YachtDiceBody
+          round={state.round}
           boards={state.boards}
           turn={state.turn}
           dice={state.dice}

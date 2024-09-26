@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { createDummy, launch } from 'shared';
 
 type YachtDiceState = {
+  round: number;
   boards: {
     [key: string]: YachtDiceBoard;
   };
@@ -15,6 +16,7 @@ type YachtDiceState = {
   keep: number[];
   rolls: number;
   rolling: boolean;
+  finished: boolean;
 };
 
 type YachtDiceEvent =
@@ -27,6 +29,7 @@ type YachtDiceEvent =
   | { type: 'ON_CLICK_WHEN_NOT_MY_TURN' };
 
 type YachtDiceReduce =
+  | { type: 'ROUND'; round: number }
   | { type: 'BOARDS'; boards: { [key: string]: YachtDiceBoard } }
   | { type: 'TURN'; turn: User }
   | { type: 'DICE'; dice: number[] }
@@ -36,10 +39,13 @@ type YachtDiceReduce =
   | { type: 'ADD_KEEP'; index: number }
   | { type: 'REMOVE_KEEP'; index: number }
   | { type: 'ROLLS'; rolls: number }
-  | { type: 'ROLLING'; rolling: boolean };
+  | { type: 'ROLLING'; rolling: boolean }
+  | { type: 'FINISHED'; finished: boolean };
 
 function handleYachtDiceReduce(state: YachtDiceState, reduce: YachtDiceReduce): YachtDiceState {
   switch (reduce.type) {
+    case 'ROUND':
+      return { ...state, round: reduce.round };
     case 'BOARDS':
       return { ...state, boards: reduce.boards };
     case 'TURN':
@@ -60,6 +66,8 @@ function handleYachtDiceReduce(state: YachtDiceState, reduce: YachtDiceReduce): 
       return { ...state, rolls: reduce.rolls };
     case 'ROLLING':
       return { ...state, rolling: reduce.rolling };
+    case 'FINISHED':
+      return { ...state, finished: reduce.finished };
     default:
       return state;
   }
@@ -67,13 +75,15 @@ function handleYachtDiceReduce(state: YachtDiceState, reduce: YachtDiceReduce): 
 
 export function useYachtDiceIntent() {
   const initialState: YachtDiceState = {
+    round: 0,
     boards: {},
     turn: createDummy<User>(),
     dice: [0, 0, 0, 0, 0],
     kept: [],
     keep: [],
     rolls: 0,
-    rolling: false
+    rolling: false,
+    finished: false
   };
   const [state, dispatch] = useReducer(handleYachtDiceReduce, initialState);
   const [loading, setLoading] = useState(true);
@@ -153,6 +163,7 @@ export function useYachtDiceIntent() {
     }
 
     const unsubscribe = onYachtDiceStateChanged(lounge.id, async (yachtDice) => {
+      dispatch({ type: 'ROUND', round: yachtDice.round });
       dispatch({ type: 'BOARDS', boards: yachtDice.boards });
       const turn = await fetchUserById(yachtDice.turn);
       dispatch({ type: 'TURN', turn });
@@ -168,6 +179,9 @@ export function useYachtDiceIntent() {
 
       if (yachtDice.turn === auth.id && yachtDice.rolls === 3) {
         toast({ title: '내 차례입니다.', status: 'info', duration: 2000 });
+      }
+      if (yachtDice.finishedAt) {
+        dispatch({ type: 'FINISHED', finished: true });
       }
     });
 

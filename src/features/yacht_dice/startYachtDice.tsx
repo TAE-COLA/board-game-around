@@ -6,6 +6,7 @@ const YACHT_DICE_REFERENCE = 'YachtDice';
 const LOUNGE_REFERENCE = 'Lounge';
 
 const YACHT_DICE_PLAYER_IDS = 'playerIds';
+const YACHT_DICE_ROUND = 'round';
 const YACHT_DICE_BOARDS = 'boards';
 const YACHT_DICE_TURN = 'turn';
 const YACHT_DICE_DICE = 'dice';
@@ -41,6 +42,7 @@ export const startYachtDice = async (loungeId: string): Promise<void> => {
   const shuffledPlayerIds = lounge.playerIds.sort(() => Math.random() - 0.5);
   const yachtDice = {
     playerIds: shuffledPlayerIds,
+    round: 1,
     boards: shuffledPlayerIds.reduce((acc, playerId) => {
       acc[playerId] = { ...initialYachtDiceBoard };
       return acc;

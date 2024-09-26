@@ -31,7 +31,7 @@ const YachtBoard: React.FC<IProps> = ({
   };
 
   return (
-    <Flex direction='column' align='center' gap='8' padding='4' background='gray.100' {...props}>
+    <Flex direction='column' align='center' gap='8' padding='4' background='gray.100' borderRadius='md' {...props}>
       <Text fontSize='lg' fontWeight='bold'>{player.name}의 점수판</Text>
       <TableContainer>
         <Table size='sm'>
