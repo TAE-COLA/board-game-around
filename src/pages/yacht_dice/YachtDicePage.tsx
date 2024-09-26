@@ -16,7 +16,7 @@ const YachtDicePage: React.FC = () => {
           players={state.players}
           round={state.round}
           boards={state.boards}
-          currentBoardId={state.currentBoardId}
+          currentBoardPlayer={state.currentBoardPlayer}
           turn={state.turn}
           dice={state.dice}
           kept={state.kept}

@@ -11,7 +11,7 @@ type YachtDiceState = {
   boards: {
     [key: string]: YachtDiceBoard;
   };
-  currentBoardId: string;
+  currentBoardPlayer: User;
   turn: User;
   dice: number[];
   kept: number[];
@@ -34,7 +34,7 @@ type YachtDiceReduce =
   | { type: 'PLAYERS'; players: User[] }
   | { type: 'ROUND'; round: number }
   | { type: 'BOARDS'; boards: { [key: string]: YachtDiceBoard } }
-  | { type: 'CURRENT_BOARD_ID'; currentBoardId: string }
+  | { type: 'CURRENT_BOARD_PLAYER'; currentBoardPlayer: User }
   | { type: 'TURN'; turn: User }
   | { type: 'DICE'; dice: number[] }
   | { type: 'SAVE_KEPT' }
@@ -53,8 +53,8 @@ function handleYachtDiceReduce(state: YachtDiceState, reduce: YachtDiceReduce): 
       return { ...state, round: reduce.round };
     case 'BOARDS':
       return { ...state, boards: reduce.boards };
-    case 'CURRENT_BOARD_ID':
-      return { ...state, currentBoardId: reduce.currentBoardId };
+    case 'CURRENT_BOARD_PLAYER':
+      return { ...state, currentBoardPlayer: reduce.currentBoardPlayer };
     case 'TURN':
       return { ...state, turn: reduce.turn };
     case 'DICE':
@@ -83,7 +83,7 @@ export function useYachtDiceIntent() {
     players: [],
     round: 0,
     boards: {},
-    currentBoardId: '',
+    currentBoardPlayer: createDummy<User>(),
     turn: createDummy<User>(),
     dice: [0, 0, 0, 0, 0],
     kept: [],
@@ -120,14 +120,14 @@ export function useYachtDiceIntent() {
         });
         break;
       case 'ON_CLICK_PREV_BOARD_BUTTON':
-        const currentIndex = state.players.findIndex((player) => player.id === state.currentBoardId);
-        const prevBoardId = state.players[(currentIndex - 1 + state.players.length) % state.players.length].id;
-        dispatch({ type: 'CURRENT_BOARD_ID', currentBoardId: prevBoardId });
+        const currentIndex = state.players.findIndex((player) => player.id === state.currentBoardPlayer.id);
+        const prevBoardPlayer = state.players[(currentIndex - 1 + state.players.length) % state.players.length];
+        dispatch({ type: 'CURRENT_BOARD_PLAYER', currentBoardPlayer: prevBoardPlayer });
         break;
       case 'ON_CLICK_NEXT_BOARD_BUTTON':
-        const nextIndex = state.players.findIndex((player) => player.id === state.currentBoardId);
-        const nextBoardId = state.players[(nextIndex + 1) % state.players.length].id;
-        dispatch({ type: 'CURRENT_BOARD_ID', currentBoardId: nextBoardId });
+        const nextIndex = state.players.findIndex((player) => player.id === state.currentBoardPlayer.id);
+        const nextBoardPlayer = state.players[(nextIndex + 1) % state.players.length];
+        dispatch({ type: 'CURRENT_BOARD_PLAYER', currentBoardPlayer: nextBoardPlayer });
         break;
       case 'ON_CLICK_ROLL_BUTTON':
         if (auth.id !== state.turn.id) {
@@ -173,7 +173,7 @@ export function useYachtDiceIntent() {
       dispatch({ type: 'PLAYERS', players });
       dispatch({ type: 'ROUND', round: yachtDice.round });
       dispatch({ type: 'BOARDS', boards: yachtDice.boards });
-      dispatch({ type: 'CURRENT_BOARD_ID', currentBoardId: auth.id });
+      dispatch({ type: 'CURRENT_BOARD_PLAYER', currentBoardPlayer: players[0] });
       const turn = await fetchUserById(yachtDice.turn);
       dispatch({ type: 'TURN', turn });
       dispatch({ type: 'DICE', dice: yachtDice.dice });

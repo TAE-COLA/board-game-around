@@ -9,7 +9,7 @@ type IProps = FlexProps & {
   boards: {
     [key: string]: YachtDiceBoard;
   };
-  currentBoardId: string;
+  currentBoardPlayer: User;
   turn: User;
   dice: number[];
   kept: number[];
@@ -29,7 +29,7 @@ const YachtDiceBody: React.FC<IProps> = ({
   players,
   round,
   boards,
-  currentBoardId,
+  currentBoardPlayer,
   turn,
   dice,
   kept,
@@ -50,11 +50,11 @@ const YachtDiceBody: React.FC<IProps> = ({
       <Flex direction='column' gap='4'>
         <YachtDiceRoundBox round={round} />
         <YachtBoard 
-          player={turn} 
-          board={boards[currentBoardId]} 
-          score={Object.values(boards[currentBoardId]).reduce((acc, value: { value: number; marked: boolean }) => acc + value.value, 0)}
-          isFirst={currentBoardId === players[0].id}
-          isLast={currentBoardId === players[players.length - 1].id}
+          player={currentBoardPlayer} 
+          board={boards[currentBoardPlayer.id]} 
+          score={Object.values(boards[currentBoardPlayer.id]).reduce((acc, value: { value: number; marked: boolean }) => acc + value.value, 0)}
+          isFirst={currentBoardPlayer.id === players[0].id}
+          isLast={currentBoardPlayer.id === players[players.length - 1].id}
           onClickPrevBoardButton={onClickPrevBoardButton}
           onClickNextBoardButton={onClickNextBoardButton}
           flex='1'
