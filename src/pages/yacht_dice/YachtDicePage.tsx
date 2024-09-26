@@ -16,12 +16,15 @@ const YachtDicePage: React.FC = () => {
           players={state.players}
           round={state.round}
           boards={state.boards}
+          currentBoardId={state.currentBoardId}
           turn={state.turn}
           dice={state.dice}
           kept={state.kept}
           keep={state.keep}
           rolls={state.rolls}
           rolling={state.rolling}
+          onClickPrevBoardButton={() => onEvent({ type: 'ON_CLICK_PREV_BOARD_BUTTON' })}
+          onClickNextBoardButton={() => onEvent({ type: 'ON_CLICK_NEXT_BOARD_BUTTON' })}
           onClickRollButton={() => onEvent({ type: 'ON_CLICK_ROLL_BUTTON' })}
           onRollFinish={(values) => onEvent({ type: 'ON_ROLL_FINISH', values })}
           onAddDiceToKeep={(index) => onEvent({ type: 'ON_ADD_DICE_TO_KEEP', index })}

@@ -11,6 +11,7 @@ type YachtDiceState = {
   boards: {
     [key: string]: YachtDiceBoard;
   };
+  currentBoardId: string;
   turn: User;
   dice: number[];
   kept: number[];
@@ -21,17 +22,19 @@ type YachtDiceState = {
 
 type YachtDiceEvent =
   | { type: 'ON_CLICK_EXIT_BUTTON' }
+  | { type: 'ON_CLICK_PREV_BOARD_BUTTON' }
+  | { type: 'ON_CLICK_NEXT_BOARD_BUTTON' }
   | { type: 'ON_CLICK_ROLL_BUTTON' }
   | { type: 'ON_ROLL_FINISH'; values: number[] }
   | { type: 'ON_ADD_DICE_TO_KEEP'; index: number }
   | { type: 'ON_REMOVE_DICE_TO_KEEP'; index: number }
-  | { type: 'ON_CLICK_SELECT_HAND_BUTTON'; key: string; value: number }
-  | { type: 'ON_CLICK_WHEN_NOT_MY_TURN' };
+  | { type: 'ON_CLICK_SELECT_HAND_BUTTON'; key: string; value: number };
 
 type YachtDiceReduce =
   | { type: 'PLAYERS'; players: User[] }
   | { type: 'ROUND'; round: number }
   | { type: 'BOARDS'; boards: { [key: string]: YachtDiceBoard } }
+  | { type: 'CURRENT_BOARD_ID'; currentBoardId: string }
   | { type: 'TURN'; turn: User }
   | { type: 'DICE'; dice: number[] }
   | { type: 'SAVE_KEPT' }
@@ -50,6 +53,8 @@ function handleYachtDiceReduce(state: YachtDiceState, reduce: YachtDiceReduce): 
       return { ...state, round: reduce.round };
     case 'BOARDS':
       return { ...state, boards: reduce.boards };
+    case 'CURRENT_BOARD_ID':
+      return { ...state, currentBoardId: reduce.currentBoardId };
     case 'TURN':
       return { ...state, turn: reduce.turn };
     case 'DICE':
@@ -78,6 +83,7 @@ export function useYachtDiceIntent() {
     players: [],
     round: 0,
     boards: {},
+    currentBoardId: '',
     turn: createDummy<User>(),
     dice: [0, 0, 0, 0, 0],
     kept: [],
@@ -101,6 +107,8 @@ export function useYachtDiceIntent() {
   };
   const modal = { isOpen, onOpen, onClose: onCloseResultModal };
 
+  const notMyTurnToast = () => toast({ title: '내 차례가 아닙니다.', status: 'error', duration: 2000 });
+
   const onEvent = async (event: YachtDiceEvent) => {
     switch (event.type) {
       case 'ON_CLICK_EXIT_BUTTON':
@@ -111,9 +119,19 @@ export function useYachtDiceIntent() {
           navigate('/main', { replace: true });
         });
         break;
+      case 'ON_CLICK_PREV_BOARD_BUTTON':
+        const currentIndex = state.players.findIndex((player) => player.id === state.currentBoardId);
+        const prevBoardId = state.players[(currentIndex - 1 + state.players.length) % state.players.length].id;
+        dispatch({ type: 'CURRENT_BOARD_ID', currentBoardId: prevBoardId });
+        break;
+      case 'ON_CLICK_NEXT_BOARD_BUTTON':
+        const nextIndex = state.players.findIndex((player) => player.id === state.currentBoardId);
+        const nextBoardId = state.players[(nextIndex + 1) % state.players.length].id;
+        dispatch({ type: 'CURRENT_BOARD_ID', currentBoardId: nextBoardId });
+        break;
       case 'ON_CLICK_ROLL_BUTTON':
         if (auth.id !== state.turn.id) {
-          onEvent({ type: 'ON_CLICK_WHEN_NOT_MY_TURN' });
+          notMyTurnToast();
         } else {
           dispatch({ type: 'SAVE_KEPT' });
           dispatch({ type: 'ROLLING', rolling: true });
@@ -122,22 +140,19 @@ export function useYachtDiceIntent() {
       case 'ON_ROLL_FINISH':
         dispatch({ type: 'ROLLING', rolling: false });
         await updateYachtDiceState(lounge.id, { 'dice': event.values, 'rolls-decrease': 1 })
-          .catch((error) => { if (error.code === 'PERMISSION_DENIED') onEvent({ type: 'ON_CLICK_WHEN_NOT_MY_TURN' }) });
+          .catch((error) => { if (error.code === 'PERMISSION_DENIED') notMyTurnToast() });
         break;
       case 'ON_ADD_DICE_TO_KEEP':
         await updateYachtDiceState(lounge.id, { 'keep-add': event.index })
-          .catch((error) => { if (error.code === 'PERMISSION_DENIED') onEvent({ type: 'ON_CLICK_WHEN_NOT_MY_TURN' }) });
+          .catch((error) => { if (error.code === 'PERMISSION_DENIED') notMyTurnToast() });
         break;
       case 'ON_REMOVE_DICE_TO_KEEP':
         await updateYachtDiceState(lounge.id, { 'keep-remove': event.index })
-          .catch((error) => { if (error.code === 'PERMISSION_DENIED') onEvent({ type: 'ON_CLICK_WHEN_NOT_MY_TURN' }) });
+          .catch((error) => { if (error.code === 'PERMISSION_DENIED') notMyTurnToast() });
         break;
       case 'ON_CLICK_SELECT_HAND_BUTTON':
         await updateYachtDiceState(lounge.id, { 'boards': { key: event.key, value: event.value } })
-          .catch((error) => { if (error.code === 'PERMISSION_DENIED') onEvent({ type: 'ON_CLICK_WHEN_NOT_MY_TURN' }) });
-        break;
-      case 'ON_CLICK_WHEN_NOT_MY_TURN':
-        toast({ title: '내 차례가 아닙니다.', status: 'error', duration: 2000 });
+          .catch((error) => { if (error.code === 'PERMISSION_DENIED') notMyTurnToast() });
         break;
       default:
         break;
@@ -158,6 +173,7 @@ export function useYachtDiceIntent() {
       dispatch({ type: 'PLAYERS', players });
       dispatch({ type: 'ROUND', round: yachtDice.round });
       dispatch({ type: 'BOARDS', boards: yachtDice.boards });
+      dispatch({ type: 'CURRENT_BOARD_ID', currentBoardId: auth.id });
       const turn = await fetchUserById(yachtDice.turn);
       dispatch({ type: 'TURN', turn });
       dispatch({ type: 'DICE', dice: yachtDice.dice });

@@ -1,3 +1,4 @@
+import { ChevronLeftIcon, ChevronRightIcon } from '@chakra-ui/icons';
 import { Divider, Flex, FlexProps, Table, TableContainer, Tbody, Td, Text, Tfoot, Th, Thead, Tr } from '@chakra-ui/react';
 import { User, type YachtDiceBoard } from 'entities';
 import React from 'react';
@@ -6,12 +7,20 @@ type IProps = FlexProps & {
   player: User,
   board: YachtDiceBoard,
   score: number,
+  isFirst: boolean,
+  isLast: boolean,
+  onClickPrevBoardButton: () => void,
+  onClickNextBoardButton: () => void
 };
 
 const YachtBoard: React.FC<IProps> = ({
   player,
   board,
   score,
+  isFirst,
+  isLast,
+  onClickPrevBoardButton,
+  onClickNextBoardButton,
   ...props
 }) => {
   const orderedBoard = {
@@ -32,7 +41,11 @@ const YachtBoard: React.FC<IProps> = ({
 
   return (
     <Flex direction='column' align='center' gap='8' padding='4' background='gray.100' borderRadius='md' {...props}>
-      <Text fontSize='lg' fontWeight='bold'>{player.name}의 점수판</Text>
+      <Flex width='100%' align='center'>
+        {!isFirst && <ChevronLeftIcon onClick={onClickPrevBoardButton} cursor='pointer' />}
+        <Text fontWeight='bold' textAlign='center' flex='1'>{player.name}</Text>
+        {!isLast && <ChevronRightIcon onClick={onClickNextBoardButton} cursor='pointer' />}
+      </Flex>
       <TableContainer>
         <Table size='sm'>
           <Thead>
