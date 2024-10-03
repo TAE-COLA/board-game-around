@@ -3,10 +3,10 @@ import React from 'react';
 import { Page, RegisterContainer, RegisterFields } from 'widgets';
 
 const RegisterPage: React.FC = () => {
-  const { state, onEvent } = useRegisterIntent();
+  const { state, loading, onEvent} = useRegisterIntent();
 
   return (
-    <Page loading= {state.loading} height="100vh">
+    <Page loading={loading} height="100vh">
       <RegisterContainer>
         <RegisterFields
           email={state.email}

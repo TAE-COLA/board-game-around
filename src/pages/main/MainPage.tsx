@@ -1,22 +1,15 @@
 import { Box } from '@chakra-ui/react';
 import { useMainIntent } from 'pages';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { GameCardGrid, GameEntryModal, GreetingUser, Header, Page } from 'widgets';
 
 const MainPage: React.FC = () => {
-  const { state, modal, onEvent } = useMainIntent();
-
-  useEffect(() => {
-    onEvent({ type: 'SCREEN_INITIALIZE' });
-  }, []);
+  const { state, loading, modal, onEvent } = useMainIntent();
 
   return (
-    <Page loading= {state.loading}>
+    <Page loading= {loading}>
       <Header>
-        <GreetingUser
-          user={state.user}
-          onClickLogoutButton={() => onEvent({ type: 'ON_CLICK_LOGOUT_BUTTON' })}
-        />
+        <GreetingUser onClickLogoutButton={() => onEvent({ type: 'ON_CLICK_LOGOUT_BUTTON' })} />
       </Header>
       {!state.gameList || state.gameList.length === 0 ? 
         <Box>No games found.</Box> : 
@@ -28,7 +21,7 @@ const MainPage: React.FC = () => {
       }
       {state.selectedGame &&
         <GameEntryModal 
-          loading={state.loading}
+          loading={loading}
           modal={modal} 
           game={state.selectedGame} 
           onClickCreateLoungeButton={() => onEvent({ type: 'ON_CLICK_CREATE_LOUNGE_BUTTON' })}

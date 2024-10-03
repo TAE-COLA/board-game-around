@@ -1,12 +1,12 @@
 import { useToast } from '@chakra-ui/react';
 import { FormData } from 'entities';
 import { checkEmailForDuplicate, signUpWithEmailAndPassword } from 'features';
-import { useReducer } from 'react';
+import { getAuth } from 'firebase/auth';
+import { useEffect, useReducer, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { launch } from 'shared';
 
 type RegisterState = {
-  loading: boolean;
   email: FormData<'email', string>;
   emailDuplicate: boolean | null;
   password: FormData<'password', string>;
@@ -16,6 +16,7 @@ type RegisterState = {
 };
 
 type RegisterEvent =
+  | { type: 'SCREEN_INITIALIZE' }
   | { type: 'ON_EMAIL_CHANGE'; email: string }
   | { type: 'ON_CLICK_CHECK_FOR_DUPLICATES_BUTTON' }
   | { type: 'ON_PASSWORD_CHANGE'; password: string }
@@ -24,7 +25,6 @@ type RegisterEvent =
   | { type: 'ON_CLICK_SUBMIT_BUTTON' };
 
 type RegisterReduce =
-  | { type: 'LOADING'; loading: boolean }
   | { type: 'EMAIL'; email: FormData<'email', string> }
   | { type: 'EMAIL_DUPLICATE'; emailDuplicate: boolean | null }
   | { type: 'PASSWORD'; password: FormData<'password', string> }
@@ -34,8 +34,6 @@ type RegisterReduce =
 
 function handleRegisterReduce(state: RegisterState, reduce: RegisterReduce): RegisterState {
   switch (reduce.type) {
-    case 'LOADING':
-      return { ...state, loading: reduce.loading };
     case 'EMAIL':
       return { ...state, email: reduce.email };
     case 'EMAIL_DUPLICATE':
@@ -55,7 +53,6 @@ function handleRegisterReduce(state: RegisterState, reduce: RegisterReduce): Reg
 
 export function useRegisterIntent() {
   const initialState: RegisterState = {
-    loading: false,
     email: { label: 'email', value: '', error: null },
     emailDuplicate: null,
     password: { label: 'password', value: '', error: null },
@@ -64,12 +61,21 @@ export function useRegisterIntent() {
     valid: false,
   };
   const [state, dispatch] = useReducer(handleRegisterReduce, initialState);
+  const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
   const toast = useToast();
+  const auth = getAuth();
 
   const onEvent = async (event: RegisterEvent) => {
     switch (event.type) {
+      case 'SCREEN_INITIALIZE':
+        if (auth.currentUser) {
+          navigate('/main', { replace: true });
+          toast({ title: '이미 로그인되어 있습니다.', duration: 2000 });
+        }
+        setLoading(false);
+        break;
       case 'ON_EMAIL_CHANGE':
         dispatch({ type: 'EMAIL', email: { label: 'email', value: event.email, error: checkEmailValidity(event.email) } });
         dispatch({ type: 'VALID', valid: checkValid(state) });
@@ -93,7 +99,7 @@ export function useRegisterIntent() {
         dispatch({ type: 'VALID', valid: checkValid(state) });
         break;
       case 'ON_CLICK_SUBMIT_BUTTON':
-        await launch(dispatch, async () => {
+        await launch(setLoading, async () => {
           await signUpWithEmailAndPassword(state.email.value, state.password.value, state.nickname.value)
         });
         toast({ title: '회원가입이 완료됐습니다.', status: 'success', duration: 2000 });
@@ -104,9 +110,18 @@ export function useRegisterIntent() {
     }
   };
 
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      onEvent({ type: 'SCREEN_INITIALIZE' });
+    }, 1000);
+
+    return () => clearTimeout(timeout); // 컴포넌트 언마운트 시 타이머 해제
+  }, []);
+
   return {
     state,
-    onEvent,
+    loading,
+    onEvent
   };
 }
 

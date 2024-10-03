@@ -1,5 +1,5 @@
-export async function launch(setLoading: (value: { type: 'LOADING', loading: boolean}) => void, task: () => void) {
-  setLoading({ type: 'LOADING', loading: true });
+export async function launch(setLoading: (loading: boolean) => void, task: () => void) {
+  setLoading(true);
   await task();
-  setLoading({ type: 'LOADING', loading: false });
+  setLoading(false);
 }

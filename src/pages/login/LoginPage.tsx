@@ -3,15 +3,13 @@ import React from 'react';
 import { LoginContainer, LoginFields, Page } from 'widgets';
 
 const LoginPage: React.FC = () => {
-  const { state, onEvent } = useLoginIntent();
+  const { state, loading, onEvent } = useLoginIntent();
 
   return (
-    <Page loading= {state.loading} height="100vh">
-      <LoginContainer 
-        onClickRegisterButton={() => onEvent({ type: 'ON_CLICK_REGISTER_BUTTON'} )}
-      >
+    <Page loading={loading} height="100vh">
+      <LoginContainer onClickRegisterButton={() => onEvent({ type: 'ON_CLICK_REGISTER_BUTTON'} )}>
         <LoginFields
-          loading={state.loading}
+          loading={loading}
           email={state.email}
           password={state.password}
           onEmailChange={(email) => onEvent({ type: 'ON_EMAIL_CHANGE', email })}

@@ -1,21 +1,20 @@
 import { Button, Flex, FlexProps, Text } from '@chakra-ui/react';
-import { User } from 'entities';
+import { useAuthContext } from 'features';
 import React from 'react';
 
 type IProps = FlexProps & {
-  user: User | null;
   onClickLogoutButton: () => void;
 }
 
 const GreetingUser: React.FC<IProps> = ({ 
-  user,
   onClickLogoutButton,
   ...props 
 }) => {
-  if (!user) return <div />
-  else return (
+  const auth = useAuthContext();
+
+  return (
     <Flex alignItems="center" gap="4" {...props}>
-      <Text>반갑습니다, {user.name}님!</Text>
+      <Text>반갑습니다, {auth.name}님!</Text>
       <Button onClick={onClickLogoutButton}>로그아웃</Button>
     </Flex>
   );

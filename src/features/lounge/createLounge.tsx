@@ -1,22 +1,24 @@
 import { database } from 'features';
-import { child, equalTo, query as fQuery, ref as fReference, get, orderByChild, serverTimestamp, set } from 'firebase/database';
+import { child, equalTo, query as fQuery, ref as fReference, get, orderByChild, push, serverTimestamp, update } from 'firebase/database';
 import { generateCode } from 'shared';
-import { v4 as uuidv4 } from 'uuid';
 
 const LOUNGE_REFERENCE = 'Lounge';
+const USER_REFERENCE = 'User-lounge';
 
 const LOUNGE_CODE = 'code';
 
+const USER_LOUNGE_ID = 'loungeId';
+
 export const createLounge = async (gameId: string, ownerId: string): Promise<string> => {
-  const reference = child(fReference(database), LOUNGE_REFERENCE);
-
-  const loungeId = uuidv4();
+  const reference = fReference(database);
+  
+  const loungeId = push(child(reference, LOUNGE_REFERENCE)).key!;
   let code: string = '';
-  let isUnique = false;
 
+  let isUnique = false;
   while (!isUnique) {
     code = generateCode(10);
-    const query = fQuery(reference, orderByChild(LOUNGE_CODE), equalTo(code));
+    const query = fQuery(child(reference, LOUNGE_REFERENCE), orderByChild(LOUNGE_CODE), equalTo(code));
     const snapshot = await get(query);
     isUnique = !snapshot.exists();
   }
@@ -25,12 +27,16 @@ export const createLounge = async (gameId: string, ownerId: string): Promise<str
     gameId,
     code,
     ownerId,
-    memberIds: [ownerId],
+    playerIds: [ownerId],
     createdAt: serverTimestamp()
   }
 
-  const loungeReference = child(reference, loungeId);
-  await set(loungeReference, lounge);
+  const updates = {
+    [`/${LOUNGE_REFERENCE}/${loungeId}`]: lounge,
+    [`/${USER_REFERENCE}/${ownerId}/${USER_LOUNGE_ID}`]: loungeId
+  };
+
+  await update(reference, updates);
 
   return loungeId;
 };

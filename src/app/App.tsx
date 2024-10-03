@@ -1,5 +1,5 @@
 import { Flex } from '@chakra-ui/react';
-import { PageRouter } from 'pages';
+import { PageRouter } from 'app';
 import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
 

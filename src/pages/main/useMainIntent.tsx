@@ -1,13 +1,12 @@
 import { useDisclosure, useToast } from '@chakra-ui/react';
-import { Game, User } from 'entities';
-import { createLounge, fetchAllGames, joinLounge, useAuth } from 'features';
-import { useEffect, useReducer } from 'react';
+import { Game } from 'entities';
+import { createLounge, fetchAllGames, joinLounge, useAuthContext } from 'features';
+import { getAuth, signOut } from 'firebase/auth';
+import { useEffect, useReducer, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createDummy, launch } from 'shared';
+import { launch } from 'shared';
 
 type MainState = {
-  loading: boolean;
-  user: User;
   gameList: Game[];
   selectedGame: Game | null;
 };
@@ -20,17 +19,11 @@ type MainEvent =
   | { type: 'ON_CLICK_JOIN_LOUNGE_BUTTON'; code: string };
 
 type MainReduce =
-  | { type: 'LOADING'; loading: boolean }
-  | { type: 'USER'; user: User }
   | { type: 'GAME_LIST'; gameList: Game[] }
   | { type: 'SELECTED_GAME'; selectedGame: Game | null };
 
 function handleMainReduce(state: MainState, reduce: MainReduce): MainState {
   switch (reduce.type) {
-    case 'LOADING':
-      return { ...state, loading: reduce.loading };
-    case 'USER':
-      return { ...state, user: reduce.user };
     case 'GAME_LIST':
       return { ...state, gameList: reduce.gameList };
     case 'SELECTED_GAME':
@@ -42,17 +35,17 @@ function handleMainReduce(state: MainState, reduce: MainReduce): MainState {
 
 export function useMainIntent() {
   const initialState: MainState = {
-    loading: false,
-    user: createDummy<User>(),
     gameList: [],
     selectedGame: null,
   };
   const [state, dispatch] = useReducer(handleMainReduce, initialState);
+  const [loading, setLoading] = useState(true);
+
+  const auth = useAuthContext();
 
   const navigate = useNavigate();
   const toast = useToast();
-
-  const { user, logout } = useAuth();
+  const firebaseAuth = getAuth();
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const onCloseGameEntryModal = () => {
@@ -64,37 +57,37 @@ export function useMainIntent() {
   const onEvent = async (event: MainEvent) => {
     switch (event.type) {
       case 'SCREEN_INITIALIZE':
-        await launch(dispatch, async () => {
+        await launch(setLoading, async () => {
           const gameList = await fetchAllGames();
           dispatch({ type: 'GAME_LIST', gameList });
         });
         break;
       case 'ON_CLICK_LOGOUT_BUTTON':
-        await launch(dispatch, async () => {
-          logout();
+        await launch(setLoading, async () => {
+          await signOut(firebaseAuth);
+          navigate('/login', { replace: true });
+          toast({ title: '로그아웃되었습니다.', duration: 2000 });
         });
-        navigate('/login', { replace: true });
-        toast({ title: '정상적으로 로그아웃되었습니다.', duration: 2000 });
         break;
       case 'ON_CLICK_GAME_PLAY_BUTTON':
         dispatch({ type: 'SELECTED_GAME', selectedGame: event.game });
         onOpen();
         break;
       case 'ON_CLICK_CREATE_LOUNGE_BUTTON':
-        await launch(dispatch, async () => {
-          if (state.selectedGame && user) {
-            const loungeId = await createLounge(state.selectedGame.id, user.id);
-            navigate('/lounge/' + loungeId);
+        await launch(setLoading, async () => {
+          if (state.selectedGame) {
+            await createLounge(state.selectedGame.id, auth.id);
+            navigate('/lounge');
           }
         });
         onCloseGameEntryModal();
         break;
       case 'ON_CLICK_JOIN_LOUNGE_BUTTON':
-        await launch(dispatch, async () => {
+        await launch(setLoading, async () => {
           try {
-            if (state.selectedGame && user) {
-              const loungeId = await joinLounge(event.code, state.selectedGame.id, user.id);
-              navigate('/lounge/' + loungeId);
+            if (state.selectedGame) {
+              await joinLounge(event.code, state.selectedGame.id, auth.id);
+              navigate('/lounge');
             }
           } catch (error) {
             toast({ title: '유효하지 않은 코드거나 게임이 다릅니다.', status: 'error', duration: 2000 });
@@ -108,11 +101,16 @@ export function useMainIntent() {
   };
 
   useEffect(() => {
-    if (user) dispatch({ type: 'USER', user });
-  }, [user]);
+    setLoading(loading || auth.loading);
+  }, [auth.loading]);
+
+  useEffect(() => {
+    onEvent({ type: 'SCREEN_INITIALIZE' });
+  }, []);
 
   return {
     state,
+    loading,
     modal,
     onEvent
   };
