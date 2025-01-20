@@ -1,5 +1,5 @@
 import { useToast } from '@chakra-ui/react';
-import { exitLounge, startYachtDice, useAuthContext, useLoungeContext } from 'features';
+import { exitLounge, startDavinciCode, startYachtDice, useAuthContext, useLoungeContext } from 'features';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { launch } from 'shared';
@@ -33,7 +33,16 @@ export function useLoungeIntent() {
         break;
       case 'ON_CLICK_START_BUTTON':
         await launch(setLoading, async () => {
-          await startYachtDice(lounge.id);
+          switch (lounge.game.name) {
+            case '요트다이스':
+              await startYachtDice(lounge.id);
+              break;
+            case '다빈치코드':
+              await startDavinciCode(lounge.id);
+              break;
+            default:
+              break;
+          }
         })
         break;
       default:
