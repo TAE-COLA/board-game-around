@@ -1,9 +1,9 @@
 import { useDisclosure, useToast } from "@chakra-ui/react";
-import { DavinciCodeChip, User } from "entities"
-import { fetchUserById, fetchUsersByIds, onDavinciCodeStateChanged, useAuthContext, useLoungeContext } from "features";
+import { DavinciCodeChip, User } from "entities";
+import { exitLounge, exitYachtDice, fetchUserById, fetchUsersByIds, onDavinciCodeStateChanged, useAuthContext, useLoungeContext } from "features";
 import { useEffect, useReducer, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createDummy } from "shared";
+import { createDummy, launch } from "shared";
 
 type DavinciCodeState = {
   players: User[];
@@ -68,7 +68,13 @@ export function useDavinciCodeIntent() {
 	const onEvent = async (event: DavinciCodeEvent) => {
 		switch (event.type) {
 			case 'ON_CLICK_EXIT_BUTTON':
-				break;
+				await launch(setLoading, async () => {
+          await exitLounge(lounge.id, auth.id);
+          await exitYachtDice(lounge.id, auth.id);
+          toast({ title: '게임방을 나왔습니다.', duration: 2000 });
+          navigate('/main', { replace: true });
+        });
+        break;
 			case 'ON_CLICK_DRAW_BUTTON':
 				break;
 			default:
@@ -91,8 +97,10 @@ export function useDavinciCodeIntent() {
 			dispatch({ type: 'HANDS', hands: davinciCode.hands });
 			const turn = await fetchUserById(davinciCode.turn);
 			dispatch({ type: 'TURN', turn });
-			const finishedPlayers = await fetchUsersByIds(davinciCode.finishedPlayerIds);
-			dispatch({ type: 'FINISHED_PLAYERS', finishedPlayers: finishedPlayers });
+			if (davinciCode.finishedPlayerIds) {
+				const finishedPlayers = await fetchUsersByIds(davinciCode.finishedPlayerIds);
+				dispatch({ type: 'FINISHED_PLAYERS', finishedPlayers: finishedPlayers });
+			}
 			setLoading(false);
 
 			if (davinciCode.turn === auth.id) {

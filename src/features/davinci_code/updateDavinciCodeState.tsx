@@ -1,6 +1,6 @@
 import { DavinciCode } from 'entities/davinci_code';
 import { database } from 'features';
-import { child, ref as fReference, get, serverTimestamp, update } from 'firebase/database';
+import { child, ref as fReference, get, update } from 'firebase/database';
 
 const DAVINCI_CODE_REFERENCE = 'DavinciCode';
 
