@@ -22,17 +22,34 @@ export const startDavinciCode = async (loungeId: string): Promise<void> => {
 
 	if (!lounge || !lounge.playerIds || !lounge.ownerId) return;
 
-	const tempChip = {
-		isWhite: false,
-		number: 1,
-		isRevealed: false
-	} as DavinciCodeChip;
+	const tempHands = [
+		{
+			isWhite: false,
+			number: 1,
+			isRevealed: true
+		} as DavinciCodeChip,
+		{
+			isWhite: true,
+			number: 2,
+			isRevealed: false
+		} as DavinciCodeChip,
+		{
+			isWhite: false,
+			number: 3,
+			isRevealed: false
+		} as DavinciCodeChip,
+		{
+			isWhite: true,
+			number: 3,
+			isRevealed: false
+		} as DavinciCodeChip
+	]
 
 	const shuffledPlayerIds = lounge.playerIds.sort(() => Math.random() - 0.5);
 	const davinciCode = {
 		playerIds: shuffledPlayerIds,
 		hands: shuffledPlayerIds.reduce((acc, playerId) => {
-			acc[playerId] = [tempChip];
+			acc[playerId] = tempHands;
 			return acc;
 		}, {} as { [key: string]: DavinciCodeChip[] }),
 		turn: shuffledPlayerIds[0],

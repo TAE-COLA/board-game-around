@@ -1,5 +1,6 @@
 import { Flex, FlexProps, Text } from '@chakra-ui/react';
 import { DavinciCodeChip as chipEntity, User } from 'entities';
+import { useAuthContext } from 'features';
 import React from 'react';
 import { DavinciCodeHands } from 'widgets';
 
@@ -19,29 +20,21 @@ const DavinciCodeBody: React.FC<IProps> = ({
   finishedPlayers,
   ...props 
 }) => {
+  const auth = useAuthContext();
+
   return (
     <Flex width='100%' gap='8' {...props}>
-      <Flex direction='column' gap='4'>
-        <Text>
-          players: {players.map(player => player.name).join(', ')}
-        </Text>
-        <Text>
-          hands: {Object.keys(hands).map(key => `${key}: ${hands[key].map(chip => chip.number).join(', ')}`).join(', ')}  
-        </Text>
-        <Text>
-          turn: {turn.name}
-        </Text>
-        <Text>
-          finishedPlayers: {finishedPlayers.map(player => player.name).join(', ')}
-        </Text>
-        {
-          Object.keys(hands).map(key => (
-            <DavinciCodeHands
-              key={key}
-              hands={hands[key]}
-            />
-          ))
-        }
+      <Flex direction='column' width='100%' gap='4'>
+        <Flex width='100%' wrap='wrap' justify='space-between' gap='8'>
+          {players.map(player => 
+            player.id !== auth.id &&
+              <DavinciCodeHands
+                key={player.id}
+                player={player}
+                hands={hands[player.id]}
+              />
+          )}
+        </Flex>
       </Flex>
     </Flex>
   );

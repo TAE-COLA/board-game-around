@@ -1,7 +1,7 @@
 import { Flex } from '@chakra-ui/react';
 import { useLoungeContext } from 'features';
 import React from 'react';
-import { DavinciCodeBody, DavinciCodeHeader, Page } from 'widgets';
+import { DavinciCodeBody, DavinciCodeFooter, DavinciCodeHeader, Page } from 'widgets';
 import { useDavinciCodeIntent } from './useDavinciCodeIntent';
 
 const DavinciCodePage: React.FC = () => {
@@ -19,6 +19,7 @@ const DavinciCodePage: React.FC = () => {
           finishedPlayers={state.finishedPlayers}
           flex='1'
         />
+        <DavinciCodeFooter hands={state.hands} />
       </Flex>
     </Page>
   )
