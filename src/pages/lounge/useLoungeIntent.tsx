@@ -56,7 +56,16 @@ export function useLoungeIntent() {
 
   useEffect(() => {
     if (lounge?.status === 'PLAYING') {
-      navigate('/' + lounge.game.name, { replace: true });
+      switch (lounge.game.name) {
+        case '요트다이스':
+          navigate('/yatchdice', { replace: true });
+          break;
+        case '다빈치코드':
+          navigate('/davincicode', { replace: true });
+          break;
+        default:
+          break;
+      }
     }
   }, [lounge.status]);
 
