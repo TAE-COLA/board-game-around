@@ -18,7 +18,7 @@ const DavinciCodeHands: React.FC<IProps> = ({
   const isMyHand = auth.id === player.id;
 
   return (
-    <Card width='fit-content' align='center' gap='4' padding='4' {...props}>
+    <Card width='fit-content' height='fit-content' align='center' gap='4' padding='4' {...props}>
       <CardHeader fontWeight='bold' padding='1'>{isMyHand ? "나" : player.name}</CardHeader>
       <Flex direction='row' alignItems='center' gap='4'>
         {hands.map((chip, index) => 

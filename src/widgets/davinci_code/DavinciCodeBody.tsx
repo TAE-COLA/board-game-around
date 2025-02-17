@@ -1,4 +1,4 @@
-import { Flex, FlexProps, Text } from '@chakra-ui/react';
+import { FlexProps, SimpleGrid } from '@chakra-ui/react';
 import { DavinciCodeChip as chipEntity, User } from 'entities';
 import { useAuthContext } from 'features';
 import React from 'react';
@@ -20,23 +20,21 @@ const DavinciCodeBody: React.FC<IProps> = ({
   finishedPlayers,
   ...props 
 }) => {
-  const auth = useAuthContext();
+  const { id: authId } = useAuthContext();
 
   return (
-    <Flex width='100%' gap='8' {...props}>
-      <Flex direction='column' width='100%' gap='4'>
-        <Flex width='100%' wrap='wrap' justify='space-between' gap='8'>
-          {players.map(player => 
-            player.id !== auth.id &&
-              <DavinciCodeHands
-                key={player.id}
-                player={player}
-                hands={hands[player.id]}
-              />
-          )}
-        </Flex>
-      </Flex>
-    </Flex>
+    <SimpleGrid width="100%" minChildWidth="xs" columnGap="4" rowGap="4" {...props}>
+      {players
+        .filter(player => player.id !== authId)
+        .map(player => (
+          <DavinciCodeHands
+            key={player.id}
+            player={player}
+            hands={hands[player.id]}
+          />
+        ))
+      }
+    </SimpleGrid>
   );
 };
 

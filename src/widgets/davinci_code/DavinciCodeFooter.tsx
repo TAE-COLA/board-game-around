@@ -14,14 +14,14 @@ const DavinciCodeFooter: React.FC<IProps> = ({
   hands, 
   ...props 
 }) => {
-  const auth = useAuthContext();
-  const myHands = hands[auth.id];
+  const { id: authId, name: authName } = useAuthContext();
+  const myHands = hands[authId];
 
   return (
     <Flex direction='column' width='100%' gap='4' {...props}>
       <DavinciCodeHands
-        key={auth.id}
-        player={{ id: auth.id, name: auth.name } as User}
+        key={authId}
+        player={{ id: authId, name: authName } as User}
         hands={myHands}
       />
     </Flex>

@@ -9,15 +9,15 @@ const DavinciCodePage: React.FC = () => {
   const lounge = useLoungeContext();
 
   return (
-    <Page loading={loading} height='100vh'>
-      <Flex direction='column' width='100%' height='100%' gap='8'>
+    <Page loading={loading} height="100vh">
+      <Flex direction="column" width="100%" height="100%" gap="8">
         <DavinciCodeHeader onClickExitButton={() => onEvent({ type: 'ON_CLICK_EXIT_BUTTON' })} />
         <DavinciCodeBody
           players={state.players}
           hands={state.hands}
           turn={state.turn}
           finishedPlayers={state.finishedPlayers}
-          flex='1'
+          flex="1"
         />
         <DavinciCodeFooter hands={state.hands} />
       </Flex>
