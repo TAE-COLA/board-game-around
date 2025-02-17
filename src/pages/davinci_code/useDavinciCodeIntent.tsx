@@ -1,5 +1,5 @@
 import { useDisclosure, useToast } from "@chakra-ui/react";
-import { DavinciCodeChip, User } from "entities";
+import { DavinciCodeTile, User } from "entities";
 import { exitLounge, exitYachtDice, fetchUserById, fetchUsersByIds, onDavinciCodeStateChanged, useAuthContext, useLoungeContext } from "features";
 import { useEffect, useReducer, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -8,7 +8,7 @@ import { createDummy, launch } from "shared";
 type DavinciCodeState = {
   players: User[];
   hands: {
-    [key: string]: DavinciCodeChip[];
+    [key: string]: DavinciCodeTile[];
   };
   turn: User;
   finishedPlayers: User[];
@@ -20,7 +20,7 @@ type DavinciCodeEvent =
 
 type DavinciCodeReduce = 
 	| { type: 'PLAYERS'; players: User[] }
-	| { type: 'HANDS'; hands: { [key: string]: DavinciCodeChip[]; } }
+	| { type: 'HANDS'; hands: { [key: string]: DavinciCodeTile[]; } }
 	| { type: 'TURN'; turn: User }
 	| { type: 'FINISHED_PLAYERS'; finishedPlayers: User[] };
 

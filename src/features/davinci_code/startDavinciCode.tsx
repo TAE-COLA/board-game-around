@@ -1,5 +1,5 @@
 import { Lounge } from 'entities';
-import { DavinciCodeChip } from 'entities/davinci_code';
+import { DavinciCodeTile } from 'entities/davinci_code';
 import { database } from 'features';
 import { child, ref as fReference, get, update } from 'firebase/database';
 
@@ -7,13 +7,13 @@ const DAVINCI_CODE_REFERENCE = 'DavinciCode';
 const LOUNGE_REFERENCE = 'Lounge';
 const LOUNGE_STATUS = 'status';
 
-const generateChips = (): DavinciCodeChip[] => {
-  const chips: DavinciCodeChip[] = [];
+const generateTiles = (): DavinciCodeTile[] => {
+  const tiles: DavinciCodeTile[] = [];
   for (let i = 1; i <= 13; i++) {
-    chips.push({ isWhite: true, number: i, isRevealed: false });
-    chips.push({ isWhite: false, number: i, isRevealed: false });
+    tiles.push({ isWhite: true, number: i, isRevealed: false });
+    tiles.push({ isWhite: false, number: i, isRevealed: false });
   }
-  return chips.sort(() => Math.random() - 0.5);
+  return tiles.sort(() => Math.random() - 0.5);
 };
 
 export const startDavinciCode = async (loungeId: string): Promise<void> => {
@@ -25,11 +25,11 @@ export const startDavinciCode = async (loungeId: string): Promise<void> => {
   if (!lounge?.playerIds?.length || !lounge.ownerId) return;
 
   const shuffledPlayerIds = [...lounge.playerIds].sort(() => Math.random() - 0.5);
-  const chips = generateChips();
+  const tiles = generateTiles();
   const hands = shuffledPlayerIds.reduce((acc, playerId, index) => {
-    acc[playerId] = chips.slice(index * 4, index * 4 + 4);
+    acc[playerId] = tiles.slice(index * 4, index * 4 + 4);
     return acc;
-  }, {} as { [key: string]: DavinciCodeChip[] });
+  }, {} as { [key: string]: DavinciCodeTile[] });
 
   const davinciCode = {
     playerIds: shuffledPlayerIds,

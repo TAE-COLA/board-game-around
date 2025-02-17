@@ -1,12 +1,12 @@
 import { Card, CardHeader, CardProps, Flex, FlexProps, Text } from '@chakra-ui/react';
-import { DavinciCodeChip as chipEntity, User } from 'entities';
+import { DavinciCodeTile as tileEntity, User } from 'entities';
 import { useAuthContext } from 'features';
 import React from 'react';
-import { DavinciCodeChip } from 'widgets';
+import { DavinciCodeTile } from 'widgets';
 
 type IProps = CardProps & {
   player: User;
-  hands: chipEntity[];
+  hands: tileEntity[];
 }
 
 const DavinciCodeHands: React.FC<IProps> = ({
@@ -21,11 +21,11 @@ const DavinciCodeHands: React.FC<IProps> = ({
     <Card width='fit-content' height='fit-content' align='center' gap='4' padding='4' {...props}>
       <CardHeader fontWeight='bold' padding='1'>{isMyHand ? "나" : player.name}</CardHeader>
       <Flex direction='row' alignItems='center' gap='4'>
-        {hands.map((chip, index) => 
-          <DavinciCodeChip
+        {hands.map((tile, index) => 
+          <DavinciCodeTile
             key={index}
             player={player}
-            chip={chip}
+            tile={tile}
           />
         )}
       </Flex>

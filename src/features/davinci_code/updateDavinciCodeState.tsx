@@ -10,7 +10,7 @@ const DAVINCI_CODE_TURN = 'turn';
 const DAVINCI_CODE_FINISHED_PLAYER_IDS = 'finishedPlayerIds';
 
 type Payloads = {
-  'draw_chip'?: boolean;
+  'draw_tile'?: boolean;
 	'guess'?: { playerId: string, handIndex: number };
 	'turn' ?: string;
 };
@@ -31,7 +31,7 @@ export const updateDavinciCodeState = async (
 
 	const updates: { [key: string]: any } = {};
 
-	if (payloads['draw_chip'] !== undefined) {
+	if (payloads['draw_tile'] !== undefined) {
 
 	}
 	if (payloads['guess'] !== undefined) {

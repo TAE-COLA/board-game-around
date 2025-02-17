@@ -1,5 +1,5 @@
 import { FlexProps, SimpleGrid } from '@chakra-ui/react';
-import { DavinciCodeChip as chipEntity, User } from 'entities';
+import { DavinciCodeTile as tileEntity, User } from 'entities';
 import { useAuthContext } from 'features';
 import React from 'react';
 import { DavinciCodeHands } from 'widgets';
@@ -7,7 +7,7 @@ import { DavinciCodeHands } from 'widgets';
 type IProps = FlexProps & {
   players: User[];
   hands: {
-    [key: string]: chipEntity[];
+    [key: string]: tileEntity[];
   };
   turn: User;
   finishedPlayers: User[];
