@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 type DefaultValue<T> = T extends string
   ? ''
   : T extends number

@@ -32,19 +32,19 @@ const YachtDiceHandRanking: React.FC<IProps> = ({
     yacht: { name: 'Yacht', check: checkYacht(keptDice), marked: board.yacht.marked },
   };
 
-  const availableHandRankings = Object.entries(handRankings).filter(([_, value]) => value.check.dice.length > 0);
-  const unavailableHandRankings = Object.entries(handRankings).filter(([_, value]) => value.check.dice.length === 0);
+  const availableHandRankings = Object.entries(handRankings).filter(([, value]) => value.check.dice.length > 0);
+  const unavailableHandRankings = Object.entries(handRankings).filter(([, value]) => value.check.dice.length === 0);
 
   return (
     <Flex direction='column' justify='end' gap='4' {...props}>
       <Divider text='선택 가능한 족보' />
-      {availableHandRankings.length > 0 ? 
+      {availableHandRankings.length > 0 ?
         <Grid templateColumns='repeat(6, 1fr)' gap='4'>
           {availableHandRankings.map(([key, value]) => (
             <GridItem key={key} colSpan={value.check.dice.length >= 4 ? 3 : 2}>
-              <YachtDiceHandButton 
-                dice={value.check.dice} 
-                name={value.name} 
+              <YachtDiceHandButton
+                dice={value.check.dice}
+                name={value.name}
                 score={value.check.score}
                 isDisabled={value.marked}
                 onClick={() => onClickSelectHandButton(key, value.check.score)}
@@ -60,9 +60,9 @@ const YachtDiceHandRanking: React.FC<IProps> = ({
       <Grid templateColumns='repeat(4, 1fr)' gap='4'>
         {unavailableHandRankings.map(([key, value]) => (
           <GridItem key={key}>
-            <YachtDiceHandButton 
-              name={value.name} 
-              score={0} 
+            <YachtDiceHandButton
+              name={value.name}
+              score={0}
               isDisabled={value.marked}
               onClick={() => onClickSelectHandButton(key, value.check.score)}
             />
@@ -70,7 +70,7 @@ const YachtDiceHandRanking: React.FC<IProps> = ({
         ))}
       </Grid>
       <Divider text='또는' />
-      <YachtDiceHandButton 
+      <YachtDiceHandButton
         name='주사위 전부 선택하기'
         dice={dice}
         score={dice.reduce((acc, value) => acc + value, 0)}
@@ -154,7 +154,7 @@ function checkFourOfAKind(dice: number[]): { dice: number[]; score: number } {
     acc[num] = (acc[num] || 0) + 1;
     return acc;
   }, {});
-  const num = Object.entries(counts).find(([_, value]) => value >= 4)?.[0];
+  const num = Object.entries(counts).find(([, value]) => value >= 4)?.[0];
   if (num) {
     const values = dice.filter(value => value === Number(num)).slice(0, 4);
     const score = values.reduce((acc, value) => acc + value, 0)
@@ -169,8 +169,8 @@ function checkFullHouse(dice: number[]): { dice: number[]; score: number } {
     acc[num] = (acc[num] || 0) + 1;
     return acc;
   }, {});
-  const two = Object.entries(counts).find(([_, value]) => value === 2)?.[0];
-  const three = Object.entries(counts).find(([_, value]) => value === 3)?.[0];
+  const two = Object.entries(counts).find(([, value]) => value === 2)?.[0];
+  const three = Object.entries(counts).find(([, value]) => value === 3)?.[0];
   if (two && three) {
     const values = [Number(two), Number(two), Number(three), Number(three), Number(three)].sort();
     const score = values.reduce((acc, value) => acc + value, 0)
@@ -182,9 +182,9 @@ function checkFullHouse(dice: number[]): { dice: number[]; score: number } {
 
 function checkSmallStraight(dice: number[]): { dice: number[]; score: number } {
   const values = (dice.includes(1) && dice.includes(2) && dice.includes(3) && dice.includes(4)) ? [1, 2, 3, 4]
-  : (dice.includes(2) && dice.includes(3) && dice.includes(4) && dice.includes(5)) ? [2, 3, 4, 5]
-  : (dice.includes(3) && dice.includes(4) && dice.includes(5) && dice.includes(6)) ? [3, 4, 5, 6]
-  : [];
+    : (dice.includes(2) && dice.includes(3) && dice.includes(4) && dice.includes(5)) ? [2, 3, 4, 5]
+      : (dice.includes(3) && dice.includes(4) && dice.includes(5) && dice.includes(6)) ? [3, 4, 5, 6]
+        : [];
   if (values.length > 0) {
     return { dice: values, score: 15 };
   } else {
@@ -194,8 +194,8 @@ function checkSmallStraight(dice: number[]): { dice: number[]; score: number } {
 
 function checkLargeStraight(dice: number[]): { dice: number[]; score: number } {
   const values = (dice.includes(1) && dice.includes(2) && dice.includes(3) && dice.includes(4) && dice.includes(5)) ? [1, 2, 3, 4, 5]
-  : (dice.includes(2) && dice.includes(3) && dice.includes(4) && dice.includes(5) && dice.includes(6)) ? [2, 3, 4, 5, 6]
-  : [];
+    : (dice.includes(2) && dice.includes(3) && dice.includes(4) && dice.includes(5) && dice.includes(6)) ? [2, 3, 4, 5, 6]
+      : [];
   if (values.length > 0) {
     return { dice: values, score: 30 };
   } else {

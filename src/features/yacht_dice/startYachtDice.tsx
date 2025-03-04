@@ -5,14 +5,6 @@ import { child, ref as fReference, get, update } from 'firebase/database';
 const YACHT_DICE_REFERENCE = 'YachtDice';
 const LOUNGE_REFERENCE = 'Lounge';
 
-const YACHT_DICE_PLAYER_IDS = 'playerIds';
-const YACHT_DICE_ROUND = 'round';
-const YACHT_DICE_BOARDS = 'boards';
-const YACHT_DICE_TURN = 'turn';
-const YACHT_DICE_DICE = 'dice';
-const YACHT_DICE_KEEP = 'keep';
-const YACHT_DICE_ROLLS = 'rolls';
-
 const LOUNGE_STATUS = 'status';
 
 export const startYachtDice = async (loungeId: string): Promise<void> => {

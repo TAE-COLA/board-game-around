@@ -1,4 +1,4 @@
-import { Button, Flex, FlexProps, Text } from '@chakra-ui/react';
+import { Button, Flex, FlexProps } from '@chakra-ui/react';
 import { DavinciCodeTile as tileEntity, User } from 'entities';
 import { useAuthContext } from 'features';
 import React from 'react';
@@ -10,9 +10,9 @@ type IProps = FlexProps & {
   };
 };
 
-const DavinciCodeFooter: React.FC<IProps> = ({ 
-  hands, 
-  ...props 
+const DavinciCodeFooter: React.FC<IProps> = ({
+  hands,
+  ...props
 }) => {
   const { id: authId, name: authName } = useAuthContext();
   const myHands = hands[authId];

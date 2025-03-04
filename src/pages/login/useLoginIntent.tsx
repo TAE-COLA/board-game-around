@@ -63,8 +63,8 @@ export function useLoginIntent() {
           try {
             await signInWithEmailAndPassword(firebaseAuth, state.email, state.password);
             toast({ title: '로그인이 완료되었습니다.', status: 'success', duration: 2000 });
-            navigate('/main', { replace: true }) 
-          } catch (error) {
+            navigate('/main', { replace: true })
+          } catch {
             toast({ title: '로그인에 실패했습니다.', status: 'error', duration: 2000 });
           }
         });

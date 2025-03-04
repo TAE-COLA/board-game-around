@@ -80,12 +80,13 @@ export function useRegisterIntent() {
         dispatch({ type: 'EMAIL', email: { label: 'email', value: event.email, error: checkEmailValidity(event.email) } });
         dispatch({ type: 'VALID', valid: checkValid(state) });
         break;
-      case 'ON_CLICK_CHECK_FOR_DUPLICATES_BUTTON':
+      case 'ON_CLICK_CHECK_FOR_DUPLICATES_BUTTON': {
         const emailDuplicate = await checkEmailForDuplicate(state.email.value);
         dispatch({ type: 'EMAIL', email: { label: 'email', value: state.email.value, error: emailDuplicate ? '중복된 이메일입니다.' : null } });
         dispatch({ type: 'EMAIL_DUPLICATE', emailDuplicate: emailDuplicate });
         dispatch({ type: 'VALID', valid: checkValid(state) });
         break;
+      }
       case 'ON_PASSWORD_CHANGE':
         dispatch({ type: 'PASSWORD', password: { label: 'password', value: event.password, error: checkPasswordValidity(event.password) } });
         dispatch({ type: 'VALID', valid: checkValid(state) });

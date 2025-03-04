@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import firebase from "firebase/compat/app";
 import "firebase/compat/auth";
 import "firebase/compat/database";
@@ -14,11 +15,10 @@ const firebaseConfig = {
   databaseURL: process.env.REACT_APP_FIREBASE_DATABASE_URL,
 };
 
-firebase.initializeApp(firebaseConfig); 
+firebase.initializeApp(firebaseConfig);
 
 const auth = firebase.auth();
 const database = firebase.database();
-const firestore = firebase.firestore(); 
+const firestore = firebase.firestore();
 
 export { auth, database, firestore };
-

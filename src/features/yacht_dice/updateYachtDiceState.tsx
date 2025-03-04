@@ -23,7 +23,7 @@ type Payloads = {
 };
 
 export const updateYachtDiceState = async (
-  loungeId: string, 
+  loungeId: string,
   payloads: Payloads
 ): Promise<void> => {
   const reference = fReference(database);
@@ -40,8 +40,8 @@ export const updateYachtDiceState = async (
     finishedAt: val[YACHT_DICE_FINISHED_AT],
   } as YachtDice;
 
-  const updates: { [key: string]: any } = {};
-  
+  const updates: { [key: string]: string | number | object | null } = {};
+
   if (payloads['boards'] !== undefined) {
     const playerIndex = lounge.playerIds.indexOf(lounge.turn);
     const nextPlayerId = lounge.playerIds[(playerIndex + 1) % lounge.playerIds.length];
@@ -90,6 +90,6 @@ export const updateYachtDiceState = async (
   if (payloads['turn'] !== undefined) {
     updates[`/${YACHT_DICE_REFERENCE}/${loungeId}/${YACHT_DICE_TURN}`] = payloads['turn'];
   }
-  
+
   await update(reference, updates);
 };

@@ -89,7 +89,7 @@ export function useMainIntent() {
               await joinLounge(event.code, state.selectedGame.id, auth.id);
               navigate('/lounge');
             }
-          } catch (error) {
+          } catch {
             toast({ title: '유효하지 않은 코드거나 게임이 다릅니다.', status: 'error', duration: 2000 });
           }
         });

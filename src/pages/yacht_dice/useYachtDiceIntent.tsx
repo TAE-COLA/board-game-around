@@ -119,16 +119,17 @@ export function useYachtDiceIntent() {
           navigate('/main', { replace: true });
         });
         break;
-      case 'ON_CLICK_PREV_BOARD_BUTTON':
+      case 'ON_CLICK_PREV_BOARD_BUTTON': {
         const currentIndex = state.players.findIndex((player) => player.id === state.currentBoardPlayer.id);
         const prevBoardPlayer = state.players[(currentIndex - 1 + state.players.length) % state.players.length];
         dispatch({ type: 'CURRENT_BOARD_PLAYER', currentBoardPlayer: prevBoardPlayer });
         break;
-      case 'ON_CLICK_NEXT_BOARD_BUTTON':
+      } case 'ON_CLICK_NEXT_BOARD_BUTTON': {
         const nextIndex = state.players.findIndex((player) => player.id === state.currentBoardPlayer.id);
         const nextBoardPlayer = state.players[(nextIndex + 1) % state.players.length];
         dispatch({ type: 'CURRENT_BOARD_PLAYER', currentBoardPlayer: nextBoardPlayer });
         break;
+      }
       case 'ON_CLICK_ROLL_BUTTON':
         if (auth.id !== state.turn.id) {
           notMyTurnToast();
@@ -158,7 +159,7 @@ export function useYachtDiceIntent() {
         break;
     }
   };
-  
+
   useEffect(() => {
     if (lounge.loading) return;
 

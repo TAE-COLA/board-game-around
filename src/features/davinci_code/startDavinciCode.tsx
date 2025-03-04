@@ -42,6 +42,6 @@ export const startDavinciCode = async (loungeId: string): Promise<void> => {
     [`/${LOUNGE_REFERENCE}/${loungeId}/${LOUNGE_STATUS}`]: 'PLAYING',
     [`/${DAVINCI_CODE_REFERENCE}/${loungeId}`]: davinciCode
   };
-  
+
   await update(reference, updates);
 };

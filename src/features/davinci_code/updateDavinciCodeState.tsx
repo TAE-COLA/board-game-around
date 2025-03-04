@@ -10,17 +10,17 @@ const DAVINCI_CODE_TURN = 'turn';
 const DAVINCI_CODE_FINISHED_PLAYER_IDS = 'finishedPlayerIds';
 
 type Payloads = {
-  'draw_tile'?: boolean;
+	'draw_tile'?: boolean;
 	'guess'?: { playerId: string, handIndex: number };
-	'turn' ?: string;
+	'turn'?: string;
 };
 
 export const updateDavinciCodeState = async (
 	loungeId: string,
 	payloads: Payloads
 ): Promise<void> => {
-  const reference = fReference(database);
-  const loungeReference = child(reference, `${DAVINCI_CODE_REFERENCE}/${loungeId}`);
+	const reference = fReference(database);
+	const loungeReference = child(reference, `${DAVINCI_CODE_REFERENCE}/${loungeId}`);
 	const val = (await get(loungeReference)).val();
 	const lounge = {
 		playerIds: val[DAVINCI_CODE_PLAYER_IDS],
