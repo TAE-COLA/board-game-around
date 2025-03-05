@@ -1,16 +1,29 @@
 import { ChevronLeftIcon, ChevronRightIcon } from '@chakra-ui/icons';
-import { Divider, Flex, FlexProps, Table, TableContainer, Tbody, Td, Text, Tfoot, Th, Thead, Tr } from '@chakra-ui/react';
+import {
+  Divider,
+  Flex,
+  FlexProps,
+  Table,
+  TableContainer,
+  Tbody,
+  Td,
+  Text,
+  Tfoot,
+  Th,
+  Thead,
+  Tr,
+} from '@chakra-ui/react';
 import { User, type YachtDiceBoard } from 'entities';
 import React from 'react';
 
 type IProps = FlexProps & {
-  player: User,
-  board: YachtDiceBoard,
-  score: number,
-  isFirst: boolean,
-  isLast: boolean,
-  onClickPrevBoardButton: () => void,
-  onClickNextBoardButton: () => void
+  player: User;
+  board: YachtDiceBoard;
+  score: number;
+  isFirst: boolean;
+  isLast: boolean;
+  onClickPrevBoardButton: () => void;
+  onClickNextBoardButton: () => void;
 };
 
 const YachtBoard: React.FC<IProps> = ({
@@ -40,11 +53,29 @@ const YachtBoard: React.FC<IProps> = ({
   };
 
   return (
-    <Flex direction='column' align='center' gap='8' padding='4' background='gray.100' borderRadius='md' {...props}>
+    <Flex
+      direction='column'
+      align='center'
+      gap='8'
+      padding='4'
+      background='gray.100'
+      borderRadius='md'
+      {...props}
+    >
       <Flex width='100%' align='center'>
-        <ChevronLeftIcon onClick={() => isFirst || onClickPrevBoardButton()} cursor={isFirst ? undefined : 'pointer'} opacity={isFirst ? 0 : 1} />
-        <Text fontWeight='bold' textAlign='center' flex='1'>{player.name}</Text>
-        <ChevronRightIcon onClick={() => isLast || onClickNextBoardButton()} cursor={isLast ? undefined : 'pointer'} opacity={isLast ? 0 : 1} />
+        <ChevronLeftIcon
+          onClick={() => isFirst || onClickPrevBoardButton()}
+          cursor={isFirst ? undefined : 'pointer'}
+          opacity={isFirst ? 0 : 1}
+        />
+        <Text fontWeight='bold' textAlign='center' flex='1'>
+          {player.name}
+        </Text>
+        <ChevronRightIcon
+          onClick={() => isLast || onClickNextBoardButton()}
+          cursor={isLast ? undefined : 'pointer'}
+          opacity={isLast ? 0 : 1}
+        />
       </Flex>
       <TableContainer>
         <Table size='sm'>
@@ -57,34 +88,34 @@ const YachtBoard: React.FC<IProps> = ({
           <Tbody>
             <Tr>
               <Td colSpan={2}>
-                <Divider borderColor="gray.400" />
+                <Divider borderColor='gray.400' />
               </Td>
             </Tr>
             {Object.values(orderedBoard).map(({ name, value, marked }) => (
               <React.Fragment key={name}>
-                {name === 'Bonus' &&
+                {name === 'Bonus' && (
                   <Tr>
                     <Td colSpan={2}>
-                      <Divider borderColor="gray.400" />
+                      <Divider borderColor='gray.400' />
                     </Td>
                   </Tr>
-                }
+                )}
                 <Tr>
                   <Td>{name}</Td>
                   <Td isNumeric>{marked ? value : '-'}</Td>
                 </Tr>
-                {name === 'Bonus' &&
+                {name === 'Bonus' && (
                   <Tr>
                     <Td colSpan={2}>
-                      <Divider borderColor="gray.400" />
+                      <Divider borderColor='gray.400' />
                     </Td>
                   </Tr>
-                }
-            </React.Fragment>
+                )}
+              </React.Fragment>
             ))}
             <Tr>
               <Td colSpan={2}>
-                <Divider borderColor="gray.400" />
+                <Divider borderColor='gray.400' />
               </Td>
             </Tr>
           </Tbody>
@@ -98,6 +129,6 @@ const YachtBoard: React.FC<IProps> = ({
       </TableContainer>
     </Flex>
   );
-}
+};
 
 export default YachtBoard;

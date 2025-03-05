@@ -1,6 +1,12 @@
-import { Button, Flex, FlexProps, FormControl, FormLabel, Input } from '@chakra-ui/react';
+import {
+  Button,
+  Flex,
+  FlexProps,
+  FormControl,
+  FormLabel,
+  Input,
+} from '@chakra-ui/react';
 import React, { KeyboardEvent } from 'react';
-
 
 type IProps = FlexProps & {
   loading: boolean;
@@ -11,35 +17,64 @@ type IProps = FlexProps & {
   onClickLoginButton: () => void;
 };
 
-const LoginFields: React.FC<IProps> = ({ 
+const LoginFields: React.FC<IProps> = ({
   loading,
   email,
   password,
   onEmailChange,
   onPasswordChange,
   onClickLoginButton,
-  ...props 
+  ...props
 }) => {
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
       event.preventDefault();
-      onClickLoginButton()
+      onClickLoginButton();
     }
   };
 
   return (
-    <Flex direction='column' width='full' maxWidth='md' padding='8' gap='4' bg='white' borderRadius='md' boxShadow='md' {...props}>
-      <FormControl id="email">
+    <Flex
+      direction='column'
+      width='full'
+      maxWidth='md'
+      padding='8'
+      gap='4'
+      bg='white'
+      borderRadius='md'
+      boxShadow='md'
+      {...props}
+    >
+      <FormControl id='email'>
         <FormLabel>Email</FormLabel>
-        <Input type="email" placeholder="이메일을 입력하세요" value={email} onChange={(e) => onEmailChange(e.target.value)} onKeyDown={handleKeyDown} />
+        <Input
+          type='email'
+          placeholder='이메일을 입력하세요'
+          value={email}
+          onChange={(e) => onEmailChange(e.target.value)}
+          onKeyDown={handleKeyDown}
+        />
       </FormControl>
-      <FormControl id="password">
+      <FormControl id='password'>
         <FormLabel>Password</FormLabel>
-        <Input type="password" placeholder="비밀번호를 입력하세요" value={password} onChange={(e) => onPasswordChange(e.target.value)} onKeyDown={handleKeyDown} />
+        <Input
+          type='password'
+          placeholder='비밀번호를 입력하세요'
+          value={password}
+          onChange={(e) => onPasswordChange(e.target.value)}
+          onKeyDown={handleKeyDown}
+        />
       </FormControl>
-      <Button onClick={onClickLoginButton} isDisabled={loading} colorScheme="blue" size="lg">로그인</Button>
+      <Button
+        onClick={onClickLoginButton}
+        isDisabled={loading}
+        colorScheme='blue'
+        size='lg'
+      >
+        로그인
+      </Button>
     </Flex>
   );
-}
+};
 
 export default LoginFields;

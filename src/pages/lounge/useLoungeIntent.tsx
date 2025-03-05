@@ -1,5 +1,11 @@
 import { useToast } from '@chakra-ui/react';
-import { exitLounge, startDavinciCode, startYachtDice, useAuthContext, useLoungeContext } from 'features';
+import {
+  exitLounge,
+  startDavinciCode,
+  startYachtDice,
+  useAuthContext,
+  useLoungeContext,
+} from 'features';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { launch } from 'shared';
@@ -29,7 +35,11 @@ export function useLoungeIntent() {
         break;
       case 'ON_CLICK_COPY_BUTTON':
         navigator.clipboard.writeText(lounge.code);
-        toast({ title: '게임방 코드가 복사되었습니다.', status: 'success', duration: 2000 });
+        toast({
+          title: '게임방 코드가 복사되었습니다.',
+          status: 'success',
+          duration: 2000,
+        });
         break;
       case 'ON_CLICK_START_BUTTON':
         await launch(setLoading, async () => {
@@ -43,7 +53,7 @@ export function useLoungeIntent() {
             default:
               break;
           }
-        })
+        });
         break;
       default:
         break;
@@ -71,6 +81,6 @@ export function useLoungeIntent() {
 
   return {
     loading,
-    onEvent
+    onEvent,
   };
 }

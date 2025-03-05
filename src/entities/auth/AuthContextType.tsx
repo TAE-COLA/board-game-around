@@ -1,4 +1,3 @@
-
 export default interface AuthContextType {
   loading: boolean;
   id: string;

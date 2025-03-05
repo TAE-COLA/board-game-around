@@ -42,12 +42,12 @@ export const startYachtDice = async (loungeId: string): Promise<void> => {
     turn: shuffledPlayerIds[0],
     dice: [1, 1, 1, 1, 1],
     keep: [],
-    rolls: 3
+    rolls: 3,
   };
 
   const updates = {
     [`/${LOUNGE_REFERENCE}/${loungeId}/${LOUNGE_STATUS}`]: 'PLAYING',
-    [`/${YACHT_DICE_REFERENCE}/${loungeId}`]: yachtDice
+    [`/${YACHT_DICE_REFERENCE}/${loungeId}`]: yachtDice,
   };
 
   await update(reference, updates);

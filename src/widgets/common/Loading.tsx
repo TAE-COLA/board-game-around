@@ -6,7 +6,7 @@ const Loading: React.FC = () => {
     <Flex height='100vh' justify='center' align='center'>
       <Spinner size='xl' />
     </Flex>
-  )
-}
+  );
+};
 
 export default Loading;

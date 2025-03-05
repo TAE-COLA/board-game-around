@@ -26,23 +26,23 @@ const YachtDiceField: React.FC<IProps> = ({
 }) => {
   return (
     <Flex direction='column' align='center' gap='10' {...props}>
-      <RollableDice 
-        dice={dice} 
-        keep={keep} 
-        rolling={rolling} 
+      <RollableDice
+        dice={dice}
+        keep={keep}
+        rolling={rolling}
         isDisabled={rolls === 3 || rolling}
         onResult={onResult}
         onAddDiceToKeep={onAddDiceToKeep}
       />
-      <KeptDice 
+      <KeptDice
         dice={dice}
-        kept={kept} 
-        keep={keep} 
-        onAddDiceToKeep={onAddDiceToKeep} 
+        kept={kept}
+        keep={keep}
+        onAddDiceToKeep={onAddDiceToKeep}
         onRemoveDiceToKeep={onRemoveDiceToKeep}
       />
     </Flex>
   );
-}
+};
 
 export default YachtDiceField;

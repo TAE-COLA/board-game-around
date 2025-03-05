@@ -1,4 +1,4 @@
-import DavinciCodeTile from "./DavinciCodeTile";
+import DavinciCodeTile from './DavinciCodeTile';
 
 export default interface DavinciCode {
   loungeId: string;

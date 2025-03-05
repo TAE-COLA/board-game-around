@@ -17,10 +17,16 @@ const LoungeHeader: React.FC<IProps> = ({
 
   return (
     <Flex width='100%' {...props}>
-      <LoungeCodeBox code={lounge.code} onClickCopyButton={onClickCopyButton} width='100%' />
-      <Button onClick={onClickExitButton} height='12' paddingX='6'>게임방 나가기</Button>
+      <LoungeCodeBox
+        code={lounge.code}
+        onClickCopyButton={onClickCopyButton}
+        width='100%'
+      />
+      <Button onClick={onClickExitButton} height='12' paddingX='6'>
+        게임방 나가기
+      </Button>
     </Flex>
-  )
+  );
 };
 
 export default LoungeHeader;

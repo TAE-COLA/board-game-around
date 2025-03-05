@@ -16,11 +16,11 @@ const PlayerCard: React.FC<IProps> = ({
   ...props
 }) => {
   return (
-    <Card 
-      direction={{ base: 'column', sm: 'row' }} 
-      align='center' 
-      size={isPlayerTurn ? 'md' : 'sm'} 
-      opacity={isPlayerTurn ? '1' : '0.5'} 
+    <Card
+      direction={{ base: 'column', sm: 'row' }}
+      align='center'
+      size={isPlayerTurn ? 'md' : 'sm'}
+      opacity={isPlayerTurn ? '1' : '0.5'}
       marginStart={isPlayerTurn ? '0' : '4'}
       {...props}
     >
@@ -29,7 +29,7 @@ const PlayerCard: React.FC<IProps> = ({
       </CardBody>
       {isOwner && <StarIcon width='6' height='6' marginEnd='4' />}
     </Card>
-  )
-}
+  );
+};
 
 export default PlayerCard;

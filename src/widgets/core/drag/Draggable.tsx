@@ -29,14 +29,18 @@ const Draggable: React.FC<IProps> = ({
       if (!didDrop) {
         onDropOutside(item.index);
       }
-    }
+    },
   }));
 
   return (
-    <Flex ref={!isDisabled ? drag : null} opacity={isDragging ? 0.5 : 1} {...props}>
+    <Flex
+      ref={!isDisabled ? drag : null}
+      opacity={isDragging ? 0.5 : 1}
+      {...props}
+    >
       {children}
     </Flex>
-  )
-}
+  );
+};
 
 export default Draggable;

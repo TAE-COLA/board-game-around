@@ -21,8 +21,8 @@ const Die: React.FC<IProps> = ({
     border: '2px',
     borderColor: fixed ? 'red' : '',
     borderRadius: 'md',
-    ...props
-  }
+    ...props,
+  };
   const circleSize = size === 'sm' ? '6px' : size === 'md' ? '12px' : '16px';
 
   switch (value) {
@@ -120,7 +120,7 @@ const Die: React.FC<IProps> = ({
       );
     default:
       return null;
-    }
-}
+  }
+};
 
 export default Die;

@@ -1,7 +1,13 @@
-import { FormControl, FormErrorMessage, FormHelperText, Input, InputGroup, InputRightElement } from '@chakra-ui/react';
+import {
+  FormControl,
+  FormErrorMessage,
+  FormHelperText,
+  Input,
+  InputGroup,
+  InputRightElement,
+} from '@chakra-ui/react';
 import { FormData } from 'entities';
 import React from 'react';
-
 
 type IProps<Label extends string> = {
   id: string;
@@ -24,7 +30,7 @@ const FormInput = <Label extends string>({
   helperText,
   isReadOnly = false,
   isDisabled = false,
-  children
+  children,
 }: IProps<Label>) => {
   return (
     <FormControl id={id} isInvalid={data.error !== null}>
@@ -38,14 +44,13 @@ const FormInput = <Label extends string>({
           isReadOnly={isReadOnly}
           isDisabled={isDisabled}
         />
-        <InputRightElement width='120'>
-          {children}
-        </InputRightElement>
+        <InputRightElement width='120'>{children}</InputRightElement>
       </InputGroup>
-      {!data.error ? 
-        <FormHelperText paddingX='2'>{helperText}</FormHelperText> :
+      {!data.error ? (
+        <FormHelperText paddingX='2'>{helperText}</FormHelperText>
+      ) : (
         <FormErrorMessage paddingX='2'>{data.error}</FormErrorMessage>
-      }
+      )}
     </FormControl>
   );
 };
@@ -53,26 +58,26 @@ const FormInput = <Label extends string>({
 export default FormInput;
 
 type HTMLInputTypeAttribute =
-  | "button"
-  | "checkbox"
-  | "color"
-  | "date"
-  | "datetime-local"
-  | "email"
-  | "file"
-  | "hidden"
-  | "image"
-  | "month"
-  | "number"
-  | "password"
-  | "radio"
-  | "range"
-  | "reset"
-  | "search"
-  | "submit"
-  | "tel"
-  | "text"
-  | "time"
-  | "url"
-  | "week"
+  | 'button'
+  | 'checkbox'
+  | 'color'
+  | 'date'
+  | 'datetime-local'
+  | 'email'
+  | 'file'
+  | 'hidden'
+  | 'image'
+  | 'month'
+  | 'number'
+  | 'password'
+  | 'radio'
+  | 'range'
+  | 'reset'
+  | 'search'
+  | 'submit'
+  | 'tel'
+  | 'text'
+  | 'time'
+  | 'url'
+  | 'week'
   | (string & {});

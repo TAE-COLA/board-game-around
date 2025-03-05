@@ -34,7 +34,7 @@ function handleLoginReduce(state: LoginState, reduce: LoginReduce): LoginState {
 export function useLoginIntent() {
   const initialState: LoginState = {
     email: '',
-    password: ''
+    password: '',
   };
   const [state, dispatch] = useReducer(handleLoginReduce, initialState);
   const [loading, setLoading] = useState(true);
@@ -61,11 +61,23 @@ export function useLoginIntent() {
       case 'ON_CLICK_LOGIN_BUTTON':
         await launch(setLoading, async () => {
           try {
-            await signInWithEmailAndPassword(firebaseAuth, state.email, state.password);
-            toast({ title: '로그인이 완료되었습니다.', status: 'success', duration: 2000 });
-            navigate('/main', { replace: true })
+            await signInWithEmailAndPassword(
+              firebaseAuth,
+              state.email,
+              state.password
+            );
+            toast({
+              title: '로그인이 완료되었습니다.',
+              status: 'success',
+              duration: 2000,
+            });
+            navigate('/main', { replace: true });
           } catch {
-            toast({ title: '로그인에 실패했습니다.', status: 'error', duration: 2000 });
+            toast({
+              title: '로그인에 실패했습니다.',
+              status: 'error',
+              duration: 2000,
+            });
           }
         });
         break;
@@ -88,6 +100,6 @@ export function useLoginIntent() {
   return {
     state,
     loading,
-    onEvent
+    onEvent,
   };
 }

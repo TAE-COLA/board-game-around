@@ -15,7 +15,7 @@ export function createDummy<T extends object>(): T {
   const dummy = {} as T;
 
   for (const key in dummy) {
-    (dummy as any)[key] = (undefined as unknown) as DefaultValue<T[typeof key]>;
+    (dummy as any)[key] = undefined as unknown as DefaultValue<T[typeof key]>;
   }
 
   return dummy;

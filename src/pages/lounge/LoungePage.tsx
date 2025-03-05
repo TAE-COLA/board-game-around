@@ -19,7 +19,7 @@ const LoungePage: React.FC = () => {
         />
       </Flex>
     </Page>
-  )
-}
+  );
+};
 
 export default LoungePage;

@@ -1,6 +1,14 @@
 import { useToast } from '@chakra-ui/react';
 import { Game, User } from 'entities';
-import { LoungeContext, fetchGameById, fetchLoungeIdByUserId, fetchUserById, fetchUsersByIds, onLoungeStateChanged, useAuthContext } from 'features';
+import {
+  LoungeContext,
+  fetchGameById,
+  fetchLoungeIdByUserId,
+  fetchUserById,
+  fetchUsersByIds,
+  onLoungeStateChanged,
+  useAuthContext,
+} from 'features';
 import { serverTimestamp } from 'firebase/database';
 import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
@@ -13,7 +21,9 @@ const LoungeProvider: React.FC = () => {
   const [code, setCode] = useState('');
   const [owner, setOwner] = useState(createDummy<User>());
   const [players, setplayers] = useState<User[]>([]);
-  const [status, setStatus] = useState<'WAITING' | 'PLAYING' | 'END'>('WAITING');
+  const [status, setStatus] = useState<'WAITING' | 'PLAYING' | 'END'>(
+    'WAITING'
+  );
   const [createdAt, setCreatedAt] = useState(serverTimestamp());
 
   const [isLoungeAvailable, setIsLoungeAvailable] = useState(false);
@@ -29,11 +39,15 @@ const LoungeProvider: React.FC = () => {
     fetchLoungeIdByUserId(auth.id).then((loungeId) => {
       if (!loungeId) {
         navigate('/main', { replace: true });
-        toast({ title: '게임방이 존재하지 않습니다.', status: 'error', duration: 2000 });
+        toast({
+          title: '게임방이 존재하지 않습니다.',
+          status: 'error',
+          duration: 2000,
+        });
         return;
       }
 
-      setId(loungeId)
+      setId(loungeId);
       const unsubscribe = onLoungeStateChanged(loungeId, async (lounge) => {
         if (lounge) {
           setIsLoungeAvailable(true);
@@ -59,12 +73,18 @@ const LoungeProvider: React.FC = () => {
   useEffect(() => {
     if (!loading && !isLoungeAvailable) {
       navigate('/main', { replace: true });
-        toast({ title: '게임방이 존재하지 않습니다.', status: 'error', duration: 2000 });
+      toast({
+        title: '게임방이 존재하지 않습니다.',
+        status: 'error',
+        duration: 2000,
+      });
     }
   }, [loading, isLoungeAvailable]);
 
   return (
-    <LoungeContext.Provider value={{ loading, id, game, code, owner, players, status, createdAt }}>
+    <LoungeContext.Provider
+      value={{ loading, id, game, code, owner, players, status, createdAt }}
+    >
       <Outlet />
     </LoungeContext.Provider>
   );

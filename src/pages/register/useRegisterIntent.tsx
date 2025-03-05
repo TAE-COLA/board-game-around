@@ -28,11 +28,17 @@ type RegisterReduce =
   | { type: 'EMAIL'; email: FormData<'email', string> }
   | { type: 'EMAIL_DUPLICATE'; emailDuplicate: boolean | null }
   | { type: 'PASSWORD'; password: FormData<'password', string> }
-  | { type: 'PASSWORD_CONFIRM'; passwordConfirm: FormData<'passwordConfrim', string> }
+  | {
+      type: 'PASSWORD_CONFIRM';
+      passwordConfirm: FormData<'passwordConfrim', string>;
+    }
   | { type: 'NICKNAME'; nickname: FormData<'nickname', string> }
   | { type: 'VALID'; valid: boolean };
 
-function handleRegisterReduce(state: RegisterState, reduce: RegisterReduce): RegisterState {
+function handleRegisterReduce(
+  state: RegisterState,
+  reduce: RegisterReduce
+): RegisterState {
   switch (reduce.type) {
     case 'EMAIL':
       return { ...state, email: reduce.email };
@@ -77,33 +83,79 @@ export function useRegisterIntent() {
         setLoading(false);
         break;
       case 'ON_EMAIL_CHANGE':
-        dispatch({ type: 'EMAIL', email: { label: 'email', value: event.email, error: checkEmailValidity(event.email) } });
+        dispatch({
+          type: 'EMAIL',
+          email: {
+            label: 'email',
+            value: event.email,
+            error: checkEmailValidity(event.email),
+          },
+        });
         dispatch({ type: 'VALID', valid: checkValid(state) });
         break;
       case 'ON_CLICK_CHECK_FOR_DUPLICATES_BUTTON': {
         const emailDuplicate = await checkEmailForDuplicate(state.email.value);
-        dispatch({ type: 'EMAIL', email: { label: 'email', value: state.email.value, error: emailDuplicate ? '중복된 이메일입니다.' : null } });
+        dispatch({
+          type: 'EMAIL',
+          email: {
+            label: 'email',
+            value: state.email.value,
+            error: emailDuplicate ? '중복된 이메일입니다.' : null,
+          },
+        });
         dispatch({ type: 'EMAIL_DUPLICATE', emailDuplicate: emailDuplicate });
         dispatch({ type: 'VALID', valid: checkValid(state) });
         break;
       }
       case 'ON_PASSWORD_CHANGE':
-        dispatch({ type: 'PASSWORD', password: { label: 'password', value: event.password, error: checkPasswordValidity(event.password) } });
+        dispatch({
+          type: 'PASSWORD',
+          password: {
+            label: 'password',
+            value: event.password,
+            error: checkPasswordValidity(event.password),
+          },
+        });
         dispatch({ type: 'VALID', valid: checkValid(state) });
         break;
       case 'ON_PASSWORD_CONFIRM_CHANGE':
-        dispatch({ type: 'PASSWORD_CONFIRM', passwordConfirm: { label: 'passwordConfrim', value: event.passwordConfirm, error: checkPasswordConfirmValidity(state.password.value, event.passwordConfirm) } });
+        dispatch({
+          type: 'PASSWORD_CONFIRM',
+          passwordConfirm: {
+            label: 'passwordConfrim',
+            value: event.passwordConfirm,
+            error: checkPasswordConfirmValidity(
+              state.password.value,
+              event.passwordConfirm
+            ),
+          },
+        });
         dispatch({ type: 'VALID', valid: checkValid(state) });
         break;
       case 'ON_NICKNAME_CHANGE':
-        dispatch({ type: 'NICKNAME', nickname: { label: 'nickname', value: event.nickname, error: checkNicknameValidity(event.nickname) } });
+        dispatch({
+          type: 'NICKNAME',
+          nickname: {
+            label: 'nickname',
+            value: event.nickname,
+            error: checkNicknameValidity(event.nickname),
+          },
+        });
         dispatch({ type: 'VALID', valid: checkValid(state) });
         break;
       case 'ON_CLICK_SUBMIT_BUTTON':
         await launch(setLoading, async () => {
-          await signUpWithEmailAndPassword(state.email.value, state.password.value, state.nickname.value)
+          await signUpWithEmailAndPassword(
+            state.email.value,
+            state.password.value,
+            state.nickname.value
+          );
         });
-        toast({ title: '회원가입이 완료됐습니다.', status: 'success', duration: 2000 });
+        toast({
+          title: '회원가입이 완료됐습니다.',
+          status: 'success',
+          duration: 2000,
+        });
         navigate('/main', { replace: true });
         break;
       default:
@@ -122,12 +174,14 @@ export function useRegisterIntent() {
   return {
     state,
     loading,
-    onEvent
+    onEvent,
   };
 }
 
 function checkEmailValidity(email: string): string | null {
-  if (email.length === 0) { return null; }
+  if (email.length === 0) {
+    return null;
+  }
 
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   if (!emailRegex.test(email)) {
@@ -138,7 +192,9 @@ function checkEmailValidity(email: string): string | null {
 }
 
 function checkPasswordValidity(password: string): string | null {
-  if (password.length === 0) { return null; }
+  if (password.length === 0) {
+    return null;
+  }
 
   if (password.length < 8) {
     return '비밀번호는 8자 이상이어야 합니다.';
@@ -147,8 +203,13 @@ function checkPasswordValidity(password: string): string | null {
   return null;
 }
 
-function checkPasswordConfirmValidity(password: string, passwordConfirm: string): string | null {
-  if (passwordConfirm.length === 0) { return null; }
+function checkPasswordConfirmValidity(
+  password: string,
+  passwordConfirm: string
+): string | null {
+  if (passwordConfirm.length === 0) {
+    return null;
+  }
 
   if (password !== passwordConfirm) {
     return '비밀번호가 일치하지 않습니다.';
@@ -158,7 +219,9 @@ function checkPasswordConfirmValidity(password: string, passwordConfirm: string)
 }
 
 function checkNicknameValidity(nickname: string): string | null {
-  if (nickname.length === 0) { return null; }
+  if (nickname.length === 0) {
+    return null;
+  }
 
   if (nickname.length < 2 || 10 < nickname.length) {
     return '닉네임은 2자 이상 10자 이하로 입력하세요.';
@@ -174,7 +237,10 @@ function checkValid(state: RegisterState): boolean {
   if (state.password.error !== null || state.password.value.length === 0) {
     return false;
   }
-  if (state.passwordConfirm.error !== null || state.passwordConfirm.value.length === 0) {
+  if (
+    state.passwordConfirm.error !== null ||
+    state.passwordConfirm.value.length === 0
+  ) {
     return false;
   }
   if (state.nickname.error !== null || state.nickname.value.length === 0) {

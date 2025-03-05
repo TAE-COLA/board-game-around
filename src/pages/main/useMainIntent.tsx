@@ -1,6 +1,11 @@
 import { useDisclosure, useToast } from '@chakra-ui/react';
 import { Game } from 'entities';
-import { createLounge, fetchAllGames, joinLounge, useAuthContext } from 'features';
+import {
+  createLounge,
+  fetchAllGames,
+  joinLounge,
+  useAuthContext,
+} from 'features';
 import { getAuth, signOut } from 'firebase/auth';
 import { useEffect, useReducer, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -49,7 +54,7 @@ export function useMainIntent() {
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const onCloseGameEntryModal = () => {
-    dispatch({ type: 'SELECTED_GAME', selectedGame: null })
+    dispatch({ type: 'SELECTED_GAME', selectedGame: null });
     onClose();
   };
   const modal = { isOpen, onOpen, onClose: onCloseGameEntryModal };
@@ -90,7 +95,11 @@ export function useMainIntent() {
               navigate('/lounge');
             }
           } catch {
-            toast({ title: '유효하지 않은 코드거나 게임이 다릅니다.', status: 'error', duration: 2000 });
+            toast({
+              title: '유효하지 않은 코드거나 게임이 다릅니다.',
+              status: 'error',
+              duration: 2000,
+            });
           }
         });
         onCloseGameEntryModal();
@@ -112,6 +121,6 @@ export function useMainIntent() {
     state,
     loading,
     modal,
-    onEvent
+    onEvent,
   };
 }

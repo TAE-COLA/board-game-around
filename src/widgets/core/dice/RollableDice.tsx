@@ -3,8 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { Die, Draggable } from 'widgets';
 
 type IProps = FlexProps & {
-  dice: number[],
-  keep: number[],
+  dice: number[];
+  keep: number[];
   rolling?: boolean;
   isDisabled?: boolean;
   onResult?: (values: number[]) => void;
@@ -23,9 +23,11 @@ const RollableDice: React.FC<IProps> = ({
   const [values, setValues] = useState<number[]>(dice);
   function randomize(values: number[]): number[] {
     return values.map((value, index) => {
-      const random = keep.includes(index) ? value : Math.floor(Math.random() * 6) + 1
-      return random
-    })
+      const random = keep.includes(index)
+        ? value
+        : Math.floor(Math.random() * 6) + 1;
+      return random;
+    });
   }
 
   useEffect(() => {
@@ -53,12 +55,23 @@ const RollableDice: React.FC<IProps> = ({
   return (
     <Flex gap='2' {...props}>
       {values.map((value, index) => (
-        <Draggable key={index} type='DIE' index={index} isDisabled={isDisabled || keep.includes(index)} opacity={isDisabled ? 0.5 : 1}>
-          <Die value={value} fixed={keep.includes(index)} onClick={() => isDisabled || onAddDiceToKeep(index)} {...props}/>
+        <Draggable
+          key={index}
+          type='DIE'
+          index={index}
+          isDisabled={isDisabled || keep.includes(index)}
+          opacity={isDisabled ? 0.5 : 1}
+        >
+          <Die
+            value={value}
+            fixed={keep.includes(index)}
+            onClick={() => isDisabled || onAddDiceToKeep(index)}
+            {...props}
+          />
         </Draggable>
       ))}
     </Flex>
   );
-}
+};
 
 export default RollableDice;

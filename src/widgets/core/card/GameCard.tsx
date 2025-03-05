@@ -1,4 +1,15 @@
-import { Button, ButtonProps, Card, CardBody, CardFooter, CardHeader, CardProps, Heading, HeadingProps, Text } from '@chakra-ui/react';
+import {
+  Button,
+  ButtonProps,
+  Card,
+  CardBody,
+  CardFooter,
+  CardHeader,
+  CardProps,
+  Heading,
+  HeadingProps,
+  Text,
+} from '@chakra-ui/react';
 import { Game } from 'entities';
 import React from 'react';
 
@@ -6,9 +17,9 @@ type IProps = CardProps & {
   game: Game;
   onClickGamePlayButton: ButtonProps['onClick'];
   headerSize?: HeadingProps['size'];
-}
+};
 
-const GameCard: React.FC<IProps> = ({ 
+const GameCard: React.FC<IProps> = ({
   game,
   onClickGamePlayButton,
   headerSize = 'md',
@@ -26,7 +37,7 @@ const GameCard: React.FC<IProps> = ({
         <Button onClick={onClickGamePlayButton}>플레이 하기</Button>
       </CardFooter>
     </Card>
-  )
-}
+  );
+};
 
 export default GameCard;

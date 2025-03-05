@@ -24,7 +24,9 @@ export const startDavinciCode = async (loungeId: string): Promise<void> => {
 
   if (!lounge?.playerIds?.length || !lounge.ownerId) return;
 
-  const shuffledPlayerIds = [...lounge.playerIds].sort(() => Math.random() - 0.5);
+  const shuffledPlayerIds = [...lounge.playerIds].sort(
+    () => Math.random() - 0.5
+  );
   const tiles = generateTiles();
   const hands = shuffledPlayerIds.reduce((acc, playerId, index) => {
     acc[playerId] = tiles.slice(index * 4, index * 4 + 4);
@@ -35,12 +37,12 @@ export const startDavinciCode = async (loungeId: string): Promise<void> => {
     playerIds: shuffledPlayerIds,
     hands,
     turn: shuffledPlayerIds[0],
-    finishedPlayerIds: []
+    finishedPlayerIds: [],
   };
 
   const updates = {
     [`/${LOUNGE_REFERENCE}/${loungeId}/${LOUNGE_STATUS}`]: 'PLAYING',
-    [`/${DAVINCI_CODE_REFERENCE}/${loungeId}`]: davinciCode
+    [`/${DAVINCI_CODE_REFERENCE}/${loungeId}`]: davinciCode,
   };
 
   await update(reference, updates);

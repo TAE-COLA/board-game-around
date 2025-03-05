@@ -1,4 +1,8 @@
-import { ChakraBaseProvider, theme as chakraTheme, extendBaseTheme } from '@chakra-ui/react';
+import {
+  ChakraBaseProvider,
+  theme as chakraTheme,
+  extendBaseTheme,
+} from '@chakra-ui/react';
 import React from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -13,9 +17,7 @@ const Providers: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <QueryClientProvider client={queryClient}>
       <ChakraBaseProvider theme={theme}>
-        <DndProvider backend={HTML5Backend}>
-          { children }
-        </DndProvider>
+        <DndProvider backend={HTML5Backend}>{children}</DndProvider>
       </ChakraBaseProvider>
     </QueryClientProvider>
   );

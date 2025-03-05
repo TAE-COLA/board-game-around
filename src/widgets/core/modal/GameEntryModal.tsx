@@ -1,4 +1,16 @@
-import { Button, Flex, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Text } from '@chakra-ui/react';
+import {
+  Button,
+  Flex,
+  Input,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  Text,
+} from '@chakra-ui/react';
 import { Game } from 'entities';
 import React, { useState } from 'react';
 
@@ -15,7 +27,7 @@ const GameEntryModal: React.FC<IProps> = ({
   modal,
   game,
   onClickCreateLoungeButton,
-  onClickJoinLoungeButton
+  onClickJoinLoungeButton,
 }) => {
   const [code, setData] = useState('');
 
@@ -26,10 +38,22 @@ const GameEntryModal: React.FC<IProps> = ({
         <ModalHeader>{game.name} 플레이</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <Flex direction='row' width='100%' justify='Center' align='Center' gap='16'>
+          <Flex
+            direction='row'
+            width='100%'
+            justify='Center'
+            align='Center'
+            gap='16'
+          >
             <Flex direction='column' gap='4'>
               <Text>새로운 게임방을 생성하세요</Text>
-              <Button onClick={onClickCreateLoungeButton} isDisabled={loading} colorScheme='blue'>게임방 생성</Button>
+              <Button
+                onClick={onClickCreateLoungeButton}
+                isDisabled={loading}
+                colorScheme='blue'
+              >
+                게임방 생성
+              </Button>
             </Flex>
             <Flex direction='column' gap='4'>
               <Text>또는 기존의 게임방에 참여하세요</Text>
@@ -39,7 +63,13 @@ const GameEntryModal: React.FC<IProps> = ({
                 onChange={(e) => setData(e.target.value)}
                 isDisabled={loading}
               />
-              <Button onClick={() => onClickJoinLoungeButton(code)} isDisabled={loading} colorScheme='blue'>게임방 참여</Button>
+              <Button
+                onClick={() => onClickJoinLoungeButton(code)}
+                isDisabled={loading}
+                colorScheme='blue'
+              >
+                게임방 참여
+              </Button>
             </Flex>
           </Flex>
         </ModalBody>

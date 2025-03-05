@@ -3,18 +3,24 @@ import React from 'react';
 
 type IProps = FlexProps & {
   children: React.ReactNode;
-}
+};
 
-const RegisterContainer: React.FC<IProps> = ({
-  children,
-  ...props
-}) => {
+const RegisterContainer: React.FC<IProps> = ({ children, ...props }) => {
   return (
-    <Flex flexDirection="column" height="100%" justifyContent="Center" alignItems="Center" gap="36px" {...props}>
-      <Text fontSize="2xl" fontWeight="bold">회원가입</Text>
+    <Flex
+      flexDirection='column'
+      height='100%'
+      justifyContent='Center'
+      alignItems='Center'
+      gap='36px'
+      {...props}
+    >
+      <Text fontSize='2xl' fontWeight='bold'>
+        회원가입
+      </Text>
       {children}
     </Flex>
   );
-}
+};
 
 export default RegisterContainer;

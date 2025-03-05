@@ -9,4 +9,4 @@ export function getOrdinal(num: number): string {
   }
 
   return `${num}${suffix}`;
-};
+}

@@ -19,7 +19,7 @@ type IProps = FlexProps & {
   onClickSubmitButton: () => void;
 };
 
-const RegisterFields: React.FC<IProps> = ({ 
+const RegisterFields: React.FC<IProps> = ({
   email,
   emailDuplicate,
   password,
@@ -32,10 +32,20 @@ const RegisterFields: React.FC<IProps> = ({
   onPasswordConfirmChange,
   onNicknameChange,
   onClickSubmitButton,
-  ...props 
+  ...props
 }) => {
   return (
-    <Flex direction='column' width='full' maxWidth='md' padding='8' gap='4' bg='white' borderRadius='md' boxShadow='md' {...props}>
+    <Flex
+      direction='column'
+      width='full'
+      maxWidth='md'
+      padding='8'
+      gap='4'
+      bg='white'
+      borderRadius='md'
+      boxShadow='md'
+      {...props}
+    >
       <FormInput
         id={email.label}
         data={email}
@@ -44,10 +54,18 @@ const RegisterFields: React.FC<IProps> = ({
         placeholder='이메일'
         isReadOnly={emailDuplicate === false}
       >
-        {emailDuplicate === false ? 
-          <CheckIcon color='green.500' marginRight='4' /> : 
-          <Button onClick={onClickCheckForDuplicatesButton} isDisabled={email.value.length === 0 || email.error !== null} size='sm' marginRight='1'>중복확인</Button>
-        }
+        {emailDuplicate === false ? (
+          <CheckIcon color='green.500' marginRight='4' />
+        ) : (
+          <Button
+            onClick={onClickCheckForDuplicatesButton}
+            isDisabled={email.value.length === 0 || email.error !== null}
+            size='sm'
+            marginRight='1'
+          >
+            중복확인
+          </Button>
+        )}
       </FormInput>
       <FormInput
         id={password.label}
@@ -71,9 +89,11 @@ const RegisterFields: React.FC<IProps> = ({
         placeholder='닉네임'
         helperText='닉네임은 2자 이상 10자 이하로 입력하세요.'
       />
-      <Button onClick={onClickSubmitButton} isDisabled={!valid} size="lg">회원가입</Button>
+      <Button onClick={onClickSubmitButton} isDisabled={!valid} size='lg'>
+        회원가입
+      </Button>
     </Flex>
   );
-}
+};
 
 export default RegisterFields;

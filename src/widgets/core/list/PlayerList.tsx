@@ -9,23 +9,19 @@ type IProps = FlexProps & {
   turn?: User;
 };
 
-const PlayerList: React.FC<IProps> = ({ 
-  players,
-  owner,
-  turn,
-  ...props 
-}) => {
+const PlayerList: React.FC<IProps> = ({ players, owner, turn, ...props }) => {
   return (
     <Flex direction='column' gap='4' {...props}>
       {players.map((player) => (
-        <PlayerCard key={player.id} 
-          player={player} 
-          isOwner={owner && owner.id === player.id} 
+        <PlayerCard
+          key={player.id}
+          player={player}
+          isOwner={owner && owner.id === player.id}
           isPlayerTurn={turn && turn.id === player.id}
         />
       ))}
     </Flex>
-  )
-}
+  );
+};
 
 export default PlayerList;

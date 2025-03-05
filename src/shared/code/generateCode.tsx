@@ -5,6 +5,6 @@ const generateCode = (length: number): string => {
   return Array.from({ length }, () =>
     characters.charAt(Math.floor(Math.random() * charactersLength))
   ).join('');
-}
+};
 
 export default generateCode;
