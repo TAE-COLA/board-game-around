@@ -52,7 +52,7 @@ const DavinciCodeTile: React.FC<IProps> = ({
           justifyContent='center'
         >
           <Text as='kbd' fontSize='xl' color={tile.isWhite ? 'black' : 'white'}>
-            {isMyTile || tile.isRevealed ? tile.number : '>'}
+            {isMyTile || tile.isRevealed ? tile.number : '?'}
           </Text>
           <Spacer />
           <Divider />

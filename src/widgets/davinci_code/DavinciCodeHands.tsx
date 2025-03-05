@@ -1,3 +1,4 @@
+import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons';
 import { Card, CardHeader, CardProps, Flex } from '@chakra-ui/react';
 import { DavinciCodeTile as tileEntity, User } from 'entities';
 import { useAuthContext } from 'features';
@@ -33,12 +34,18 @@ const DavinciCodeHands: React.FC<IProps> = ({
       </CardHeader>
       <Flex direction='row' alignItems='center' gap='3'>
         {hands.map((tile, index) => (
-          <DavinciCodeTile
-            key={index}
-            player={player}
-            tile={tile}
-            onClick={() => onClickTile(index)}
-          />
+          <Flex direction='column' gap={2} align='center' key={index}>
+            <DavinciCodeTile
+              player={player}
+              tile={tile}
+              onClick={() => onClickTile(index)}
+            />
+            {tile.isRevealed ? (
+              <ViewIcon opacity={0.5} />
+            ) : (
+              <ViewOffIcon opacity={0.5} />
+            )}
+          </Flex>
         ))}
       </Flex>
     </Card>
