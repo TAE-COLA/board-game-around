@@ -27,6 +27,12 @@ const DavinciCodeTile: React.FC<IProps> = ({
   const isMyTile = auth.id === player.id;
   const size = isMyTile ? tileSizes.myTile : tileSizes.otherTile;
 
+  const handleClick = () => {
+    if (!isMyTile && !tile.isRevealed && onClick) {
+      onClick();
+    }
+  };
+
   return (
     <Card
       width={size.width}
@@ -34,7 +40,8 @@ const DavinciCodeTile: React.FC<IProps> = ({
       background={tile.isWhite ? 'white' : 'black'}
       border={tile.isWhite ? '1px solid gray' : '1px solid white'}
       opacity={isMyTile && tile.isRevealed ? 0.3 : 1}
-      onClick={onClick}
+      onClick={handleClick}
+      cursor={!isMyTile && !tile.isRevealed && onClick ? 'pointer' : 'default'}
       {...props}
     >
       <CardBody width='100%' height='100%'>

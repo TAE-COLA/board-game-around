@@ -11,6 +11,7 @@ type IProps = FlexProps & {
   };
   turn: User;
   finishedPlayers: User[];
+  onClickTile: (player: User, index: number) => void;
 };
 
 const DavinciCodeBody: React.FC<IProps> = ({
@@ -18,6 +19,7 @@ const DavinciCodeBody: React.FC<IProps> = ({
   hands,
   turn,
   finishedPlayers,
+  onClickTile,
   ...props
 }) => {
   const { id: authId } = useAuthContext();
@@ -38,6 +40,7 @@ const DavinciCodeBody: React.FC<IProps> = ({
             key={player.id}
             player={player}
             hands={hands[player.id]}
+            onClickTile={(index) => onClickTile(player, index)}
           />
         ))}
     </Flex>

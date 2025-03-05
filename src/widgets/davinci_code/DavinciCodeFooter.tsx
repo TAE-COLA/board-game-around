@@ -20,6 +20,7 @@ const DavinciCodeFooter: React.FC<IProps> = ({ hands, ...props }) => {
         key={authId}
         player={{ id: authId, name: authName } as User}
         hands={myHands}
+        onClickTile={() => {}}
       />
     </Flex>
   );

@@ -7,9 +7,15 @@ import { DavinciCodeTile } from 'widgets';
 type IProps = CardProps & {
   player: User;
   hands: tileEntity[];
+  onClickTile: (index: number) => void;
 };
 
-const DavinciCodeHands: React.FC<IProps> = ({ player, hands, ...props }) => {
+const DavinciCodeHands: React.FC<IProps> = ({
+  player,
+  hands,
+  onClickTile,
+  ...props
+}) => {
   const auth = useAuthContext();
   const isMyHand = auth.id === player.id;
 
@@ -27,7 +33,12 @@ const DavinciCodeHands: React.FC<IProps> = ({ player, hands, ...props }) => {
       </CardHeader>
       <Flex direction='row' alignItems='center' gap='3'>
         {hands.map((tile, index) => (
-          <DavinciCodeTile key={index} player={player} tile={tile} />
+          <DavinciCodeTile
+            key={index}
+            player={player}
+            tile={tile}
+            onClick={() => onClickTile(index)}
+          />
         ))}
       </Flex>
     </Card>

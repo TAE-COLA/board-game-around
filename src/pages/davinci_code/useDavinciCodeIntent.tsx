@@ -24,7 +24,8 @@ type DavinciCodeState = {
 
 type DavinciCodeEvent =
   | { type: 'ON_CLICK_EXIT_BUTTON' }
-  | { type: 'ON_CLICK_DRAW_BUTTON' };
+  | { type: 'ON_CLICK_DRAW_BUTTON' }
+  | { type: 'ON_CLICK_TILE'; player: User; index: number };
 
 type DavinciCodeReduce =
   | { type: 'PLAYERS'; players: User[] }
@@ -67,12 +68,26 @@ export function useDavinciCodeIntent() {
   const auth = useAuthContext();
   const lounge = useLoungeContext();
 
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const resultModal = useDisclosure();
+  const numberModal = useDisclosure();
+
   const onCloseResultModal = () => {
     navigate('/main', { replace: true });
-    onClose();
+    resultModal.onClose();
   };
-  const modal = { isOpen, onOpen, onClose: onCloseResultModal };
+
+  const modal = {
+    resultModal: {
+      isOpen: resultModal.isOpen,
+      onOpen: resultModal.onOpen,
+      onClose: onCloseResultModal,
+    },
+    numberModal: {
+      isOpen: numberModal.isOpen,
+      onOpen: numberModal.onOpen,
+      onClose: numberModal.onClose,
+    },
+  };
 
   const notMyTurnToast = () =>
     toast({ title: '내 차례가 아닙니다.', status: 'error', duration: 2000 });
@@ -88,6 +103,9 @@ export function useDavinciCodeIntent() {
         });
         break;
       case 'ON_CLICK_DRAW_BUTTON':
+        break;
+      case 'ON_CLICK_TILE':
+        modal.numberModal.onOpen();
         break;
       default:
         break;
@@ -130,7 +148,7 @@ export function useDavinciCodeIntent() {
           toast({ title: '내 차례입니다.', status: 'info', duration: 2000 });
         }
         if (davinciCode.finishedAt) {
-          onOpen();
+          modal.resultModal.onOpen();
         }
 
         return () => unsubscribe();

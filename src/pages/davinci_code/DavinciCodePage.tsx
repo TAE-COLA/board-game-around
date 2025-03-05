@@ -5,6 +5,7 @@ import {
   DavinciCodeBody,
   DavinciCodeFooter,
   DavinciCodeHeader,
+  NumberModal,
   Page,
 } from 'widgets';
 import { useDavinciCodeIntent } from './useDavinciCodeIntent';
@@ -24,10 +25,19 @@ const DavinciCodePage: React.FC = () => {
           hands={state.hands}
           turn={state.turn}
           finishedPlayers={state.finishedPlayers}
+          onClickTile={(player, index) =>
+            onEvent({ type: 'ON_CLICK_TILE', player, index })
+          }
           flex='1'
         />
         <DavinciCodeFooter hands={state.hands} />
       </Flex>
+      <NumberModal
+        digits={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]}
+        maxDigits={1}
+        onConfirm={() => {}}
+        modal={modal.numberModal}
+      />
     </Page>
   );
 };
