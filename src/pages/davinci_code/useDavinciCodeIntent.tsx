@@ -69,18 +69,22 @@ export function useDavinciCodeIntent() {
   const lounge = useLoungeContext();
 
   const resultModal = useDisclosure();
+  const drawModal = useDisclosure();
   const numberModal = useDisclosure();
-
-  const onCloseResultModal = () => {
-    navigate('/main', { replace: true });
-    resultModal.onClose();
-  };
 
   const modal = {
     resultModal: {
       isOpen: resultModal.isOpen,
       onOpen: resultModal.onOpen,
-      onClose: onCloseResultModal,
+      onClose() {
+        navigate('/main', { replace: true });
+        resultModal.onClose();
+      },
+    },
+    drawModal: {
+      isOpen: drawModal.isOpen,
+      onOpen: drawModal.onOpen,
+      onClose: drawModal.onClose,
     },
     numberModal: {
       isOpen: numberModal.isOpen,
@@ -133,7 +137,7 @@ export function useDavinciCodeIntent() {
         dispatch({ type: 'HANDS', hands: davinciCode.hands });
         const turn = await fetchUserById(davinciCode.turn);
         dispatch({ type: 'TURN', turn });
-        if (davinciCode.finishedPlayerIds) {
+        if (davinciCode.finishedPlayerIds.length) {
           const finishedPlayers = await fetchUsersByIds(
             davinciCode.finishedPlayerIds
           );

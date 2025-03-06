@@ -1,6 +1,6 @@
 import { Flex } from '@chakra-ui/react';
-import { useLoungeContext } from 'features';
-import React from 'react';
+import { useAuthContext, useLoungeContext } from 'features';
+import React, { useEffect } from 'react';
 import {
   DavinciCodeBody,
   DavinciCodeFooter,
@@ -8,11 +8,17 @@ import {
   NumberModal,
   Page,
 } from 'widgets';
+import DavinciCodeDrawModal from 'widgets/core/modal/DavinciCodeDrawModal';
 import { useDavinciCodeIntent } from './useDavinciCodeIntent';
 
 const DavinciCodePage: React.FC = () => {
+  const { id: authId, name: authName } = useAuthContext();
   const { state, loading, modal, onEvent } = useDavinciCodeIntent();
   const lounge = useLoungeContext();
+
+  useEffect(() => {
+    modal.drawModal.onOpen();
+  });
 
   return (
     <Page loading={loading} height='100vh'>
@@ -30,8 +36,13 @@ const DavinciCodePage: React.FC = () => {
           }
           flex='1'
         />
-        <DavinciCodeFooter hands={state.hands} />
+        <DavinciCodeFooter hand={state.hands[authId]} />
       </Flex>
+      <DavinciCodeDrawModal
+        hand={state.hands[authId]}
+        drawableTiles={4}
+        modal={modal.drawModal}
+      />
       <NumberModal
         digits={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]}
         maxDigits={1}

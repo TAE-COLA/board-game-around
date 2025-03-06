@@ -1,20 +1,11 @@
-import { Lounge } from 'entities';
-import { DavinciCodeTile } from 'entities/davinci_code';
+import { DavinciCodeTile, EmptyData, Lounge } from 'entities';
 import { database } from 'features';
 import { child, ref as fReference, get, update } from 'firebase/database';
+import { emptyData } from 'shared';
 
 const DAVINCI_CODE_REFERENCE = 'DavinciCode';
 const LOUNGE_REFERENCE = 'Lounge';
 const LOUNGE_STATUS = 'status';
-
-const generateTiles = (): DavinciCodeTile[] => {
-  const tiles: DavinciCodeTile[] = [];
-  for (let i = 1; i <= 13; i++) {
-    tiles.push({ isWhite: true, number: i, isRevealed: false });
-    tiles.push({ isWhite: false, number: i, isRevealed: false });
-  }
-  return tiles.sort(() => Math.random() - 0.5);
-};
 
 export const startDavinciCode = async (loungeId: string): Promise<void> => {
   const reference = fReference(database);
@@ -27,17 +18,15 @@ export const startDavinciCode = async (loungeId: string): Promise<void> => {
   const shuffledPlayerIds = [...lounge.playerIds].sort(
     () => Math.random() - 0.5
   );
-  const tiles = generateTiles();
-  const hands = shuffledPlayerIds.reduce((acc, playerId, index) => {
-    acc[playerId] = tiles.slice(index * 4, index * 4 + 4);
-    return acc;
-  }, {} as { [key: string]: DavinciCodeTile[] });
 
   const davinciCode = {
     playerIds: shuffledPlayerIds,
-    hands,
+    hands: shuffledPlayerIds.reduce((acc, playerId) => {
+      acc[playerId] = [emptyData];
+      return acc;
+    }, {} as { [key: string]: (DavinciCodeTile | EmptyData)[] }),
     turn: shuffledPlayerIds[0],
-    finishedPlayerIds: [],
+    finishedPlayerIds: [emptyData],
   };
 
   const updates = {

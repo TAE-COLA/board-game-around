@@ -14,21 +14,22 @@ import React from 'react';
 type IProps = CardProps & {
   player: User;
   tile: TileEntity;
-  onClick?: () => void;
+  size?: { width: string; height: string };
+  onClick: () => void;
 };
 
 const DavinciCodeTile: React.FC<IProps> = ({
   player,
   tile,
+  size = { width: '54px', height: '76px' },
   onClick,
   ...props
 }) => {
   const auth = useAuthContext();
   const isMyTile = auth.id === player.id;
-  const size = isMyTile ? tileSizes.myTile : tileSizes.otherTile;
 
   const handleClick = () => {
-    if (!isMyTile && !tile.isRevealed && onClick) {
+    if (!(isMyTile || tile.isRevealed)) {
       onClick();
     }
   };
@@ -41,7 +42,7 @@ const DavinciCodeTile: React.FC<IProps> = ({
       border={tile.isWhite ? '1px solid gray' : '1px solid white'}
       opacity={isMyTile && tile.isRevealed ? 0.3 : 1}
       onClick={handleClick}
-      cursor={!isMyTile && !tile.isRevealed && onClick ? 'pointer' : 'default'}
+      cursor={isMyTile || tile.isRevealed ? 'default' : 'pointer'}
       {...props}
     >
       <CardBody width='100%' height='100%'>
@@ -55,22 +56,11 @@ const DavinciCodeTile: React.FC<IProps> = ({
             {isMyTile || tile.isRevealed ? tile.number : '?'}
           </Text>
           <Spacer />
-          <Divider />
+          {(isMyTile || tile.isRevealed) && <Divider borderColor='gray' />}
         </Flex>
       </CardBody>
     </Card>
   );
-};
-
-const tileSizes = {
-  myTile: {
-    width: '54px',
-    height: '76px',
-  },
-  otherTile: {
-    width: '40px',
-    height: '56px',
-  },
 };
 
 export default DavinciCodeTile;
