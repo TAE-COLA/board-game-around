@@ -1,5 +1,5 @@
 export default interface DavinciCodeTile {
   isWhite: boolean;
-  number: number;
+  number: string;
   isRevealed: boolean;
 }

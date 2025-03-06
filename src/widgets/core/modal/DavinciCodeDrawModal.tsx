@@ -12,72 +12,105 @@ import {
 } from '@chakra-ui/react';
 import { DavinciCodeTile as tileEntity, User } from 'entities';
 import { useAuthContext } from 'features';
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { DavinciCodeTile } from 'widgets/davinci_code';
 
 type IProps = {
   hand: tileEntity[];
   drawableTiles: number;
+  pendingTiles: tileEntity[];
+  onClickDrawButton: (isWhite: boolean) => void;
+  onSubmitHand: (hand: tileEntity[]) => void;
   modal: { isOpen: boolean; onOpen: () => void; onClose: () => void };
 };
 
 const DavinciCodeDrawModal: React.FC<IProps> = ({
   hand,
   drawableTiles,
+  pendingTiles,
+  onClickDrawButton,
+  onSubmitHand,
   modal,
 }) => {
   const { id: authId, name: authName } = useAuthContext();
 
-  const [step, setStep] = React.useState<number>(0);
-  const [remainingTiles, setRemainingTiles] =
-    React.useState<number>(drawableTiles);
-  const [drawnTiles, setDrawnTiles] = React.useState<tileEntity[]>([]);
-  const [selectedTileIndex, setSelectedTileIndex] = React.useState<
-    number | null
-  >(null);
-  const [myHands, setMyHands] = React.useState<tileEntity[]>(hand);
+  const [step, setStep] = useState<number>(0);
+  const [selectedTileIndex, setSelectedTileIndex] = useState<number | null>(null);
+  const [myHands, setMyHands] = useState<tileEntity[]>(hand);
 
-  const handleDrawTile = (isWhite: boolean) => {
-    // Simulate drawing a tile from the server
-    const newTile: tileEntity = {
-      isRevealed: false,
-      number: Math.floor(Math.random() * 13) + 1,
-      isWhite,
-    };
-    setDrawnTiles([...drawnTiles, newTile]);
-    setRemainingTiles(remainingTiles - 1);
-  };
+  const handleSelectTile = useCallback(
+    (index: number) => {
+      if (step === 0) return;
 
-  const handleSelectTile = (index: number) => {
-    setSelectedTileIndex(index);
-  };
+      setSelectedTileIndex((prevIndex) => {
+        if (prevIndex === index) {
+          setMyHands((prevHands) => prevHands.filter((tile) => tile.number !== ''));
+          return null;
+        } else {
+          const selectedTile = pendingTiles[index];
+          const dummyTile = {
+            isRevealed: false,
+            number: '',
+            isWhite: false,
+          } as tileEntity;
 
-  const handlePlaceTile = (index: number) => {
-    if (selectedTileIndex !== null) {
-      const newHands = [...myHands];
-      newHands.splice(index, 0, drawnTiles[selectedTileIndex]);
-      setMyHands(newHands);
-      setDrawnTiles(drawnTiles.filter((_, i) => i !== selectedTileIndex));
-      setSelectedTileIndex(null);
-    }
-  };
-
-  const boxProps = (selected: boolean) =>
-    selected
-      ? {
-          padding: 2,
-          border: 2,
-          borderRadius: 'lg',
-          borderStyle: 'dashed',
-          borderColor: 'red.300',
+          setMyHands((prevHands) => {
+            let newHands = prevHands.filter((tile) => tile.number !== '');
+            if (selectedTile.number === '-') {
+              newHands = newHands.reduce((acc, tile) => {
+                acc.push(dummyTile, tile);
+                return acc;
+              }, [] as tileEntity[]);
+              newHands.push(dummyTile);
+            } else {
+              for (let i = 0; i <= newHands.length; i++) {
+                if (
+                  i === newHands.length ||
+                  (newHands[i].number !== '-' &&
+                    (parseInt(newHands[i].number) > parseInt(selectedTile.number) ||
+                      (parseInt(newHands[i].number) === parseInt(selectedTile.number) &&
+                        newHands[i].isWhite &&
+                        !selectedTile.isWhite)))
+                ) {
+                  newHands.splice(i, 0, dummyTile);
+                  break;
+                }
+              }
+            }
+            return newHands;
+          });
+          return index;
         }
-      : {
-          padding: 2,
-          border: 2,
-          borderRadius: 'lg',
-          borderStyle: 'dashed',
-          borderColor: 'gray.300',
-        };
+      });
+    },
+    [step, pendingTiles]
+  );
+
+  const handlePlaceTile = useCallback(
+    (index: number) => {
+      if (selectedTileIndex === null) return;
+
+      setMyHands((prevHands) => {
+        const newHands = [...prevHands];
+        newHands[index] = pendingTiles[selectedTileIndex];
+        return newHands.filter((tile) => tile.number !== '');
+      });
+      setSelectedTileIndex(null);
+    },
+    [selectedTileIndex, pendingTiles]
+  );
+
+  const handleSubmitButton = useCallback(() => {
+    onSubmitHand(myHands);
+    setStep(0);
+    setSelectedTileIndex(null);
+    setMyHands(hand);
+    modal.onClose();
+  }, [myHands, onSubmitHand, hand, modal]);
+
+  useEffect(() => {
+    setMyHands(hand);
+  }, [hand]);
 
   return (
     <Modal
@@ -85,12 +118,11 @@ const DavinciCodeDrawModal: React.FC<IProps> = ({
       onClose={modal.onClose}
       isCentered
       closeOnOverlayClick={false}
+      size='xl'
     >
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>
-          {step === 0 ? '타일을 뽑아주세요.' : '타일을 배치해주세요.'}
-        </ModalHeader>
+        <ModalHeader>{step === 0 ? '타일을 뽑아주세요.' : '타일을 배치해주세요.'}</ModalHeader>
         <ModalBody>
           <Flex direction='column' gap={4}>
             <Flex gap={4}>
@@ -98,12 +130,16 @@ const DavinciCodeDrawModal: React.FC<IProps> = ({
                 <Box
                   key={index}
                   onClick={() => handleSelectTile(index)}
-                  {...boxProps(selectedTileIndex === index)}
+                  padding={2}
+                  border={2}
+                  borderRadius='lg'
+                  borderStyle='dashed'
+                  borderColor={selectedTileIndex === index ? 'red.300' : 'gray.300'}
                 >
-                  {drawnTiles[index] ? (
+                  {pendingTiles[index] ? (
                     <DavinciCodeTile
                       player={{ id: authId, name: authName } as User}
-                      tile={drawnTiles[index]}
+                      tile={pendingTiles[index]}
                       size={{ width: '54px', height: '76px' }}
                       onClick={() => {}}
                     />
@@ -115,29 +151,31 @@ const DavinciCodeDrawModal: React.FC<IProps> = ({
             </Flex>
             {step === 1 && (
               <Flex direction='column' gap={4}>
-                <Text>내 손패</Text>
-                <Flex gap={4}>
-                  {myHands.map((tile, index) => (
-                    <DavinciCodeTile
-                      key={index}
-                      player={{ id: authId, name: authName } as User}
-                      tile={tile}
-                      onClick={() => {}}
-                      size={{ width: '54px', height: '76px' }}
-                    />
-                  ))}
-                  {selectedTileIndex !== null &&
-                    Array.from({ length: myHands.length + 1 }).map(
-                      (_, index) => (
-                        <Box
-                          key={index}
-                          {...boxProps(false)}
-                          onClick={() => handlePlaceTile(index)}
-                        >
-                          <Box width='54px' height='72px' />
-                        </Box>
-                      )
-                    )}
+                <Text>내 타일</Text>
+                <Flex align='center' gap={4} overflowX='auto'>
+                  {myHands.map((tile, index) =>
+                    tile.number === '' ? (
+                      <Box
+                        key={index}
+                        onClick={() => handlePlaceTile(index)}
+                        padding={2}
+                        border={2}
+                        borderRadius='lg'
+                        borderStyle='dashed'
+                        borderColor='gray.300'
+                      >
+                        <Box key={index} width='54px' height='72px' />
+                      </Box>
+                    ) : (
+                      <DavinciCodeTile
+                        key={index}
+                        player={{ id: authId, name: authName } as User}
+                        tile={tile}
+                        onClick={() => {}}
+                        size={{ width: '54px', height: '76px' }}
+                      />
+                    )
+                  )}
                 </Flex>
               </Flex>
             )}
@@ -145,15 +183,15 @@ const DavinciCodeDrawModal: React.FC<IProps> = ({
         </ModalBody>
         <ModalFooter>
           {step === 0 ? (
-            remainingTiles > 0 ? (
+            pendingTiles.length < drawableTiles ? (
               <Flex gap={4}>
-                <Button variant='outline' onClick={() => handleDrawTile(true)}>
+                <Button variant='outline' onClick={() => onClickDrawButton(true)}>
                   흰 타일 뽑기
                 </Button>
                 <Button
                   colorScheme='blackAlpha'
                   background='black'
-                  onClick={() => handleDrawTile(false)}
+                  onClick={() => onClickDrawButton(false)}
                 >
                   검은 타일 뽑기
                 </Button>
@@ -162,7 +200,7 @@ const DavinciCodeDrawModal: React.FC<IProps> = ({
               <Button onClick={() => setStep(1)}>다음</Button>
             )
           ) : (
-            <Button onClick={modal.onClose}>완료</Button>
+            <Button onClick={handleSubmitButton}>완료</Button>
           )}
         </ModalFooter>
       </ModalContent>

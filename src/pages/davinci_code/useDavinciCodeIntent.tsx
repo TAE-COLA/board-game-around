@@ -1,11 +1,13 @@
 import { useDisclosure, useToast } from '@chakra-ui/react';
 import { DavinciCodeTile, User } from 'entities';
 import {
+  drawDavinciCodeTile,
   exitLounge,
   exitYachtDice,
   fetchUserById,
   fetchUsersByIds,
   onDavinciCodeStateChanged,
+  updateDavinciCodeHand,
   useAuthContext,
   useLoungeContext,
 } from 'features';
@@ -20,18 +22,23 @@ type DavinciCodeState = {
   };
   turn: User;
   finishedPlayers: User[];
+  drawableTiles: number;
+  pendingTiles: DavinciCodeTile[];
 };
 
 type DavinciCodeEvent =
   | { type: 'ON_CLICK_EXIT_BUTTON' }
-  | { type: 'ON_CLICK_DRAW_BUTTON' }
+  | { type: 'ON_CLICK_DRAW_BUTTON'; isWhite: boolean }
+  | { type: 'ON_SUBMIT_HAND'; hand: DavinciCodeTile[] }
   | { type: 'ON_CLICK_TILE'; player: User; index: number };
 
 type DavinciCodeReduce =
   | { type: 'PLAYERS'; players: User[] }
   | { type: 'HANDS'; hands: { [key: string]: DavinciCodeTile[] } }
   | { type: 'TURN'; turn: User }
-  | { type: 'FINISHED_PLAYERS'; finishedPlayers: User[] };
+  | { type: 'FINISHED_PLAYERS'; finishedPlayers: User[] }
+  | { type: 'DRAWABLE_TILES'; drawableTiles: number }
+  | { type: 'PENDING_TILES'; pendingTiles: DavinciCodeTile[] };
 
 function handleDavinciCodeReduce(
   state: DavinciCodeState,
@@ -46,6 +53,8 @@ function handleDavinciCodeReduce(
       return { ...state, turn: reduce.turn };
     case 'FINISHED_PLAYERS':
       return { ...state, finishedPlayers: reduce.finishedPlayers };
+    case 'PENDING_TILES':
+      return { ...state, pendingTiles: reduce.pendingTiles };
     default:
       return state;
   }
@@ -57,6 +66,8 @@ export function useDavinciCodeIntent() {
     hands: {},
     turn: createDummy<User>(),
     finishedPlayers: [],
+    drawableTiles: 0,
+    pendingTiles: [],
   };
 
   const [state, dispatch] = useReducer(handleDavinciCodeReduce, initialState);
@@ -84,7 +95,10 @@ export function useDavinciCodeIntent() {
     drawModal: {
       isOpen: drawModal.isOpen,
       onOpen: drawModal.onOpen,
-      onClose: drawModal.onClose,
+      onClose() {
+        dispatch({ type: 'DRAWABLE_TILES', drawableTiles: 0 });
+        drawModal.onClose();
+      },
     },
     numberModal: {
       isOpen: numberModal.isOpen,
@@ -93,8 +107,8 @@ export function useDavinciCodeIntent() {
     },
   };
 
-  const notMyTurnToast = () =>
-    toast({ title: '내 차례가 아닙니다.', status: 'error', duration: 2000 });
+  // const notMyTurnToast = () =>
+  //   toast({ title: '내 차례가 아닙니다.', status: 'error', duration: 2000 });
 
   const onEvent = async (event: DavinciCodeEvent) => {
     switch (event.type) {
@@ -107,6 +121,10 @@ export function useDavinciCodeIntent() {
         });
         break;
       case 'ON_CLICK_DRAW_BUTTON':
+        await drawDavinciCodeTile(lounge.id, event.isWhite);
+        break;
+      case 'ON_SUBMIT_HAND':
+        await updateDavinciCodeHand(lounge.id, auth.id, event.hand, true);
         break;
       case 'ON_CLICK_TILE':
         modal.numberModal.onOpen();
@@ -148,9 +166,21 @@ export function useDavinciCodeIntent() {
         }
         setLoading(false);
 
-        if (davinciCode.turn === auth.id) {
-          toast({ title: '내 차례입니다.', status: 'info', duration: 2000 });
+        if (davinciCode.turn === auth.id && davinciCode.phase === 'DRAW') {
+          dispatch({
+            type: 'PENDING_TILES',
+            pendingTiles: davinciCode.pendingTiles,
+          });
+
+          if (davinciCode.hands[auth.id].length === 0) {
+            dispatch({ type: 'DRAWABLE_TILES', drawableTiles: 4 });
+            modal.drawModal.onOpen();
+          } else {
+            dispatch({ type: 'DRAWABLE_TILES', drawableTiles: 1 });
+            modal.drawModal.onOpen();
+          }
         }
+
         if (davinciCode.finishedAt) {
           modal.resultModal.onOpen();
         }

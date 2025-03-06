@@ -7,6 +7,12 @@ export default interface DavinciCode {
     [key: string]: DavinciCodeTile[];
   };
   turn: string;
+  phase: 'DRAW' | 'GUESS';
   finishedPlayerIds: string[];
+  remainingTiles: {
+    white: DavinciCodeTile[];
+    black: DavinciCodeTile[];
+  };
+  pendingTiles: DavinciCodeTile[];
   finishedAt?: object;
 }

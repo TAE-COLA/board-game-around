@@ -19,14 +19,32 @@ export const startDavinciCode = async (loungeId: string): Promise<void> => {
     () => Math.random() - 0.5
   );
 
+  const initialHands = shuffledPlayerIds.reduce((acc, playerId) => {
+    acc[playerId] = [emptyData];
+    return acc;
+  }, {} as { [key: string]: (DavinciCodeTile | EmptyData)[] });
+
+  const shuffledTiles = {
+    white: Array.from({ length: 13 }, (_, i) => ({
+      isRevealed: false,
+      number: i !== 12 ? `${i}` : '-',
+      isWhite: true,
+    })).sort(() => Math.random() - 0.5),
+    black: Array.from({ length: 13 }, (_, i) => ({
+      isRevealed: false,
+      number: i !== 12 ? `${i}` : '-',
+      isWhite: false,
+    })).sort(() => Math.random() - 0.5),
+  };
+
   const davinciCode = {
     playerIds: shuffledPlayerIds,
-    hands: shuffledPlayerIds.reduce((acc, playerId) => {
-      acc[playerId] = [emptyData];
-      return acc;
-    }, {} as { [key: string]: (DavinciCodeTile | EmptyData)[] }),
+    hands: initialHands,
     turn: shuffledPlayerIds[0],
+    phase: 'DRAW',
     finishedPlayerIds: [emptyData],
+    remainingTiles: shuffledTiles,
+    pendingTiles: [emptyData],
   };
 
   const updates = {
