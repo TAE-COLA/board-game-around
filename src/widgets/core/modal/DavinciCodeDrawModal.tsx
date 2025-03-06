@@ -24,6 +24,12 @@ type IProps = {
   modal: { isOpen: boolean; onOpen: () => void; onClose: () => void };
 };
 
+const isBiggerThan: (tile: tileEntity, other: tileEntity) => boolean | null = (tile, other) => {
+  if (tile.number === '-') return null;
+  if (other.number === '-') return null;
+  return tile.number > other.number || (tile.number === other.number && tile.isWhite);
+};
+
 const DavinciCodeDrawModal: React.FC<IProps> = ({
   hand,
   drawableTiles,
@@ -55,27 +61,66 @@ const DavinciCodeDrawModal: React.FC<IProps> = ({
           } as tileEntity;
 
           setMyHands((prevHands) => {
-            let newHands = prevHands.filter((tile) => tile.number !== '');
-            if (selectedTile.number === '-') {
-              newHands = newHands.reduce((acc, tile) => {
+            const newHands = prevHands
+              .filter((tile) => tile.number !== '')
+              .reduce((acc, tile) => {
                 acc.push(dummyTile, tile);
                 return acc;
               }, [] as tileEntity[]);
+
+            if (selectedTile.number === '-') {
               newHands.push(dummyTile);
             } else {
-              for (let i = 0; i <= newHands.length; i++) {
-                if (
-                  i === newHands.length ||
-                  (newHands[i].number !== '-' &&
-                    (parseInt(newHands[i].number) > parseInt(selectedTile.number) ||
-                      (parseInt(newHands[i].number) === parseInt(selectedTile.number) &&
-                        newHands[i].isWhite &&
-                        !selectedTile.isWhite)))
-                ) {
-                  newHands.splice(i, 0, dummyTile);
-                  break;
-                }
-              }
+              // const availableIndexes: number[] = [];
+              // const pendingIndexes: number[] = [];
+              // newHands.forEach((tile, index) => {
+              //   if (tile.number === dummyTile.number) {
+              //     let isAvailable = true;
+              //     if (index > 0) {
+              //       const prevTile = newHands[index - 1];
+              //       if (prevTile.number === '-' && !pendingIndexes.includes(index)) {
+              //         pendingIndexes.push(index);
+              //       } else if (isBiggerThan(prevTile, selectedTile)) {
+              //         isAvailable = false;
+              //       }
+              //     }
+              //     if (index < newHands.length - 1) {
+              //       const nextTile = newHands[index + 1];
+              //       if (nextTile.number === '-' && !pendingIndexes.includes(index)) {
+              //         pendingIndexes.push(index);
+              //       } else if (isBiggerThan(selectedTile, nextTile)) {
+              //         isAvailable = false;
+              //       }
+              //     }
+              //     if (isAvailable) {
+              //       availableIndexes.push(index);
+              //     }
+              //   } else {
+              //     if (pendingIndexes.length) {
+              //       if (tile.number !== '-' && isBiggerThan(tile, selectedTile)) {
+              //         pendingIndexes.forEach((pendingIndex) => {
+              //           availableIndexes.push(pendingIndex);
+              //         });
+              //         pendingIndexes.splice(0, pendingIndexes.length);
+              //       } else if (tile.number !== '-' && isBiggerThan(selectedTile, tile)) {
+              //         pendingIndexes.splice(0, pendingIndexes.length);
+              //       }
+              //     }
+              //   }
+              // });
+              // if (pendingIndexes.length) {
+              //   pendingIndexes.forEach((pendingIndex) => {
+              //     availableIndexes.push(pendingIndex);
+              //   });
+              // }
+              // newHands = newHands
+              //   .map((tile, index) => {
+              //     if (availableIndexes.includes(index)) {
+              //       return tile;
+              //     }
+              //     return null;
+              //   })
+              //   .filter((tile) => tile !== null) as tileEntity[];
             }
             return newHands;
           });
