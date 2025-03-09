@@ -24,10 +24,9 @@ type IProps = {
   modal: { isOpen: boolean; onOpen: () => void; onClose: () => void };
 };
 
-const isBiggerThan: (tile: tileEntity, other: tileEntity) => boolean | null = (tile, other) => {
-  if (tile.number === '-') return null;
-  if (other.number === '-') return null;
-  return tile.number > other.number || (tile.number === other.number && tile.isWhite);
+const compareTile: (left: tileEntity, right: tileEntity) => boolean | null = (left, right) => {
+  if (left.number === '-' || right.number === '-') return true;
+  else return left.number < right.number || (left.number === right.number && right.isWhite);
 };
 
 const DavinciCodeDrawModal: React.FC<IProps> = ({
@@ -42,85 +41,49 @@ const DavinciCodeDrawModal: React.FC<IProps> = ({
 
   const [step, setStep] = useState<number>(0);
   const [selectedTileIndex, setSelectedTileIndex] = useState<number | null>(null);
+  const [placedTileIndexes, setPlacedTileIndexes] = useState<number[]>([]);
   const [myHands, setMyHands] = useState<tileEntity[]>(hand);
 
   const handleSelectTile = useCallback(
     (index: number) => {
       if (step === 0) return;
+      if (placedTileIndexes.includes(index)) return;
 
       setSelectedTileIndex((prevIndex) => {
         if (prevIndex === index) {
-          setMyHands((prevHands) => prevHands.filter((tile) => tile.number !== ''));
+          setMyHands((prevHands) => prevHands.filter((tile) => tile.number !== 'dummy'));
           return null;
         } else {
           const selectedTile = pendingTiles[index];
           const dummyTile = {
             isRevealed: false,
-            number: '',
+            number: 'dummy',
             isWhite: false,
           } as tileEntity;
 
           setMyHands((prevHands) => {
             const newHands = prevHands
-              .filter((tile) => tile.number !== '')
+              .filter((tile) => tile.number !== 'dummy')
               .reduce((acc, tile) => {
                 acc.push(dummyTile, tile);
                 return acc;
               }, [] as tileEntity[]);
 
-            if (selectedTile.number === '-') {
-              newHands.push(dummyTile);
-            } else {
-              // const availableIndexes: number[] = [];
-              // const pendingIndexes: number[] = [];
-              // newHands.forEach((tile, index) => {
-              //   if (tile.number === dummyTile.number) {
-              //     let isAvailable = true;
-              //     if (index > 0) {
-              //       const prevTile = newHands[index - 1];
-              //       if (prevTile.number === '-' && !pendingIndexes.includes(index)) {
-              //         pendingIndexes.push(index);
-              //       } else if (isBiggerThan(prevTile, selectedTile)) {
-              //         isAvailable = false;
-              //       }
-              //     }
-              //     if (index < newHands.length - 1) {
-              //       const nextTile = newHands[index + 1];
-              //       if (nextTile.number === '-' && !pendingIndexes.includes(index)) {
-              //         pendingIndexes.push(index);
-              //       } else if (isBiggerThan(selectedTile, nextTile)) {
-              //         isAvailable = false;
-              //       }
-              //     }
-              //     if (isAvailable) {
-              //       availableIndexes.push(index);
-              //     }
-              //   } else {
-              //     if (pendingIndexes.length) {
-              //       if (tile.number !== '-' && isBiggerThan(tile, selectedTile)) {
-              //         pendingIndexes.forEach((pendingIndex) => {
-              //           availableIndexes.push(pendingIndex);
-              //         });
-              //         pendingIndexes.splice(0, pendingIndexes.length);
-              //       } else if (tile.number !== '-' && isBiggerThan(selectedTile, tile)) {
-              //         pendingIndexes.splice(0, pendingIndexes.length);
-              //       }
-              //     }
-              //   }
-              // });
-              // if (pendingIndexes.length) {
-              //   pendingIndexes.forEach((pendingIndex) => {
-              //     availableIndexes.push(pendingIndex);
-              //   });
-              // }
-              // newHands = newHands
-              //   .map((tile, index) => {
-              //     if (availableIndexes.includes(index)) {
-              //       return tile;
-              //     }
-              //     return null;
-              //   })
-              //   .filter((tile) => tile !== null) as tileEntity[];
+            newHands.push(dummyTile);
+            if (selectedTile.number !== '-') {
+              const filteredHands = newHands.filter((tile, index) => {
+                if (tile.number === 'dummy') {
+                  const compareWithPrev =
+                    index > 0 ? compareTile(newHands[index - 1], selectedTile) : true;
+                  const compareWithNext =
+                    index < newHands.length - 1
+                      ? compareTile(selectedTile, newHands[index + 1])
+                      : true;
+
+                  return compareWithPrev && compareWithNext;
+                } else return true;
+              });
+              return filteredHands;
             }
             return newHands;
           });
@@ -128,19 +91,20 @@ const DavinciCodeDrawModal: React.FC<IProps> = ({
         }
       });
     },
-    [step, pendingTiles]
+    [step, placedTileIndexes, pendingTiles]
   );
 
   const handlePlaceTile = useCallback(
     (index: number) => {
       if (selectedTileIndex === null) return;
 
-      setMyHands((prevHands) => {
-        const newHands = [...prevHands];
+      setMyHands((prev) => {
+        const newHands = [...prev];
         newHands[index] = pendingTiles[selectedTileIndex];
-        return newHands.filter((tile) => tile.number !== '');
+        return newHands.filter((tile) => tile.number !== 'dummy');
       });
       setSelectedTileIndex(null);
+      setPlacedTileIndexes((prev) => [...prev, selectedTileIndex]);
     },
     [selectedTileIndex, pendingTiles]
   );
@@ -180,6 +144,7 @@ const DavinciCodeDrawModal: React.FC<IProps> = ({
                   borderRadius='lg'
                   borderStyle='dashed'
                   borderColor={selectedTileIndex === index ? 'red.300' : 'gray.300'}
+                  opacity={placedTileIndexes.includes(index) ? 0.32 : 1}
                 >
                   {pendingTiles[index] ? (
                     <DavinciCodeTile
@@ -199,7 +164,7 @@ const DavinciCodeDrawModal: React.FC<IProps> = ({
                 <Text>내 타일</Text>
                 <Flex align='center' gap={4} overflowX='auto'>
                   {myHands.map((tile, index) =>
-                    tile.number === '' ? (
+                    tile.number === 'dummy' ? (
                       <Box
                         key={index}
                         onClick={() => handlePlaceTile(index)}
