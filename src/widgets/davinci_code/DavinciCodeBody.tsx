@@ -10,6 +10,7 @@ type IProps = FlexProps & {
     [key: string]: tileEntity[];
   };
   turn: User;
+  phase: 'DRAW' | 'GUESS';
   finishedPlayers: User[];
   onClickTile: (player: User, index: number) => void;
 };
@@ -18,6 +19,7 @@ const DavinciCodeBody: React.FC<IProps> = ({
   players,
   hands,
   turn,
+  phase,
   finishedPlayers,
   onClickTile,
   ...props
@@ -40,6 +42,9 @@ const DavinciCodeBody: React.FC<IProps> = ({
             key={player.id}
             player={player}
             hands={hands[player.id]}
+            turn={turn}
+            phase={phase}
+            isFinished={finishedPlayers.includes(player)}
             onClickTile={(index) => onClickTile(player, index)}
           />
         ))}

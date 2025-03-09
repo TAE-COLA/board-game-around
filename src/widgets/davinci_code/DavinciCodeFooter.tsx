@@ -5,10 +5,12 @@ import React from 'react';
 import { DavinciCodeHands } from 'widgets';
 
 type IProps = FlexProps & {
+  turn: User;
+  phase: 'DRAW' | 'GUESS';
   hand: tileEntity[];
 };
 
-const DavinciCodeFooter: React.FC<IProps> = ({ hand, ...props }) => {
+const DavinciCodeFooter: React.FC<IProps> = ({ hand, turn, phase, ...props }) => {
   const { id: authId, name: authName } = useAuthContext();
 
   return (
@@ -17,6 +19,9 @@ const DavinciCodeFooter: React.FC<IProps> = ({ hand, ...props }) => {
         key={authId}
         player={{ id: authId, name: authName } as User}
         hands={hand}
+        turn={turn}
+        phase={phase}
+        isFinished={false}
         onClickTile={() => {}}
       />
       <Flex position='absolute' bottom={0} right={0}>

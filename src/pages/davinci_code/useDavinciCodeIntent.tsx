@@ -21,6 +21,7 @@ type DavinciCodeState = {
     [key: string]: DavinciCodeTile[];
   };
   turn: User;
+  phase: 'DRAW' | 'GUESS';
   finishedPlayers: User[];
   drawableTiles: number;
   pendingTiles: DavinciCodeTile[];
@@ -36,6 +37,7 @@ type DavinciCodeReduce =
   | { type: 'PLAYERS'; players: User[] }
   | { type: 'HANDS'; hands: { [key: string]: DavinciCodeTile[] } }
   | { type: 'TURN'; turn: User }
+  | { type: 'PHASE'; phase: 'DRAW' | 'GUESS' }
   | { type: 'FINISHED_PLAYERS'; finishedPlayers: User[] }
   | { type: 'DRAWABLE_TILES'; drawableTiles: number }
   | { type: 'PENDING_TILES'; pendingTiles: DavinciCodeTile[] };
@@ -51,8 +53,12 @@ function handleDavinciCodeReduce(
       return { ...state, hands: reduce.hands };
     case 'TURN':
       return { ...state, turn: reduce.turn };
+    case 'PHASE':
+      return { ...state, phase: reduce.phase };
     case 'FINISHED_PLAYERS':
       return { ...state, finishedPlayers: reduce.finishedPlayers };
+    case 'DRAWABLE_TILES':
+      return { ...state, drawableTiles: reduce.drawableTiles };
     case 'PENDING_TILES':
       return { ...state, pendingTiles: reduce.pendingTiles };
     default:
@@ -65,6 +71,7 @@ export function useDavinciCodeIntent() {
     players: [],
     hands: {},
     turn: createDummy<User>(),
+    phase: 'DRAW',
     finishedPlayers: [],
     drawableTiles: 0,
     pendingTiles: [],
@@ -147,47 +154,43 @@ export function useDavinciCodeIntent() {
       return;
     }
 
-    const unsubscribe = onDavinciCodeStateChanged(
-      lounge.id,
-      async (davinciCode) => {
-        const players = await fetchUsersByIds(davinciCode.playerIds);
-        dispatch({ type: 'PLAYERS', players });
-        dispatch({ type: 'HANDS', hands: davinciCode.hands });
-        const turn = await fetchUserById(davinciCode.turn);
-        dispatch({ type: 'TURN', turn });
-        if (davinciCode.finishedPlayerIds.length) {
-          const finishedPlayers = await fetchUsersByIds(
-            davinciCode.finishedPlayerIds
-          );
-          dispatch({
-            type: 'FINISHED_PLAYERS',
-            finishedPlayers: finishedPlayers,
-          });
-        }
-        setLoading(false);
-
-        if (davinciCode.turn === auth.id && davinciCode.phase === 'DRAW') {
-          dispatch({
-            type: 'PENDING_TILES',
-            pendingTiles: davinciCode.pendingTiles,
-          });
-
-          if (davinciCode.hands[auth.id].length === 0) {
-            dispatch({ type: 'DRAWABLE_TILES', drawableTiles: 4 });
-            modal.drawModal.onOpen();
-          } else {
-            dispatch({ type: 'DRAWABLE_TILES', drawableTiles: 1 });
-            modal.drawModal.onOpen();
-          }
-        }
-
-        if (davinciCode.finishedAt) {
-          modal.resultModal.onOpen();
-        }
-
-        return () => unsubscribe();
+    const unsubscribe = onDavinciCodeStateChanged(lounge.id, async (davinciCode) => {
+      const players = await fetchUsersByIds(davinciCode.playerIds);
+      dispatch({ type: 'PLAYERS', players });
+      dispatch({ type: 'HANDS', hands: davinciCode.hands });
+      const turn = await fetchUserById(davinciCode.turn);
+      dispatch({ type: 'TURN', turn });
+      dispatch({ type: 'PHASE', phase: davinciCode.phase });
+      if (davinciCode.finishedPlayerIds.length) {
+        const finishedPlayers = await fetchUsersByIds(davinciCode.finishedPlayerIds);
+        dispatch({
+          type: 'FINISHED_PLAYERS',
+          finishedPlayers: finishedPlayers,
+        });
       }
-    );
+      setLoading(false);
+
+      if (davinciCode.turn === auth.id && davinciCode.phase === 'DRAW') {
+        dispatch({
+          type: 'PENDING_TILES',
+          pendingTiles: davinciCode.pendingTiles,
+        });
+
+        if (davinciCode.hands[auth.id].length === 0) {
+          dispatch({ type: 'DRAWABLE_TILES', drawableTiles: 4 });
+          modal.drawModal.onOpen();
+        } else {
+          dispatch({ type: 'DRAWABLE_TILES', drawableTiles: 1 });
+          modal.drawModal.onOpen();
+        }
+      }
+
+      if (davinciCode.finishedAt) {
+        modal.resultModal.onOpen();
+      }
+
+      return () => unsubscribe();
+    });
   }, [lounge.id, lounge.loading]);
 
   return {
