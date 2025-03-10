@@ -26,7 +26,7 @@ const DavinciCodePage: React.FC = () => {
       </Flex>
       <DavinciCodeDrawModal
         hand={state.hands[authId]}
-        drawableTiles={4}
+        drawableTiles={state.drawableTiles}
         pendingTiles={state.pendingTiles}
         onClickDrawButton={(isWhite) => onEvent({ type: 'ON_CLICK_DRAW_BUTTON', isWhite })}
         onSubmitHand={(hand) => onEvent({ type: 'ON_SUBMIT_HAND', hand })}

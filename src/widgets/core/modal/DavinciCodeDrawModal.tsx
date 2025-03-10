@@ -24,15 +24,6 @@ type IProps = {
   modal: { isOpen: boolean; onOpen: () => void; onClose: () => void };
 };
 
-const compareTile: (left: tileEntity, right: tileEntity) => boolean | null = (left, right) => {
-  if (left.number === '-' || right.number === '-') return true;
-  else
-    return (
-      Number(left.number) < Number(right.number) ||
-      (Number(left.number) === Number(right.number) && right.isWhite)
-    );
-};
-
 const DavinciCodeDrawModal: React.FC<IProps> = ({
   hand,
   drawableTiles,
@@ -77,14 +68,11 @@ const DavinciCodeDrawModal: React.FC<IProps> = ({
             if (selectedTile.number !== '-') {
               const filteredHands = newHands.filter((tile, index) => {
                 if (tile.number === 'dummy') {
-                  const compareWithPrev =
-                    index > 0 ? compareTile(newHands[index - 1], selectedTile) : true;
-                  const compareWithNext =
-                    index < newHands.length - 1
-                      ? compareTile(selectedTile, newHands[index + 1])
-                      : true;
+                  const isValidPlacement =
+                    (index === 0 || selectedTile.isBiggerThan(newHands[index - 1])) &&
+                    (index === newHands.length - 1 || selectedTile.isSmallerThan(newHands[index + 1]));
 
-                  return compareWithPrev && compareWithNext;
+                  return isValidPlacement;
                 } else return true;
               });
               return filteredHands;
@@ -126,13 +114,7 @@ const DavinciCodeDrawModal: React.FC<IProps> = ({
   }, [hand]);
 
   return (
-    <Modal
-      isOpen={modal.isOpen}
-      onClose={modal.onClose}
-      isCentered
-      closeOnOverlayClick={false}
-      size='xl'
-    >
+    <Modal isOpen={modal.isOpen} onClose={modal.onClose} isCentered closeOnOverlayClick={false} size='xl'>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>{step === 0 ? '타일을 뽑아주세요.' : '타일을 배치해주세요.'}</ModalHeader>
@@ -202,11 +184,7 @@ const DavinciCodeDrawModal: React.FC<IProps> = ({
                 <Button variant='outline' onClick={() => onClickDrawButton(true)}>
                   흰 타일 뽑기
                 </Button>
-                <Button
-                  colorScheme='blackAlpha'
-                  background='black'
-                  onClick={() => onClickDrawButton(false)}
-                >
+                <Button colorScheme='blackAlpha' background='black' onClick={() => onClickDrawButton(false)}>
                   검은 타일 뽑기
                 </Button>
               </Flex>

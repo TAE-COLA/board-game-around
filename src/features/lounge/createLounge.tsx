@@ -19,10 +19,7 @@ const LOUNGE_CODE = 'code';
 
 const USER_LOUNGE_ID = 'loungeId';
 
-export const createLounge = async (
-  gameId: string,
-  ownerId: string
-): Promise<string> => {
+export const createLounge = async (gameId: string, ownerId: string): Promise<string> => {
   const reference = fReference(database);
 
   const loungeId = push(child(reference, LOUNGE_REFERENCE)).key!;
@@ -46,7 +43,7 @@ export const createLounge = async (
     'CiB1YRBhNVQSW7grv1yOGcGr0wA3',
     'XICkS14iXqU53eYZDr1OlvQeFdA3',
   ];
-  const playerIds = [ownerId, ...dummyPlayers];
+  const playerIds = [ownerId];
 
   const lounge = {
     gameId,
