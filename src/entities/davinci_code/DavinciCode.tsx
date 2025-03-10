@@ -7,7 +7,7 @@ export default interface DavinciCode {
     [key: string]: DavinciCodeTile[];
   };
   turn: string;
-  phase: 'DRAW' | 'GUESS';
+  phase: 'INITIAL_DRAW' | 'DRAW' | 'GUESS';
   finishedPlayerIds: string[];
   remainingTiles: {
     white: DavinciCodeTile[];

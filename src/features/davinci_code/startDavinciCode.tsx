@@ -15,9 +15,7 @@ export const startDavinciCode = async (loungeId: string): Promise<void> => {
 
   if (!lounge?.playerIds?.length || !lounge.ownerId) return;
 
-  const shuffledPlayerIds = [...lounge.playerIds].sort(
-    () => Math.random() - 0.5
-  );
+  const shuffledPlayerIds = [...lounge.playerIds].sort(() => Math.random() - 0.5);
 
   const initialHands = shuffledPlayerIds.reduce((acc, playerId) => {
     acc[playerId] = [emptyData];
@@ -41,7 +39,7 @@ export const startDavinciCode = async (loungeId: string): Promise<void> => {
     playerIds: shuffledPlayerIds,
     hands: initialHands,
     turn: shuffledPlayerIds[0],
-    phase: 'DRAW',
+    phase: 'INITIAL_DRAW',
     finishedPlayerIds: [emptyData],
     remainingTiles: shuffledTiles,
     pendingTiles: [emptyData],

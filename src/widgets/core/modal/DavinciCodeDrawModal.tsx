@@ -26,7 +26,11 @@ type IProps = {
 
 const compareTile: (left: tileEntity, right: tileEntity) => boolean | null = (left, right) => {
   if (left.number === '-' || right.number === '-') return true;
-  else return left.number < right.number || (left.number === right.number && right.isWhite);
+  else
+    return (
+      Number(left.number) < Number(right.number) ||
+      (Number(left.number) === Number(right.number) && right.isWhite)
+    );
 };
 
 const DavinciCodeDrawModal: React.FC<IProps> = ({

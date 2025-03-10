@@ -21,7 +21,7 @@ type DavinciCodeState = {
     [key: string]: DavinciCodeTile[];
   };
   turn: User;
-  phase: 'DRAW' | 'GUESS';
+  phase: 'INITIAL_DRAW' | 'DRAW' | 'GUESS';
   finishedPlayers: User[];
   drawableTiles: number;
   pendingTiles: DavinciCodeTile[];
@@ -37,7 +37,7 @@ type DavinciCodeReduce =
   | { type: 'PLAYERS'; players: User[] }
   | { type: 'HANDS'; hands: { [key: string]: DavinciCodeTile[] } }
   | { type: 'TURN'; turn: User }
-  | { type: 'PHASE'; phase: 'DRAW' | 'GUESS' }
+  | { type: 'PHASE'; phase: 'INITIAL_DRAW' | 'DRAW' | 'GUESS' }
   | { type: 'FINISHED_PLAYERS'; finishedPlayers: User[] }
   | { type: 'DRAWABLE_TILES'; drawableTiles: number }
   | { type: 'PENDING_TILES'; pendingTiles: DavinciCodeTile[] };
@@ -170,18 +170,26 @@ export function useDavinciCodeIntent() {
       }
       setLoading(false);
 
-      if (davinciCode.turn === auth.id && davinciCode.phase === 'DRAW') {
-        dispatch({
-          type: 'PENDING_TILES',
-          pendingTiles: davinciCode.pendingTiles,
-        });
-
-        if (davinciCode.hands[auth.id].length === 0) {
-          dispatch({ type: 'DRAWABLE_TILES', drawableTiles: 4 });
-          modal.drawModal.onOpen();
-        } else {
-          dispatch({ type: 'DRAWABLE_TILES', drawableTiles: 1 });
-          modal.drawModal.onOpen();
+      if (davinciCode.turn === auth.id) {
+        switch (davinciCode.phase) {
+          case 'INITIAL_DRAW':
+            dispatch({
+              type: 'PENDING_TILES',
+              pendingTiles: davinciCode.pendingTiles,
+            });
+            dispatch({ type: 'DRAWABLE_TILES', drawableTiles: 4 });
+            modal.drawModal.onOpen();
+            break;
+          case 'DRAW':
+            dispatch({
+              type: 'PENDING_TILES',
+              pendingTiles: davinciCode.pendingTiles,
+            });
+            dispatch({ type: 'DRAWABLE_TILES', drawableTiles: 1 });
+            modal.drawModal.onOpen();
+            break;
+          default:
+            break;
         }
       }
 

@@ -6,7 +6,7 @@ import { DavinciCodeHands } from 'widgets';
 
 type IProps = FlexProps & {
   turn: User;
-  phase: 'DRAW' | 'GUESS';
+  phase: 'INITIAL_DRAW' | 'DRAW' | 'GUESS';
   hand: tileEntity[];
 };
 
@@ -21,7 +21,7 @@ const DavinciCodeFooter: React.FC<IProps> = ({ hand, turn, phase, ...props }) =>
         hands={hand}
         turn={turn}
         phase={phase}
-        isFinished={false}
+        finishedPlayers={[]}
         onClickTile={() => {}}
       />
       <Flex position='absolute' bottom={0} right={0}>

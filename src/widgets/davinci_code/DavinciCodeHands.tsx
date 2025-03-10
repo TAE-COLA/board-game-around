@@ -9,8 +9,8 @@ type IProps = CardProps & {
   player: User;
   hands: tileEntity[];
   turn: User;
-  phase: 'DRAW' | 'GUESS';
-  isFinished: boolean;
+  phase: 'INITIAL_DRAW' | 'DRAW' | 'GUESS';
+  finishedPlayers: User[];
   onClickTile: (index: number) => void;
 };
 
@@ -19,6 +19,7 @@ const DavinciCodeHands: React.FC<IProps> = ({
   hands,
   turn,
   phase,
+  finishedPlayers,
   onClickTile,
   ...props
 }) => {
@@ -39,8 +40,8 @@ const DavinciCodeHands: React.FC<IProps> = ({
         ))}
       </Flex>
       <CardFooter>
-        {isMyHand ?? turn.id === player.id
-          ? phase === 'DRAW'
+        {turn.id === player.id
+          ? phase === 'INITIAL_DRAW' || phase === 'DRAW'
             ? '타일을 뽑고 있습니다...'
             : '추론하고 있습니다...'
           : ''}
