@@ -10,17 +10,17 @@ import {
   ModalOverlay,
   Text,
 } from '@chakra-ui/react';
-import { DavinciCodeTile as tileEntity, User } from 'entities';
+import { DavinciCodeTile, User } from 'entities';
 import { useAuthContext } from 'features';
 import React, { useCallback, useEffect, useState } from 'react';
-import { DavinciCodeTile } from 'widgets/davinci_code';
+import { DavinciCodeTile as Tile } from 'widgets';
 
 type IProps = {
-  hand: tileEntity[];
+  hand: DavinciCodeTile[];
   drawableTiles: number;
-  pendingTiles: tileEntity[];
+  pendingTiles: DavinciCodeTile[];
   onClickDrawButton: (isWhite: boolean) => void;
-  onSubmitHand: (hand: tileEntity[]) => void;
+  onSubmitHand: (hand: DavinciCodeTile[]) => void;
   modal: { isOpen: boolean; onOpen: () => void; onClose: () => void };
 };
 
@@ -37,7 +37,7 @@ const DavinciCodeDrawModal: React.FC<IProps> = ({
   const [step, setStep] = useState<number>(0);
   const [selectedTileIndex, setSelectedTileIndex] = useState<number | null>(null);
   const [placedTileIndexes, setPlacedTileIndexes] = useState<number[]>([]);
-  const [myHands, setMyHands] = useState<tileEntity[]>(hand);
+  const [myHands, setMyHands] = useState<DavinciCodeTile[]>(hand);
 
   const handleSelectTile = useCallback(
     (index: number) => {
@@ -49,12 +49,12 @@ const DavinciCodeDrawModal: React.FC<IProps> = ({
           setMyHands((prevHands) => prevHands.filter((tile) => tile.number !== 'dummy'));
           return null;
         } else {
-          const selectedTile = pendingTiles[index];
+          const selectedTile = new DavinciCodeTile(pendingTiles[index].isWhite, pendingTiles[index].number, false);
           const dummyTile = {
             isRevealed: false,
             number: 'dummy',
             isWhite: false,
-          } as tileEntity;
+          } as DavinciCodeTile;
 
           setMyHands((prevHands) => {
             const newHands = prevHands
@@ -62,12 +62,13 @@ const DavinciCodeDrawModal: React.FC<IProps> = ({
               .reduce((acc, tile) => {
                 acc.push(dummyTile, tile);
                 return acc;
-              }, [] as tileEntity[]);
+              }, [] as DavinciCodeTile[]);
 
             newHands.push(dummyTile);
             if (selectedTile.number !== '-') {
               const filteredHands = newHands.filter((tile, index) => {
                 if (tile.number === 'dummy') {
+                  console.log('selectedTile의 타입: ', selectedTile);
                   const isValidPlacement =
                     (index === 0 || selectedTile.isBiggerThan(newHands[index - 1])) &&
                     (index === newHands.length - 1 || selectedTile.isSmallerThan(newHands[index + 1]));
@@ -105,6 +106,7 @@ const DavinciCodeDrawModal: React.FC<IProps> = ({
     onSubmitHand(myHands);
     setStep(0);
     setSelectedTileIndex(null);
+    setPlacedTileIndexes([]);
     setMyHands(hand);
     modal.onClose();
   }, [myHands, onSubmitHand, hand, modal]);
@@ -133,7 +135,7 @@ const DavinciCodeDrawModal: React.FC<IProps> = ({
                   opacity={placedTileIndexes.includes(index) ? 0.32 : 1}
                 >
                   {pendingTiles[index] ? (
-                    <DavinciCodeTile
+                    <Tile
                       player={{ id: authId, name: authName } as User}
                       tile={pendingTiles[index]}
                       size={{ width: '54px', height: '76px' }}
@@ -163,7 +165,7 @@ const DavinciCodeDrawModal: React.FC<IProps> = ({
                         <Box key={index} width='54px' height='72px' />
                       </Box>
                     ) : (
-                      <DavinciCodeTile
+                      <Tile
                         key={index}
                         player={{ id: authId, name: authName } as User}
                         tile={tile}

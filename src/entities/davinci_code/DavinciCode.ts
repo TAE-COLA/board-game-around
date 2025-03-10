@@ -1,6 +1,6 @@
 import DavinciCodeTile from './DavinciCodeTile';
 
-export default interface DavinciCode {
+export interface DavinciCode {
   loungeId: string;
   playerIds: string[];
   hands: {

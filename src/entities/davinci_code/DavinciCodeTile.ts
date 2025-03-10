@@ -12,16 +12,12 @@ export default class DavinciCodeTile {
   isSmallerThan(other: DavinciCodeTile): boolean | null {
     if (this.number === '-' || other.number === '-') return true;
     return (
-      Number(this.number) < Number(other.number) ||
-      (Number(this.number) === Number(other.number) && other.isWhite)
+      Number(this.number) < Number(other.number) || (Number(this.number) === Number(other.number) && other.isWhite)
     );
   }
 
   isBiggerThan(other: DavinciCodeTile): boolean | null {
     if (this.number === '-' || other.number === '-') return true;
-    return (
-      Number(this.number) > Number(other.number) ||
-      (Number(this.number) === Number(other.number) && this.isWhite)
-    );
+    return Number(this.number) > Number(other.number) || (Number(this.number) === Number(other.number) && this.isWhite);
   }
 }

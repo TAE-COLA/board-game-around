@@ -1,4 +1,4 @@
-import { DavinciCode } from 'entities/davinci_code';
+import { DavinciCode } from 'entities';
 import { database } from 'features';
 import { child, ref as fReference, get, update } from 'firebase/database';
 
@@ -15,15 +15,9 @@ type Payloads = {
   turn?: string;
 };
 
-export const updateDavinciCodeState = async (
-  loungeId: string,
-  payloads: Payloads
-): Promise<void> => {
+export const updateDavinciCodeState = async (loungeId: string, payloads: Payloads): Promise<void> => {
   const reference = fReference(database);
-  const loungeReference = child(
-    reference,
-    `${DAVINCI_CODE_REFERENCE}/${loungeId}`
-  );
+  const loungeReference = child(reference, `${DAVINCI_CODE_REFERENCE}/${loungeId}`);
   const val = (await get(loungeReference)).val();
   const lounge = {
     playerIds: val[DAVINCI_CODE_PLAYER_IDS],
