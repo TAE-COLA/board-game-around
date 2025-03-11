@@ -1,4 +1,4 @@
-export default interface Lounge {
+export interface Lounge {
   id: string;
   gameId: string;
   code: string;

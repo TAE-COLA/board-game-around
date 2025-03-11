@@ -1,6 +1,6 @@
-import type YachtDiceBoard from './YachtDiceBoard';
+import type { YachtDiceBoard } from './YachtDiceBoard';
 
-export default interface YachtDice {
+export interface YachtDice {
   loungeId: string;
   playerIds: string[];
   round: number;

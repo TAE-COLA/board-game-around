@@ -1,4 +1,4 @@
-export default class DavinciCodeTile {
+export class DavinciCodeTile {
   isWhite: boolean;
   number: string;
   isRevealed: boolean;
@@ -21,3 +21,5 @@ export default class DavinciCodeTile {
     return Number(this.number) > Number(other.number) || (Number(this.number) === Number(other.number) && this.isWhite);
   }
 }
+
+export const dummyTile = new DavinciCodeTile(false, '', false);

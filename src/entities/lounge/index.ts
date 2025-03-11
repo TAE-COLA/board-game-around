@@ -1,2 +1,2 @@
-export { default as Lounge } from './Lounge';
-export { default as LoungeContextType } from './LoungeContextType';
+export { Lounge } from './Lounge';
+export { LoungeContextType } from './LoungeContextType';

@@ -1,5 +1,4 @@
-export default interface AuthContextType {
-  loading: boolean;
+export interface User {
   id: string;
   name: string;
   email: string;

@@ -1,6 +1,6 @@
 import { Game, User } from 'entities';
 
-export default interface LoungeContextType {
+export interface LoungeContextType {
   loading: boolean;
   id: string;
   game: Game;

@@ -10,17 +10,17 @@ import {
   ModalOverlay,
   Text,
 } from '@chakra-ui/react';
-import { DavinciCodeTile, User } from 'entities';
+import { DavinciCodeTile as tileEntity, User } from 'entities';
 import { useAuthContext } from 'features';
-import React, { useCallback, useEffect, useState } from 'react';
-import { DavinciCodeTile as Tile } from 'widgets';
+import React, { useEffect } from 'react';
+import { DavinciCodeTile } from 'widgets/davinci_code';
 
 type IProps = {
-  hand: DavinciCodeTile[];
+  hand: tileEntity[];
   drawableTiles: number;
-  pendingTiles: DavinciCodeTile[];
+  pendingTiles: tileEntity[];
   onClickDrawButton: (isWhite: boolean) => void;
-  onSubmitHand: (hand: DavinciCodeTile[]) => void;
+  onSubmitHand: (hand: tileEntity[]) => void;
   modal: { isOpen: boolean; onOpen: () => void; onClose: () => void };
 };
 
@@ -34,82 +34,93 @@ const DavinciCodeDrawModal: React.FC<IProps> = ({
 }) => {
   const { id: authId, name: authName } = useAuthContext();
 
-  const [step, setStep] = useState<number>(0);
-  const [selectedTileIndex, setSelectedTileIndex] = useState<number | null>(null);
-  const [placedTileIndexes, setPlacedTileIndexes] = useState<number[]>([]);
-  const [myHands, setMyHands] = useState<DavinciCodeTile[]>(hand);
+  const [step, setStep] = React.useState<number>(0);
+  const [selectedTileIndex, setSelectedTileIndex] = React.useState<number | null>(null);
+  const [myHands, setMyHands] = React.useState<tileEntity[]>(hand);
 
-  const handleSelectTile = useCallback(
-    (index: number) => {
-      if (step === 0) return;
-      if (placedTileIndexes.includes(index)) return;
+  const handleSelectTile = (index: number) => {
+    if (step === 0) return;
 
-      setSelectedTileIndex((prevIndex) => {
-        if (prevIndex === index) {
-          setMyHands((prevHands) => prevHands.filter((tile) => tile.number !== 'dummy'));
-          return null;
-        } else {
-          const selectedTile = new DavinciCodeTile(pendingTiles[index].isWhite, pendingTiles[index].number, false);
-          const dummyTile = {
-            isRevealed: false,
-            number: 'dummy',
-            isWhite: false,
-          } as DavinciCodeTile;
-
-          setMyHands((prevHands) => {
-            const newHands = prevHands
-              .filter((tile) => tile.number !== 'dummy')
-              .reduce((acc, tile) => {
-                acc.push(dummyTile, tile);
-                return acc;
-              }, [] as DavinciCodeTile[]);
-
-            newHands.push(dummyTile);
-            if (selectedTile.number !== '-') {
-              const filteredHands = newHands.filter((tile, index) => {
-                if (tile.number === 'dummy') {
-                  console.log('selectedTile의 타입: ', selectedTile);
-                  const isValidPlacement =
-                    (index === 0 || selectedTile.isBiggerThan(newHands[index - 1])) &&
-                    (index === newHands.length - 1 || selectedTile.isSmallerThan(newHands[index + 1]));
-
-                  return isValidPlacement;
-                } else return true;
-              });
-              return filteredHands;
-            }
-            return newHands;
-          });
-          return index;
-        }
-      });
-    },
-    [step, placedTileIndexes, pendingTiles]
-  );
-
-  const handlePlaceTile = useCallback(
-    (index: number) => {
-      if (selectedTileIndex === null) return;
-
-      setMyHands((prev) => {
-        const newHands = [...prev];
-        newHands[index] = pendingTiles[selectedTileIndex];
-        return newHands.filter((tile) => tile.number !== 'dummy');
-      });
+    if (selectedTileIndex === index) {
       setSelectedTileIndex(null);
-      setPlacedTileIndexes((prev) => [...prev, selectedTileIndex]);
-    },
-    [selectedTileIndex, pendingTiles]
-  );
 
-  const handleSubmitButton = useCallback(() => {
+      const newHands = myHands.filter((tile) => tile.number !== '');
+      setMyHands(newHands);
+    } else {
+      setSelectedTileIndex(index);
+
+      let newHands = myHands.filter((tile) => tile.number !== '');
+      const selectedTile = pendingTiles[index];
+
+      const dummyTile = {
+        isRevealed: false,
+        number: '',
+        isWhite: false,
+      } as tileEntity;
+
+      if (selectedTile.number === '-') {
+        newHands = newHands.reduce((acc, tile) => {
+          acc.push(dummyTile, tile);
+          return acc;
+        }, [] as tileEntity[]);
+        newHands.push(dummyTile);
+      } else {
+        for (let i = 0; i <= newHands.length; i++) {
+          if (
+            i === newHands.length ||
+            (newHands[i].number !== '-' &&
+              (parseInt(newHands[i].number) > parseInt(selectedTile.number) ||
+                (parseInt(newHands[i].number) === parseInt(selectedTile.number) &&
+                  newHands[i].isWhite &&
+                  !selectedTile.isWhite)))
+          ) {
+            newHands.splice(i, 0, dummyTile);
+            break;
+          }
+        }
+      }
+
+      setMyHands(newHands);
+    }
+  };
+
+  const handlePlaceTile = (index: number) => {
+    if (selectedTileIndex === null) return;
+
+    let newHands = [...myHands];
+    const selectedTile = pendingTiles[selectedTileIndex];
+
+    newHands[index] = selectedTile;
+    newHands = newHands.filter((tile) => tile.number !== '');
+
+    setMyHands(newHands);
+    setSelectedTileIndex(null);
+  };
+
+  const handleSubmitButton = () => {
     onSubmitHand(myHands);
     setStep(0);
     setSelectedTileIndex(null);
-    setPlacedTileIndexes([]);
     setMyHands(hand);
     modal.onClose();
-  }, [myHands, onSubmitHand, hand, modal]);
+  };
+
+  const boxProps = (selected: boolean) =>
+    selected
+      ? {
+          padding: 2,
+          border: 2,
+          borderRadius: 'lg',
+          borderStyle: 'dashed',
+          borderColor: 'red.300',
+        }
+      : {
+          padding: 2,
+          border: 2,
+          borderRadius: 'lg',
+          borderStyle: 'dashed',
+          borderColor: 'gray.300',
+        };
 
   useEffect(() => {
     setMyHands(hand);
@@ -124,18 +135,9 @@ const DavinciCodeDrawModal: React.FC<IProps> = ({
           <Flex direction='column' gap={4}>
             <Flex gap={4}>
               {Array.from({ length: drawableTiles }).map((_, index) => (
-                <Box
-                  key={index}
-                  onClick={() => handleSelectTile(index)}
-                  padding={2}
-                  border={2}
-                  borderRadius='lg'
-                  borderStyle='dashed'
-                  borderColor={selectedTileIndex === index ? 'red.300' : 'gray.300'}
-                  opacity={placedTileIndexes.includes(index) ? 0.32 : 1}
-                >
+                <Box key={index} onClick={() => handleSelectTile(index)} {...boxProps(selectedTileIndex === index)}>
                   {pendingTiles[index] ? (
-                    <Tile
+                    <DavinciCodeTile
                       player={{ id: authId, name: authName } as User}
                       tile={pendingTiles[index]}
                       size={{ width: '54px', height: '76px' }}
@@ -152,20 +154,12 @@ const DavinciCodeDrawModal: React.FC<IProps> = ({
                 <Text>내 타일</Text>
                 <Flex align='center' gap={4} overflowX='auto'>
                   {myHands.map((tile, index) =>
-                    tile.number === 'dummy' ? (
-                      <Box
-                        key={index}
-                        onClick={() => handlePlaceTile(index)}
-                        padding={2}
-                        border={2}
-                        borderRadius='lg'
-                        borderStyle='dashed'
-                        borderColor='gray.300'
-                      >
+                    tile.number === '' ? (
+                      <Box key={index} onClick={() => handlePlaceTile(index)} {...boxProps(false)}>
                         <Box key={index} width='54px' height='72px' />
                       </Box>
                     ) : (
-                      <Tile
+                      <DavinciCodeTile
                         key={index}
                         player={{ id: authId, name: authName } as User}
                         tile={tile}

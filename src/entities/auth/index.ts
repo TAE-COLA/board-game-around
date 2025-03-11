@@ -1,1 +1,1 @@
-export { default as AuthContextType } from './AuthContextType';
+export { AuthContextType } from './AuthContextType';

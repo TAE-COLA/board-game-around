@@ -1,2 +1,2 @@
-export { default as YachtDice } from './YachtDice';
-export { default as YachtDiceBoard } from './YachtDiceBoard';
+export { YachtDice } from './YachtDice';
+export { YachtDiceBoard } from './YachtDiceBoard';

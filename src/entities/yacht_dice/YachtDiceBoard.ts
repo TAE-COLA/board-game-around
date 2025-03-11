@@ -1,4 +1,4 @@
-export default interface YachtDiceBoard {
+export interface YachtDiceBoard {
   ace: { value: number; marked: boolean };
   double: { value: number; marked: boolean };
   triple: { value: number; marked: boolean };
