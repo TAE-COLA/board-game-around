@@ -8,18 +8,29 @@ export const PageRouter: React.FC = () => {
 
   return (
     <Routes location={location}>
-      <Route path='/' element={<Navigate to='/login' replace />} />
-      <Route path='/login' element={<LoginPage />} />
-      <Route path='/register' element={<RegisterPage />} />
+      <Route path={Paths.default} element={<Navigate to={Paths.login} replace />} />
+      <Route path={Paths.login} element={<LoginPage />} />
+      <Route path={Paths.register} element={<RegisterPage />} />
       <Route element={<AuthProvider />}>
-        <Route path='/main' element={<MainPage />} />
+        <Route path={Paths.main} element={<MainPage />} />
         <Route element={<LoungeProvider />}>
-          <Route path='/lounge' element={<LoungePage />} />
-          <Route path='/yatchdice' element={<YachtDicePage />} />
-          <Route path='/davincicode' element={<DavinciCodePage />} />
+          <Route path={Paths.lounge} element={<LoungePage />} />
+          <Route path={Paths.yachtDice} element={<YachtDicePage />} />
+          <Route path={Paths.davinciCode} element={<DavinciCodePage />} />
         </Route>
       </Route>
-      <Route path='*' element={<div>404 Not Found</div>} />
+      <Route path={Paths.notFound} element={<div>404 Not Found</div>} />
     </Routes>
   );
+};
+
+export const Paths = {
+  default: '/',
+  main: '/main',
+  login: '/login',
+  register: '/register',
+  lounge: '/lounge',
+  yachtDice: '/yachtdice',
+  davinciCode: '/davincicode',
+  notFound: '*',
 };

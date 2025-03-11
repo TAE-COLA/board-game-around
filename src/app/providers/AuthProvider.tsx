@@ -1,10 +1,11 @@
 import { useToast } from '@chakra-ui/react';
+import { Paths } from 'app/route';
 import { fetchUserById } from 'features';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { AuthContext, User } from 'models';
 import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
-import { createDummy } from 'shared';
+import { createDummy, requireLogin } from 'shared';
 
 export const AuthProvider: React.FC = () => {
   const [user, setUser] = useState(createDummy<User>());
@@ -28,12 +29,8 @@ export const AuthProvider: React.FC = () => {
 
   useEffect(() => {
     if (!loading && !firebaseAuth.currentUser) {
-      navigate('/login', { replace: true });
-      toast({
-        title: '로그인이 필요한 메뉴입니다. 로그인해주세요.',
-        status: 'error',
-        duration: 2000,
-      });
+      navigate(Paths.login, { replace: true });
+      toast(requireLogin);
     }
   }, [user, loading]);
 

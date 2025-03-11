@@ -1,6 +1,6 @@
-export { drawDavinciCodeTile } from './drawDavinciCodeTile';
-export { exitDavinciCode } from './exitDavinciCode';
-export { onDavinciCodeStateChanged } from './onDavinciCodeStateChanged';
-export { startDavinciCode } from './startDavinciCode';
-export { updateDavinciCodeHand } from './updateDavinciCodeHand';
-export { updateDavinciCodeState } from './updateDavinciCodeState';
+export * from './drawDavinciCodeTile';
+export * from './exitDavinciCode';
+export * from './onDavinciCodeStateChanged';
+export * from './startDavinciCode';
+export * from './updateDavinciCodeHand';
+export * from './updateDavinciCodeState';

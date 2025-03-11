@@ -1,1 +1,1 @@
-export { PageRouter } from './PageRouter';
+export * from './PageRouter';

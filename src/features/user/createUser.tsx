@@ -4,11 +4,9 @@ import { User } from 'models';
 
 const USER_COLLECTION = 'Users';
 
-const createUser = async (user: User): Promise<string> => {
+export const createUser = async (user: User): Promise<string> => {
   const document = fDocument(firestore, USER_COLLECTION, user.id);
   await setDoc(document, user);
 
   return user.id;
 };
-
-export default createUser;

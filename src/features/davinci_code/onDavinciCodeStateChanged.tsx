@@ -1,7 +1,7 @@
 import { database } from 'features';
 import { child, onValue, ref, type Unsubscribe } from 'firebase/database';
 import { DavinciCode } from 'models';
-import { sanitize } from 'shared';
+import { errorGameStateFailed, sanitize } from 'shared';
 
 const DAVINCI_CODE_REFERENCE = 'DavinciCode';
 
@@ -14,10 +14,10 @@ export const onDavinciCodeStateChanged = (
   return onValue(davinciCodeReference, (snapshot) => {
     const data = snapshot.val() as DavinciCode;
 
-    const sanitizedData = sanitize(data);
-    if (!sanitizedData) {
-      throw new Error('Invalid data');
-    }
-    onChanged(sanitizedData);
+    onChanged(
+      sanitize(data, () => {
+        throw new Error(errorGameStateFailed);
+      }).val()
+    );
   });
 };

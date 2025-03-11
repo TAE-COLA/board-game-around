@@ -1,2 +1,2 @@
-export { default as signUpWithEmailAndPassword } from './signUpWithEmailAndPassword';
-export { useAuthContext } from './useAuthContext';
+export * from './signUpWithEmailAndPassword';
+export * from './useAuthContext';

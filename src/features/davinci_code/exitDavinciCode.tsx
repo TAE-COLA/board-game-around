@@ -7,7 +7,6 @@ const DAVINCI_CODE_REFERENCE = 'DavinciCode';
 const DAVINCI_CODE_PLAYER_IDS = 'playerIds';
 const DAVINCI_CODE_HANDS = 'hands';
 const DAVINCI_CODE_TURN = 'turn';
-const DAVINCI_CODE_FINISHED_PLAYER_IDS = 'finishedPlayerIds';
 
 export const exitDavinciCode = async (loungeId: string, userId: string): Promise<void> => {
   const reference = fRefrence(database);

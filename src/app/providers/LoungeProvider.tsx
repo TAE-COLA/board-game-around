@@ -1,4 +1,5 @@
 import { useToast } from '@chakra-ui/react';
+import { Paths } from 'app/route';
 import {
   LoungeContext,
   fetchGameById,
@@ -12,7 +13,7 @@ import { serverTimestamp } from 'firebase/database';
 import { Game, User } from 'models';
 import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
-import { createDummy } from 'shared';
+import { createDummy, noLounge } from 'shared';
 
 export const LoungeProvider: React.FC = () => {
   const [id, setId] = useState('');
@@ -34,48 +35,39 @@ export const LoungeProvider: React.FC = () => {
   useEffect(() => {
     if (auth.loading) return;
 
-    fetchLoungeIdByUserId(auth.id).then((loungeId) => {
-      if (!loungeId) {
-        navigate('/main', { replace: true });
-        toast({
-          title: '게임방이 존재하지 않습니다.',
-          status: 'error',
-          duration: 2000,
+    fetchLoungeIdByUserId(auth.id)
+      .then((loungeId) => {
+        setId(loungeId);
+        const unsubscribe = onLoungeStateChanged(loungeId, async (lounge) => {
+          if (lounge) {
+            setIsLoungeAvailable(true);
+            const game = await fetchGameById(lounge.gameId);
+            setGame(game);
+            const owner = await fetchUserById(lounge.ownerId);
+            setOwner(owner);
+            const players = await fetchUsersByIds(lounge.playerIds);
+            setplayers(players);
+            setCode(lounge.code);
+            setStatus(lounge.status);
+            setCreatedAt(lounge.createdAt);
+            setLoading(false);
+          } else {
+            setIsLoungeAvailable(false);
+          }
         });
-        return;
-      }
 
-      setId(loungeId);
-      const unsubscribe = onLoungeStateChanged(loungeId, async (lounge) => {
-        if (lounge) {
-          setIsLoungeAvailable(true);
-          const game = await fetchGameById(lounge.gameId);
-          setGame(game);
-          const owner = await fetchUserById(lounge.ownerId);
-          setOwner(owner);
-          const players = await fetchUsersByIds(lounge.playerIds);
-          setplayers(players);
-          setCode(lounge.code);
-          setStatus(lounge.status);
-          setCreatedAt(lounge.createdAt);
-          setLoading(false);
-        } else {
-          setIsLoungeAvailable(false);
-        }
+        return () => unsubscribe();
+      })
+      .catch(() => {
+        navigate(Paths.main, { replace: true });
+        toast(noLounge);
       });
-
-      return () => unsubscribe();
-    });
   }, [auth]);
 
   useEffect(() => {
     if (!loading && !isLoungeAvailable) {
-      navigate('/main', { replace: true });
-      toast({
-        title: '게임방이 존재하지 않습니다.',
-        status: 'error',
-        duration: 2000,
-      });
+      navigate(Paths.main, { replace: true });
+      toast(noLounge);
     }
   }, [loading, isLoungeAvailable]);
 

@@ -2,7 +2,11 @@ import { createUser } from 'features';
 import { createUserWithEmailAndPassword, User as FUser, getAuth } from 'firebase/auth';
 import { User } from 'models';
 
-const signUpWithEmailAndPassword = async (email: string, password: string, nickname: string): Promise<string> => {
+export const signUpWithEmailAndPassword = async (
+  email: string,
+  password: string,
+  nickname: string
+): Promise<string> => {
   const auth = getAuth();
   const userCredential = await createUserWithEmailAndPassword(auth, email, password);
 
@@ -17,5 +21,3 @@ const signUpWithEmailAndPassword = async (email: string, password: string, nickn
 
   return userId;
 };
-
-export default signUpWithEmailAndPassword;
