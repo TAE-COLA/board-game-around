@@ -1,5 +1,4 @@
 import { useDisclosure, useToast } from '@chakra-ui/react';
-import { User, YachtDiceBoard } from 'entities';
 import {
   exitLounge,
   exitYachtDice,
@@ -10,6 +9,7 @@ import {
   useAuthContext,
   useLoungeContext,
 } from 'features';
+import { User, YachtDiceBoard } from 'models';
 import { useEffect, useReducer, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createDummy, launch } from 'shared';
@@ -54,10 +54,7 @@ type YachtDiceReduce =
   | { type: 'ROLLS'; rolls: number }
   | { type: 'ROLLING'; rolling: boolean };
 
-function handleYachtDiceReduce(
-  state: YachtDiceState,
-  reduce: YachtDiceReduce
-): YachtDiceState {
+function handleYachtDiceReduce(state: YachtDiceState, reduce: YachtDiceReduce): YachtDiceState {
   switch (reduce.type) {
     case 'PLAYERS':
       return { ...state, players: reduce.players };
@@ -122,8 +119,7 @@ export function useYachtDiceIntent() {
   };
   const modal = { isOpen, onOpen, onClose: onCloseResultModal };
 
-  const notMyTurnToast = () =>
-    toast({ title: '내 차례가 아닙니다.', status: 'error', duration: 2000 });
+  const notMyTurnToast = () => toast({ title: '내 차례가 아닙니다.', status: 'error', duration: 2000 });
 
   const onEvent = async (event: YachtDiceEvent) => {
     switch (event.type) {
@@ -136,13 +132,8 @@ export function useYachtDiceIntent() {
         });
         break;
       case 'ON_CLICK_PREV_BOARD_BUTTON': {
-        const currentIndex = state.players.findIndex(
-          (player) => player.id === state.currentBoardPlayer.id
-        );
-        const prevBoardPlayer =
-          state.players[
-            (currentIndex - 1 + state.players.length) % state.players.length
-          ];
+        const currentIndex = state.players.findIndex((player) => player.id === state.currentBoardPlayer.id);
+        const prevBoardPlayer = state.players[(currentIndex - 1 + state.players.length) % state.players.length];
         dispatch({
           type: 'CURRENT_BOARD_PLAYER',
           currentBoardPlayer: prevBoardPlayer,
@@ -150,11 +141,8 @@ export function useYachtDiceIntent() {
         break;
       }
       case 'ON_CLICK_NEXT_BOARD_BUTTON': {
-        const nextIndex = state.players.findIndex(
-          (player) => player.id === state.currentBoardPlayer.id
-        );
-        const nextBoardPlayer =
-          state.players[(nextIndex + 1) % state.players.length];
+        const nextIndex = state.players.findIndex((player) => player.id === state.currentBoardPlayer.id);
+        const nextBoardPlayer = state.players[(nextIndex + 1) % state.players.length];
         dispatch({
           type: 'CURRENT_BOARD_PLAYER',
           currentBoardPlayer: nextBoardPlayer,
@@ -217,37 +205,34 @@ export function useYachtDiceIntent() {
       return;
     }
 
-    const unsubscribe = onYachtDiceStateChanged(
-      lounge.id,
-      async (yachtDice) => {
-        const players = await fetchUsersByIds(yachtDice.playerIds);
-        dispatch({ type: 'PLAYERS', players });
-        dispatch({ type: 'ROUND', round: yachtDice.round });
-        dispatch({ type: 'BOARDS', boards: yachtDice.boards });
-        dispatch({
-          type: 'CURRENT_BOARD_PLAYER',
-          currentBoardPlayer: players[0],
-        });
-        const turn = await fetchUserById(yachtDice.turn);
-        dispatch({ type: 'TURN', turn });
-        dispatch({ type: 'DICE', dice: yachtDice.dice });
-        dispatch({ type: 'KEEP', keep: yachtDice.keep ?? [] });
-        dispatch({ type: 'ROLLS', rolls: yachtDice.rolls });
-        if (yachtDice.rolls === 0) {
-          dispatch({ type: 'SAVE_KEPT' });
-        } else if (yachtDice.rolls === 3) {
-          dispatch({ type: 'CLEAR_KEPT' });
-        }
-        setLoading(false);
-
-        if (yachtDice.turn === auth.id && yachtDice.rolls === 3) {
-          toast({ title: '내 차례입니다.', status: 'info', duration: 2000 });
-        }
-        if (yachtDice.finishedAt) {
-          onOpen();
-        }
+    const unsubscribe = onYachtDiceStateChanged(lounge.id, async (yachtDice) => {
+      const players = await fetchUsersByIds(yachtDice.playerIds);
+      dispatch({ type: 'PLAYERS', players });
+      dispatch({ type: 'ROUND', round: yachtDice.round });
+      dispatch({ type: 'BOARDS', boards: yachtDice.boards });
+      dispatch({
+        type: 'CURRENT_BOARD_PLAYER',
+        currentBoardPlayer: players[0],
+      });
+      const turn = await fetchUserById(yachtDice.turn);
+      dispatch({ type: 'TURN', turn });
+      dispatch({ type: 'DICE', dice: yachtDice.dice });
+      dispatch({ type: 'KEEP', keep: yachtDice.keep ?? [] });
+      dispatch({ type: 'ROLLS', rolls: yachtDice.rolls });
+      if (yachtDice.rolls === 0) {
+        dispatch({ type: 'SAVE_KEPT' });
+      } else if (yachtDice.rolls === 3) {
+        dispatch({ type: 'CLEAR_KEPT' });
       }
-    );
+      setLoading(false);
+
+      if (yachtDice.turn === auth.id && yachtDice.rolls === 3) {
+        toast({ title: '내 차례입니다.', status: 'info', duration: 2000 });
+      }
+      if (yachtDice.finishedAt) {
+        onOpen();
+      }
+    });
 
     return () => unsubscribe();
   }, [lounge.id, lounge.loading]);

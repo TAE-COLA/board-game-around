@@ -1,11 +1,6 @@
-import { User } from 'entities';
 import { firestore } from 'features';
-import {
-  collection as fCollection,
-  query as fQuery,
-  getDocs,
-  where,
-} from 'firebase/firestore';
+import { collection as fCollection, query as fQuery, getDocs, where } from 'firebase/firestore';
+import { User } from 'models';
 import { sanitize } from 'shared';
 
 const USER_COLLECTION = 'Users';

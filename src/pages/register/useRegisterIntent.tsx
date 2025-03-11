@@ -1,7 +1,7 @@
 import { useToast } from '@chakra-ui/react';
-import { FormData } from 'entities';
 import { checkEmailForDuplicate, signUpWithEmailAndPassword } from 'features';
 import { getAuth } from 'firebase/auth';
+import { FormData } from 'models';
 import { useEffect, useReducer, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { launch } from 'shared';
@@ -35,10 +35,7 @@ type RegisterReduce =
   | { type: 'NICKNAME'; nickname: FormData<'nickname', string> }
   | { type: 'VALID'; valid: boolean };
 
-function handleRegisterReduce(
-  state: RegisterState,
-  reduce: RegisterReduce
-): RegisterState {
+function handleRegisterReduce(state: RegisterState, reduce: RegisterReduce): RegisterState {
   switch (reduce.type) {
     case 'EMAIL':
       return { ...state, email: reduce.email };
@@ -124,10 +121,7 @@ export function useRegisterIntent() {
           passwordConfirm: {
             label: 'passwordConfrim',
             value: event.passwordConfirm,
-            error: checkPasswordConfirmValidity(
-              state.password.value,
-              event.passwordConfirm
-            ),
+            error: checkPasswordConfirmValidity(state.password.value, event.passwordConfirm),
           },
         });
         dispatch({ type: 'VALID', valid: checkValid(state) });
@@ -145,11 +139,7 @@ export function useRegisterIntent() {
         break;
       case 'ON_CLICK_SUBMIT_BUTTON':
         await launch(setLoading, async () => {
-          await signUpWithEmailAndPassword(
-            state.email.value,
-            state.password.value,
-            state.nickname.value
-          );
+          await signUpWithEmailAndPassword(state.email.value, state.password.value, state.nickname.value);
         });
         toast({
           title: '회원가입이 완료됐습니다.',
@@ -203,10 +193,7 @@ function checkPasswordValidity(password: string): string | null {
   return null;
 }
 
-function checkPasswordConfirmValidity(
-  password: string,
-  passwordConfirm: string
-): string | null {
+function checkPasswordConfirmValidity(password: string, passwordConfirm: string): string | null {
   if (passwordConfirm.length === 0) {
     return null;
   }
@@ -237,10 +224,7 @@ function checkValid(state: RegisterState): boolean {
   if (state.password.error !== null || state.password.value.length === 0) {
     return false;
   }
-  if (
-    state.passwordConfirm.error !== null ||
-    state.passwordConfirm.value.length === 0
-  ) {
+  if (state.passwordConfirm.error !== null || state.passwordConfirm.value.length === 0) {
     return false;
   }
   if (state.nickname.error !== null || state.nickname.value.length === 0) {

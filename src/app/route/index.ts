@@ -1,1 +1,1 @@
-export { default as PageRouter } from './PageRouter';
+export { PageRouter } from './PageRouter';

@@ -1,6 +1,6 @@
-import { Lounge, YachtDiceBoard } from 'entities';
 import { database } from 'features';
 import { child, ref as fReference, get, update } from 'firebase/database';
+import { Lounge, YachtDiceBoard } from 'models';
 
 const YACHT_DICE_REFERENCE = 'YachtDice';
 const LOUNGE_REFERENCE = 'Lounge';

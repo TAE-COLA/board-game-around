@@ -1,6 +1,5 @@
 export * from './auth';
-export * from './davinci_code/DavinciCode';
-export * from './davinci_code/DavinciCodeTile';
+export * from './davinci_code';
 export * from './game';
 export * from './lounge';
 export * from './types';

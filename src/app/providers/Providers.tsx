@@ -1,14 +1,10 @@
-import {
-  ChakraBaseProvider,
-  theme as chakraTheme,
-  extendBaseTheme,
-} from '@chakra-ui/react';
+import { ChakraBaseProvider, theme as chakraTheme, extendBaseTheme } from '@chakra-ui/react';
 import React from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { QueryClient, QueryClientProvider } from 'react-query';
 
-const Providers: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const Providers: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const queryClient = new QueryClient();
   const theme = extendBaseTheme({
     components: chakraTheme.components,
@@ -22,5 +18,3 @@ const Providers: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     </QueryClientProvider>
   );
 };
-
-export default Providers;

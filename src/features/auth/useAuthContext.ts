@@ -1,4 +1,4 @@
-import { AuthContext } from 'features';
+import { AuthContext } from 'models';
 import { useContext } from 'react';
 
 export const useAuthContext = () => {

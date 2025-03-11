@@ -1,5 +1,5 @@
 import { Flex, FlexProps, Grid, GridItem, Text } from '@chakra-ui/react';
-import { type YachtDiceBoard } from 'entities';
+import { type YachtDiceBoard } from 'models';
 import React from 'react';
 import { Divider, YachtDiceHandButton } from 'widgets';
 
@@ -10,13 +10,7 @@ type IProps = FlexProps & {
   onClickSelectHandButton: (key: string, value: number) => void;
 };
 
-const YachtDiceHandRanking: React.FC<IProps> = ({
-  board,
-  dice,
-  keep,
-  onClickSelectHandButton,
-  ...props
-}) => {
+const YachtDiceHandRanking: React.FC<IProps> = ({ board, dice, keep, onClickSelectHandButton, ...props }) => {
   const keptDice = dice.filter((_, index) => keep.includes(index));
   const handRankings = {
     ace: { name: 'Ace', check: checkAce(keptDice), marked: board.ace.marked },
@@ -72,12 +66,8 @@ const YachtDiceHandRanking: React.FC<IProps> = ({
     },
   };
 
-  const availableHandRankings = Object.entries(handRankings).filter(
-    ([, value]) => value.check.dice.length > 0
-  );
-  const unavailableHandRankings = Object.entries(handRankings).filter(
-    ([, value]) => value.check.dice.length === 0
-  );
+  const availableHandRankings = Object.entries(handRankings).filter(([, value]) => value.check.dice.length > 0);
+  const unavailableHandRankings = Object.entries(handRankings).filter(([, value]) => value.check.dice.length === 0);
 
   return (
     <Flex direction='column' justify='end' gap='4' {...props}>
@@ -98,10 +88,7 @@ const YachtDiceHandRanking: React.FC<IProps> = ({
         </Grid>
       ) : (
         <Flex justify='center'>
-          <Text>
-            선택할 수 있는 족보가 없습니다. 족보를 분석하려면 주사위를
-            고정하세요.
-          </Text>
+          <Text>선택할 수 있는 족보가 없습니다. 족보를 분석하려면 주사위를 고정하세요.</Text>
         </Flex>
       )}
       <Divider text='또는' />
@@ -225,13 +212,7 @@ function checkFullHouse(dice: number[]): { dice: number[]; score: number } {
   const two = Object.entries(counts).find(([, value]) => value === 2)?.[0];
   const three = Object.entries(counts).find(([, value]) => value === 3)?.[0];
   if (two && three) {
-    const values = [
-      Number(two),
-      Number(two),
-      Number(three),
-      Number(three),
-      Number(three),
-    ].sort();
+    const values = [Number(two), Number(two), Number(three), Number(three), Number(three)].sort();
     const score = values.reduce((acc, value) => acc + value, 0);
     return { dice: values, score };
   } else {
@@ -243,15 +224,9 @@ function checkSmallStraight(dice: number[]): { dice: number[]; score: number } {
   const values =
     dice.includes(1) && dice.includes(2) && dice.includes(3) && dice.includes(4)
       ? [1, 2, 3, 4]
-      : dice.includes(2) &&
-        dice.includes(3) &&
-        dice.includes(4) &&
-        dice.includes(5)
+      : dice.includes(2) && dice.includes(3) && dice.includes(4) && dice.includes(5)
       ? [2, 3, 4, 5]
-      : dice.includes(3) &&
-        dice.includes(4) &&
-        dice.includes(5) &&
-        dice.includes(6)
+      : dice.includes(3) && dice.includes(4) && dice.includes(5) && dice.includes(6)
       ? [3, 4, 5, 6]
       : [];
   if (values.length > 0) {
@@ -263,17 +238,9 @@ function checkSmallStraight(dice: number[]): { dice: number[]; score: number } {
 
 function checkLargeStraight(dice: number[]): { dice: number[]; score: number } {
   const values =
-    dice.includes(1) &&
-    dice.includes(2) &&
-    dice.includes(3) &&
-    dice.includes(4) &&
-    dice.includes(5)
+    dice.includes(1) && dice.includes(2) && dice.includes(3) && dice.includes(4) && dice.includes(5)
       ? [1, 2, 3, 4, 5]
-      : dice.includes(2) &&
-        dice.includes(3) &&
-        dice.includes(4) &&
-        dice.includes(5) &&
-        dice.includes(6)
+      : dice.includes(2) && dice.includes(3) && dice.includes(4) && dice.includes(5) && dice.includes(6)
       ? [2, 3, 4, 5, 6]
       : [];
   if (values.length > 0) {
@@ -284,8 +251,7 @@ function checkLargeStraight(dice: number[]): { dice: number[]; score: number } {
 }
 
 function checkYacht(dice: number[]): { dice: number[]; score: number } {
-  const available =
-    dice.length === 5 && dice.every((value) => value === dice[0]);
+  const available = dice.length === 5 && dice.every((value) => value === dice[0]);
   if (available) {
     return { dice, score: 50 };
   } else {

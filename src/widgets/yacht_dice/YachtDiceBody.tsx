@@ -1,5 +1,5 @@
 import { Flex, FlexProps } from '@chakra-ui/react';
-import { User, YachtDiceBoard } from 'entities';
+import { User, YachtDiceBoard } from 'models';
 import React from 'react';
 import {
   PlayerList,
@@ -60,8 +60,7 @@ const YachtDiceBody: React.FC<IProps> = ({
           player={currentBoardPlayer}
           board={boards[currentBoardPlayer.id]}
           score={Object.values(boards[currentBoardPlayer.id]).reduce(
-            (acc, value: { value: number; marked: boolean }) =>
-              acc + value.value,
+            (acc, value: { value: number; marked: boolean }) => acc + value.value,
             0
           )}
           isFirst={currentBoardPlayer.id === players[0].id}
@@ -94,11 +93,7 @@ const YachtDiceBody: React.FC<IProps> = ({
       </Flex>
       <Flex direction='column' gap='4' flex='1'>
         <PlayerList players={players} turn={turn} flex='1' />
-        <YachtDiceButtons
-          rolls={rolls}
-          rolling={rolling}
-          onClickRollButton={onClickRollButton}
-        />
+        <YachtDiceButtons rolls={rolls} rolling={rolling} onClickRollButton={onClickRollButton} />
       </Flex>
     </Flex>
   );

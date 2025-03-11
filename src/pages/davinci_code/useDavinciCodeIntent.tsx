@@ -1,5 +1,4 @@
 import { useDisclosure, useToast } from '@chakra-ui/react';
-import { DavinciCodeTile, User } from 'entities';
 import {
   drawDavinciCodeTile,
   exitLounge,
@@ -11,6 +10,7 @@ import {
   useAuthContext,
   useLoungeContext,
 } from 'features';
+import { DavinciCodeTile, User } from 'models';
 import { useEffect, useReducer, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createDummy, launch } from 'shared';
@@ -42,10 +42,7 @@ type DavinciCodeReduce =
   | { type: 'DRAWABLE_TILES'; drawableTiles: number }
   | { type: 'PENDING_TILES'; pendingTiles: DavinciCodeTile[] };
 
-function handleDavinciCodeReduce(
-  state: DavinciCodeState,
-  reduce: DavinciCodeReduce
-): DavinciCodeState {
+function handleDavinciCodeReduce(state: DavinciCodeState, reduce: DavinciCodeReduce): DavinciCodeState {
   switch (reduce.type) {
     case 'PLAYERS':
       return { ...state, players: reduce.players };

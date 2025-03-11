@@ -1,6 +1,6 @@
-import { Game } from 'entities';
 import { firestore } from 'features';
 import { collection as fCollection, getDocs } from 'firebase/firestore';
+import { Game } from 'models';
 
 const GAME_COLLECTION = 'Games';
 

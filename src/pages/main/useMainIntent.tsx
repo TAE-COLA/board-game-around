@@ -1,12 +1,7 @@
 import { useDisclosure, useToast } from '@chakra-ui/react';
-import { Game } from 'entities';
-import {
-  createLounge,
-  fetchAllGames,
-  joinLounge,
-  useAuthContext,
-} from 'features';
+import { createLounge, fetchAllGames, joinLounge, useAuthContext } from 'features';
 import { getAuth, signOut } from 'firebase/auth';
+import { Game } from 'models';
 import { useEffect, useReducer, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { launch } from 'shared';
@@ -23,9 +18,7 @@ type MainEvent =
   | { type: 'ON_CLICK_CREATE_LOUNGE_BUTTON' }
   | { type: 'ON_CLICK_JOIN_LOUNGE_BUTTON'; code: string };
 
-type MainReduce =
-  | { type: 'GAME_LIST'; gameList: Game[] }
-  | { type: 'SELECTED_GAME'; selectedGame: Game | null };
+type MainReduce = { type: 'GAME_LIST'; gameList: Game[] } | { type: 'SELECTED_GAME'; selectedGame: Game | null };
 
 function handleMainReduce(state: MainState, reduce: MainReduce): MainState {
   switch (reduce.type) {

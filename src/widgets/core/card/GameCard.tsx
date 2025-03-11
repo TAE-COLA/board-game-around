@@ -10,7 +10,7 @@ import {
   HeadingProps,
   Text,
 } from '@chakra-ui/react';
-import { Game } from 'entities';
+import { Game } from 'models';
 import React from 'react';
 
 type IProps = CardProps & {
@@ -19,12 +19,7 @@ type IProps = CardProps & {
   headerSize?: HeadingProps['size'];
 };
 
-const GameCard: React.FC<IProps> = ({
-  game,
-  onClickGamePlayButton,
-  headerSize = 'md',
-  ...props
-}) => {
+const GameCard: React.FC<IProps> = ({ game, onClickGamePlayButton, headerSize = 'md', ...props }) => {
   return (
     <Card {...props}>
       <CardHeader>

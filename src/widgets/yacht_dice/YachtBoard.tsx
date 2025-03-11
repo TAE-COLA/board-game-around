@@ -13,7 +13,7 @@ import {
   Thead,
   Tr,
 } from '@chakra-ui/react';
-import { User, type YachtDiceBoard } from 'entities';
+import { User, type YachtDiceBoard } from 'models';
 import React from 'react';
 
 type IProps = FlexProps & {
@@ -53,15 +53,7 @@ const YachtBoard: React.FC<IProps> = ({
   };
 
   return (
-    <Flex
-      direction='column'
-      align='center'
-      gap='8'
-      padding='4'
-      background='gray.100'
-      borderRadius='md'
-      {...props}
-    >
+    <Flex direction='column' align='center' gap='8' padding='4' background='gray.100' borderRadius='md' {...props}>
       <Flex width='100%' align='center'>
         <ChevronLeftIcon
           onClick={() => isFirst || onClickPrevBoardButton()}

@@ -1,6 +1,6 @@
-import { Game } from 'entities';
 import { firestore } from 'features';
 import { collection, getDocs } from 'firebase/firestore';
+import { Game } from 'models';
 import { useQuery } from 'react-query';
 
 const fetchGameList = async (): Promise<Game[]> => {

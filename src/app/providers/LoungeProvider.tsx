@@ -1,5 +1,4 @@
 import { useToast } from '@chakra-ui/react';
-import { Game, User } from 'entities';
 import {
   LoungeContext,
   fetchGameById,
@@ -10,20 +9,19 @@ import {
   useAuthContext,
 } from 'features';
 import { serverTimestamp } from 'firebase/database';
+import { Game, User } from 'models';
 import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { createDummy } from 'shared';
 
-const LoungeProvider: React.FC = () => {
+export const LoungeProvider: React.FC = () => {
   const [id, setId] = useState('');
   const [loading, setLoading] = useState(true);
   const [game, setGame] = useState(createDummy<Game>());
   const [code, setCode] = useState('');
   const [owner, setOwner] = useState(createDummy<User>());
   const [players, setplayers] = useState<User[]>([]);
-  const [status, setStatus] = useState<'WAITING' | 'PLAYING' | 'END'>(
-    'WAITING'
-  );
+  const [status, setStatus] = useState<'WAITING' | 'PLAYING' | 'END'>('WAITING');
   const [createdAt, setCreatedAt] = useState(serverTimestamp());
 
   const [isLoungeAvailable, setIsLoungeAvailable] = useState(false);
@@ -82,12 +80,8 @@ const LoungeProvider: React.FC = () => {
   }, [loading, isLoungeAvailable]);
 
   return (
-    <LoungeContext.Provider
-      value={{ loading, id, game, code, owner, players, status, createdAt }}
-    >
+    <LoungeContext.Provider value={{ loading, id, game, code, owner, players, status, createdAt }}>
       <Outlet />
     </LoungeContext.Provider>
   );
 };
-
-export default LoungeProvider;

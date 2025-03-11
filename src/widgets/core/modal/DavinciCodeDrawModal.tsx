@@ -10,8 +10,8 @@ import {
   ModalOverlay,
   Text,
 } from '@chakra-ui/react';
-import { DavinciCodeTile as tileEntity, User } from 'entities';
 import { useAuthContext } from 'features';
+import { DavinciCodeTile as tileEntity, User } from 'models';
 import React, { useEffect } from 'react';
 import { DavinciCodeTile } from 'widgets/davinci_code';
 

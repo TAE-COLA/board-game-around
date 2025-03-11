@@ -1,19 +1,12 @@
-import {
-  FormControl,
-  FormErrorMessage,
-  FormHelperText,
-  Input,
-  InputGroup,
-  InputRightElement,
-} from '@chakra-ui/react';
-import { FormData } from 'entities';
+import { FormControl, FormErrorMessage, FormHelperText, Input, InputGroup, InputRightElement } from '@chakra-ui/react';
+import { FormData } from 'models';
 import React from 'react';
 
 type IProps<Label extends string> = {
   id: string;
   data: FormData<Label, string>;
   onValueChange: (value: string) => void;
-  type?: HTMLInputTypeAttribute;
+  type?: HTMLInputTypeAttrmodels
   placeholder?: string;
   helperText?: string;
   isReadOnly?: boolean;

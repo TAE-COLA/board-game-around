@@ -1,6 +1,6 @@
-import { User } from 'entities';
 import { firestore } from 'features';
 import { doc as fDocument, setDoc } from 'firebase/firestore';
+import { User } from 'models';
 
 const USER_COLLECTION = 'Users';
 

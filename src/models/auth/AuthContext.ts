@@ -1,3 +1,5 @@
+import { createContext } from 'react';
+
 export interface AuthContextType {
   loading: boolean;
   id: string;
@@ -5,3 +7,5 @@ export interface AuthContextType {
   email: string;
   createdAt: Date;
 }
+
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);

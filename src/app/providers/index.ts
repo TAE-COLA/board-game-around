@@ -1,3 +1,3 @@
-export { default as AuthProvider } from './AuthProvider';
-export { default as LoungeProvider } from './LoungeProvider';
-export { default as Providers } from './Providers';
+export * from './AuthProvider';
+export * from './LoungeProvider';
+export * from './Providers';

@@ -1,4 +1,4 @@
-import { Game, User } from 'entities';
+import { Game, User } from 'models';
 
 export interface LoungeContextType {
   loading: boolean;

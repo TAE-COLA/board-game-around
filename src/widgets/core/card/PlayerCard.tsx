@@ -1,6 +1,6 @@
 import { StarIcon } from '@chakra-ui/icons';
 import { Card, CardBody, CardProps, Text } from '@chakra-ui/react';
-import { User } from 'entities';
+import { User } from 'models';
 import React from 'react';
 
 type IProps = CardProps & {
@@ -9,12 +9,7 @@ type IProps = CardProps & {
   isPlayerTurn?: boolean;
 };
 
-const PlayerCard: React.FC<IProps> = ({
-  player,
-  isOwner = false,
-  isPlayerTurn = true,
-  ...props
-}) => {
+const PlayerCard: React.FC<IProps> = ({ player, isOwner = false, isPlayerTurn = true, ...props }) => {
   return (
     <Card
       direction={{ base: 'column', sm: 'row' }}

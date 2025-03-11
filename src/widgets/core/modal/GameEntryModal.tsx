@@ -11,7 +11,7 @@ import {
   ModalOverlay,
   Text,
 } from '@chakra-ui/react';
-import { Game } from 'entities';
+import { Game } from 'models';
 import React, { useState } from 'react';
 
 type IProps = {
@@ -38,20 +38,10 @@ const GameEntryModal: React.FC<IProps> = ({
         <ModalHeader>{game.name} 플레이</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <Flex
-            direction='row'
-            width='100%'
-            justify='Center'
-            align='Center'
-            gap='16'
-          >
+          <Flex direction='row' width='100%' justify='Center' align='Center' gap='16'>
             <Flex direction='column' gap='4'>
               <Text>새로운 게임방을 생성하세요</Text>
-              <Button
-                onClick={onClickCreateLoungeButton}
-                isDisabled={loading}
-                colorScheme='blue'
-              >
+              <Button onClick={onClickCreateLoungeButton} isDisabled={loading} colorScheme='blue'>
                 게임방 생성
               </Button>
             </Flex>
@@ -63,11 +53,7 @@ const GameEntryModal: React.FC<IProps> = ({
                 onChange={(e) => setData(e.target.value)}
                 isDisabled={loading}
               />
-              <Button
-                onClick={() => onClickJoinLoungeButton(code)}
-                isDisabled={loading}
-                colorScheme='blue'
-              >
+              <Button onClick={() => onClickJoinLoungeButton(code)} isDisabled={loading} colorScheme='blue'>
                 게임방 참여
               </Button>
             </Flex>

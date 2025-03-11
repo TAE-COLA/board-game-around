@@ -3,7 +3,7 @@ import { PageRouter } from 'app';
 import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
 
-const App: React.FC = () => {
+export const App: React.FC = () => {
   const background = 'linear(to-br, blue.200, pink.200)';
 
   return (
@@ -21,5 +21,3 @@ const App: React.FC = () => {
     </Flex>
   );
 };
-
-export default App;

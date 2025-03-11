@@ -1,14 +1,6 @@
-import {
-  Card,
-  CardBody,
-  CardProps,
-  Divider,
-  Flex,
-  Spacer,
-  Text,
-} from '@chakra-ui/react';
-import { DavinciCodeTile as TileEntity, User } from 'entities';
+import { Card, CardBody, CardProps, Divider, Flex, Spacer, Text } from '@chakra-ui/react';
 import { useAuthContext } from 'features';
+import { DavinciCodeTile as TileEntity, User } from 'models';
 import React from 'react';
 
 type IProps = CardProps & {
@@ -46,12 +38,7 @@ const DavinciCodeTile: React.FC<IProps> = ({
       {...props}
     >
       <CardBody width='100%' height='100%'>
-        <Flex
-          direction='column'
-          height='100%'
-          alignItems='center'
-          justifyContent='center'
-        >
+        <Flex direction='column' height='100%' alignItems='center' justifyContent='center'>
           <Text as='kbd' fontSize='xl' color={tile.isWhite ? 'black' : 'white'}>
             {isMyTile || tile.isRevealed ? tile.number : '?'}
           </Text>

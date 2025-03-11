@@ -1,6 +1,4 @@
-import { LoungeContextType } from 'entities';
+import { LoungeContextType } from 'models';
 import { createContext } from 'react';
 
-export const LoungeContext = createContext<LoungeContextType | undefined>(
-  undefined
-);
+export const LoungeContext = createContext<LoungeContextType | undefined>(undefined);

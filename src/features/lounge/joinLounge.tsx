@@ -1,14 +1,6 @@
-import { Lounge } from 'entities';
 import { database } from 'features';
-import {
-  child,
-  equalTo,
-  query as fQuery,
-  ref as fRefrence,
-  get,
-  orderByChild,
-  update,
-} from 'firebase/database';
+import { child, equalTo, query as fQuery, ref as fRefrence, get, orderByChild, update } from 'firebase/database';
+import { Lounge } from 'models';
 
 const LOUNGE_REFERENCE = 'Lounge';
 const USER_REFERENCE = 'User-lounge';
@@ -18,17 +10,9 @@ const LOUNGE_PLAYER_IDS = 'playerIds';
 
 const USER_LOUNGE_ID = 'loungeId';
 
-export const joinLounge = async (
-  code: string,
-  gameId: string,
-  userId: string
-): Promise<string | null> => {
+export const joinLounge = async (code: string, gameId: string, userId: string): Promise<string | null> => {
   const reference = fRefrence(database);
-  const query = fQuery(
-    child(reference, LOUNGE_REFERENCE),
-    orderByChild(LOUNGE_CODE),
-    equalTo(code)
-  );
+  const query = fQuery(child(reference, LOUNGE_REFERENCE), orderByChild(LOUNGE_CODE), equalTo(code));
   const snapshot = await get(query);
   const data = snapshot.val();
 
@@ -44,10 +28,7 @@ export const joinLounge = async (
   }
 
   const updates = {
-    [`/${LOUNGE_REFERENCE}/${loungeId}/${LOUNGE_PLAYER_IDS}`]: [
-      ...lounge.playerIds,
-      userId,
-    ],
+    [`/${LOUNGE_REFERENCE}/${loungeId}/${LOUNGE_PLAYER_IDS}`]: [...lounge.playerIds, userId],
     [`/${USER_REFERENCE}/${userId}/${USER_LOUNGE_ID}`]: loungeId,
   };
 

@@ -9,7 +9,7 @@ import {
   ModalOverlay,
   Text,
 } from '@chakra-ui/react';
-import { User } from 'entities';
+import { User } from 'models';
 import React from 'react';
 import { getOrdinal } from 'shared';
 
@@ -20,24 +20,12 @@ type IProps = {
 
 const YachtDiceResultModal: React.FC<IProps> = ({ rank, modal }) => {
   return (
-    <Modal
-      isOpen={modal.isOpen}
-      onClose={modal.onClose}
-      size='xl'
-      isCentered
-      closeOnOverlayClick={false}
-    >
+    <Modal isOpen={modal.isOpen} onClose={modal.onClose} size='xl' isCentered closeOnOverlayClick={false}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>요트다이스 결과</ModalHeader>
         <ModalBody>
-          <Flex
-            direction='column'
-            width='100%'
-            justify='center'
-            align='center'
-            gap='4'
-          >
+          <Flex direction='column' width='100%' justify='center' align='center' gap='4'>
             <Flex
               width='100%'
               align='center'

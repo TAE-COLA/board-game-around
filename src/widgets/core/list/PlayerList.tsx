@@ -1,5 +1,5 @@
 import { Flex, FlexProps } from '@chakra-ui/react';
-import { User } from 'entities';
+import { User } from 'models';
 import React from 'react';
 import { PlayerCard } from 'widgets';
 

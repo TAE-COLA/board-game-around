@@ -1,12 +1,6 @@
-import { YachtDice, YachtDiceBoard } from 'entities';
 import { database } from 'features';
-import {
-  child,
-  ref as fReference,
-  get,
-  serverTimestamp,
-  update,
-} from 'firebase/database';
+import { child, ref as fReference, get, serverTimestamp, update } from 'firebase/database';
+import { YachtDice, YachtDiceBoard } from 'models';
 
 const YACHT_DICE_REFERENCE = 'YachtDice';
 
@@ -28,15 +22,9 @@ type Payloads = {
   turn?: string;
 };
 
-export const updateYachtDiceState = async (
-  loungeId: string,
-  payloads: Payloads
-): Promise<void> => {
+export const updateYachtDiceState = async (loungeId: string, payloads: Payloads): Promise<void> => {
   const reference = fReference(database);
-  const loungeReference = child(
-    reference,
-    `${YACHT_DICE_REFERENCE}/${loungeId}`
-  );
+  const loungeReference = child(reference, `${YACHT_DICE_REFERENCE}/${loungeId}`);
   const val = (await get(loungeReference)).val();
   const lounge = {
     playerIds: val[YACHT_DICE_PLAYER_IDS],
@@ -53,18 +41,17 @@ export const updateYachtDiceState = async (
 
   if (payloads['boards'] !== undefined) {
     const playerIndex = lounge.playerIds.indexOf(lounge.turn);
-    const nextPlayerId =
-      lounge.playerIds[(playerIndex + 1) % lounge.playerIds.length];
-    updates[`/${YACHT_DICE_REFERENCE}/${loungeId}/${YACHT_DICE_TURN}`] =
-      nextPlayerId;
+    const nextPlayerId = lounge.playerIds[(playerIndex + 1) % lounge.playerIds.length];
+    updates[`/${YACHT_DICE_REFERENCE}/${loungeId}/${YACHT_DICE_TURN}`] = nextPlayerId;
 
     updates[`/${YACHT_DICE_REFERENCE}/${loungeId}/${YACHT_DICE_ROLLS}`] = 3;
     updates[`/${YACHT_DICE_REFERENCE}/${loungeId}/${YACHT_DICE_KEEP}`] = [];
 
     const { key, value } = payloads['boards'];
-    updates[
-      `/${YACHT_DICE_REFERENCE}/${loungeId}/${YACHT_DICE_BOARDS}/${lounge.turn}/${key}`
-    ] = { value, marked: true };
+    updates[`/${YACHT_DICE_REFERENCE}/${loungeId}/${YACHT_DICE_BOARDS}/${lounge.turn}/${key}`] = {
+      value,
+      marked: true,
+    };
 
     const afterBoard = {
       ...lounge.boards[lounge.turn],
@@ -78,23 +65,20 @@ export const updateYachtDiceState = async (
       afterBoard.penta.value +
       afterBoard.hexa.value;
     if (sum >= 63) {
-      updates[
-        `/${YACHT_DICE_REFERENCE}/${loungeId}/${YACHT_DICE_BOARDS}/${lounge.turn}/bonus`
-      ] = { value: 35, marked: true };
+      updates[`/${YACHT_DICE_REFERENCE}/${loungeId}/${YACHT_DICE_BOARDS}/${lounge.turn}/bonus`] = {
+        value: 35,
+        marked: true,
+      };
     }
     if (playerIndex === lounge.playerIds.length - 1) {
-      updates[`/${YACHT_DICE_REFERENCE}/${loungeId}/${YACHT_DICE_ROUND}`] =
-        lounge.round + 1;
+      updates[`/${YACHT_DICE_REFERENCE}/${loungeId}/${YACHT_DICE_ROUND}`] = lounge.round + 1;
       if (lounge.round === 12) {
-        updates[
-          `/${YACHT_DICE_REFERENCE}/${loungeId}/${YACHT_DICE_FINISHED_AT}`
-        ] = serverTimestamp();
+        updates[`/${YACHT_DICE_REFERENCE}/${loungeId}/${YACHT_DICE_FINISHED_AT}`] = serverTimestamp();
       }
     }
   }
   if (payloads['dice'] !== undefined) {
-    updates[`/${YACHT_DICE_REFERENCE}/${loungeId}/${YACHT_DICE_DICE}`] =
-      payloads['dice'];
+    updates[`/${YACHT_DICE_REFERENCE}/${loungeId}/${YACHT_DICE_DICE}`] = payloads['dice'];
   }
   if (payloads['keep-add'] !== undefined) {
     const keep = [...lounge.keep, payloads['keep-add']];
@@ -104,25 +88,19 @@ export const updateYachtDiceState = async (
     if (lounge.rolls === 0) {
       throw new Error('No more rolls left');
     }
-    const keep = lounge.keep.filter(
-      (index: number) => index !== payloads['keep-remove']
-    );
+    const keep = lounge.keep.filter((index: number) => index !== payloads['keep-remove']);
     updates[`/${YACHT_DICE_REFERENCE}/${loungeId}/${YACHT_DICE_KEEP}`] = keep;
   }
   if (payloads['rolls-decrease'] !== undefined) {
     if (lounge.rolls === 0) {
       throw new Error('No more rolls left');
     } else if (lounge.rolls <= 1) {
-      updates[`/${YACHT_DICE_REFERENCE}/${loungeId}/${YACHT_DICE_KEEP}`] = [
-        0, 1, 2, 3, 4,
-      ];
+      updates[`/${YACHT_DICE_REFERENCE}/${loungeId}/${YACHT_DICE_KEEP}`] = [0, 1, 2, 3, 4];
     }
-    updates[`/${YACHT_DICE_REFERENCE}/${loungeId}/${YACHT_DICE_ROLLS}`] =
-      lounge.rolls - payloads['rolls-decrease'];
+    updates[`/${YACHT_DICE_REFERENCE}/${loungeId}/${YACHT_DICE_ROLLS}`] = lounge.rolls - payloads['rolls-decrease'];
   }
   if (payloads['turn'] !== undefined) {
-    updates[`/${YACHT_DICE_REFERENCE}/${loungeId}/${YACHT_DICE_TURN}`] =
-      payloads['turn'];
+    updates[`/${YACHT_DICE_REFERENCE}/${loungeId}/${YACHT_DICE_TURN}`] = payloads['turn'];
   }
 
   await update(reference, updates);
