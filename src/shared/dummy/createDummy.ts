@@ -11,7 +11,7 @@ type DefaultValue<T> = T extends string
   ? { [K in keyof T]: DefaultValue<T[K]> }
   : null;
 
-export function createDummy<T extends object>(): T {
+export const createDummy = <T extends object>(): T => {
   const dummy = {} as T;
 
   for (const key in dummy) {
@@ -19,4 +19,4 @@ export function createDummy<T extends object>(): T {
   }
 
   return dummy;
-}
+};

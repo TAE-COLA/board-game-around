@@ -1,4 +1,4 @@
-export function getOrdinal(num: number): string {
+export const getOrdinal = (num: number): string => {
   const suffixes = ['th', 'st', 'nd', 'rd'];
 
   let suffix = suffixes[0];
@@ -9,4 +9,4 @@ export function getOrdinal(num: number): string {
   }
 
   return `${num}${suffix}`;
-}
+};

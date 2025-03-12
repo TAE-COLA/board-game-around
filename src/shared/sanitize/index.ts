@@ -1,2 +1,2 @@
-export { emptyData } from './emptyData';
-export { sanitize } from './sanitize';
+export * from './emptyData';
+export * from './sanitize';

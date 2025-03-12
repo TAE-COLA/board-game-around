@@ -1,1 +1,1 @@
-export { createDummy } from './createDummy';
+export * from './createDummy';

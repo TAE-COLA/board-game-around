@@ -1,1 +1,1 @@
-export { default as generateCode } from './generateCode';
+export * from './generateCode';

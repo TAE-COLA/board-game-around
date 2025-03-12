@@ -1,1 +1,1 @@
-export { getOrdinal } from './getOrdinal';
+export * from './getOrdinal';
