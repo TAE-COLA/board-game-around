@@ -1,20 +1,16 @@
 import { firestore } from 'features';
 import { collection as fCollection, getDocs } from 'firebase/firestore';
 import { Game } from 'models';
+import { errorNoGame, sanitize } from 'shared';
 
 const GAME_COLLECTION = 'Games';
 
 export const fetchAllGames = async (): Promise<Game[]> => {
   const collection = fCollection(firestore, GAME_COLLECTION);
   const snapshots = await getDocs(collection);
-  const data = snapshots.docs.map((doc) => {
-    return {
-      id: doc.id,
-      name: doc.data().name,
-      description: doc.data().description,
-      image: doc.data().image,
-    };
-  });
+  const data = snapshots.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Game));
 
-  return data;
+  return sanitize(data, () => {
+    throw new Error(errorNoGame);
+  }).val();
 };

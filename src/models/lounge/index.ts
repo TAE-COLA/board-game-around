@@ -1,2 +1,2 @@
 export * from './Lounge';
-export * from './LoungeContextType';
+export * from './LoungeContext';

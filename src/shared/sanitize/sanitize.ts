@@ -6,7 +6,7 @@ class Sanitized<T> {
   constructor(private value: T | null) {}
 
   val(): T {
-    if (!this.value) throw new Error(errorSanitizeFailed(typeof this.value));
+    if (this.value === undefined || this.value === null) throw new Error(errorSanitizeFailed(typeof this.value));
     return this.value;
   }
 
@@ -18,11 +18,13 @@ class Sanitized<T> {
   }
 }
 
-export const sanitize = <T>(obj: T, errorCallback: () => void): Sanitized<T> => {
-  if (obj === undefined) {
-    errorCallback();
-    return new Sanitized<T>(null);
+export const sanitize = <T>(
+  obj: T,
+  errorCallback: () => void = () => {
+    throw new Error(errorSanitizeFailed(typeof obj));
   }
+): Sanitized<T> => {
+  if (obj === undefined) return new Sanitized<T>(null).invalid(errorCallback);
 
   if (obj === null || typeof obj !== 'object') return new Sanitized(obj);
 

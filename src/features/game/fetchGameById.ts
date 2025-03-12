@@ -1,7 +1,7 @@
 import { firestore } from 'features';
 import { collection as fCollection, doc as fDocument, getDoc } from 'firebase/firestore';
 import { Game } from 'models';
-import { sanitize } from 'shared';
+import { errorNoGame, sanitize } from 'shared';
 
 const GAME_COLLECTION = 'Games';
 
@@ -12,6 +12,6 @@ export const fetchGameById = async (id: string): Promise<Game> => {
   const data = { id: snapshot.id, ...snapshot.data() } as Game;
 
   return sanitize(data, () => {
-    throw new Error('Invalid data: data is undefined');
+    throw new Error(errorNoGame);
   }).val();
 };

@@ -1,7 +1,6 @@
 import { useToast } from '@chakra-ui/react';
 import { Paths } from 'app/route';
 import {
-  LoungeContext,
   fetchGameById,
   fetchLoungeIdByUserId,
   fetchUserById,
@@ -9,50 +8,46 @@ import {
   onLoungeStateChanged,
   useAuthContext,
 } from 'features';
-import { serverTimestamp } from 'firebase/database';
-import { Game, User } from 'models';
+import { Game, LoungeContext, User } from 'models';
 import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { createDummy, noLounge } from 'shared';
 
+type LoungeState = {
+  id: string;
+  game: Game;
+  code: string;
+  owner: User;
+  players: User[];
+  status: 'WAITING' | 'PLAYING' | 'END';
+  createdAt: object;
+};
+
 export const LoungeProvider: React.FC = () => {
-  const [id, setId] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [game, setGame] = useState(createDummy<Game>());
-  const [code, setCode] = useState('');
-  const [owner, setOwner] = useState(createDummy<User>());
-  const [players, setplayers] = useState<User[]>([]);
-  const [status, setStatus] = useState<'WAITING' | 'PLAYING' | 'END'>('WAITING');
-  const [createdAt, setCreatedAt] = useState(serverTimestamp());
-
-  const [isLoungeAvailable, setIsLoungeAvailable] = useState(false);
-
   const auth = useAuthContext();
 
   const navigate = useNavigate();
   const toast = useToast();
+
+  const [loading, setLoading] = useState(true);
+  const [loungeState, setLoungeState] = useState(createDummy<LoungeState>());
 
   useEffect(() => {
     if (auth.loading) return;
 
     fetchLoungeIdByUserId(auth.id)
       .then((loungeId) => {
-        setId(loungeId);
         const unsubscribe = onLoungeStateChanged(loungeId, async (lounge) => {
           if (lounge) {
-            setIsLoungeAvailable(true);
             const game = await fetchGameById(lounge.gameId);
-            setGame(game);
             const owner = await fetchUserById(lounge.ownerId);
-            setOwner(owner);
             const players = await fetchUsersByIds(lounge.playerIds);
-            setplayers(players);
-            setCode(lounge.code);
-            setStatus(lounge.status);
-            setCreatedAt(lounge.createdAt);
+
+            setLoungeState({ ...lounge, game, owner, players });
             setLoading(false);
           } else {
-            setIsLoungeAvailable(false);
+            navigate(Paths.main, { replace: true });
+            toast(noLounge);
           }
         });
 
@@ -64,15 +59,8 @@ export const LoungeProvider: React.FC = () => {
       });
   }, [auth]);
 
-  useEffect(() => {
-    if (!loading && !isLoungeAvailable) {
-      navigate(Paths.main, { replace: true });
-      toast(noLounge);
-    }
-  }, [loading, isLoungeAvailable]);
-
   return (
-    <LoungeContext.Provider value={{ loading, id, game, code, owner, players, status, createdAt }}>
+    <LoungeContext.Provider value={{ loading, ...loungeState }}>
       <Outlet />
     </LoungeContext.Provider>
   );

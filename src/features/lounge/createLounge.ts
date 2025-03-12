@@ -28,21 +28,17 @@ export const createLounge = async (gameId: string, ownerId: string): Promise<str
   let isUnique = false;
   while (!isUnique) {
     code = generateCode(10);
-    const query = fQuery(
-      child(reference, LOUNGE_REFERENCE),
-      orderByChild(LOUNGE_CODE),
-      equalTo(code)
-    );
+    const query = fQuery(child(reference, LOUNGE_REFERENCE), orderByChild(LOUNGE_CODE), equalTo(code));
     const snapshot = await get(query);
     isUnique = !snapshot.exists();
   }
 
-  // Add dummy players
-  const dummyPlayers = [
-    '0stLzmhQtyc30FIeGii7047uvFv1',
-    'CiB1YRBhNVQSW7grv1yOGcGr0wA3',
-    'XICkS14iXqU53eYZDr1OlvQeFdA3',
-  ];
+  // // Add dummy players
+  // const dummyPlayers = [
+  //   '0stLzmhQtyc30FIeGii7047uvFv1',
+  //   'CiB1YRBhNVQSW7grv1yOGcGr0wA3',
+  //   'XICkS14iXqU53eYZDr1OlvQeFdA3',
+  // ];
   const playerIds = [ownerId];
 
   const lounge = {

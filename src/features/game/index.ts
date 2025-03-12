@@ -1,3 +1,3 @@
-export { fetchAllGames } from './fetchAllGames';
-export { fetchGameById } from './fetchGameById';
-export { useFetchGameList } from './useFetchGameList';
+export * from './fetchAllGames';
+export * from './fetchGameById';
+export * from './useFetchGameList';

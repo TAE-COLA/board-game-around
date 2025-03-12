@@ -1,6 +1,7 @@
 import { database } from 'features';
 import { child, ref as fRefrence, onValue, type Unsubscribe } from 'firebase/database';
 import { Lounge } from 'models';
+import { sanitize } from 'shared';
 
 const REFERENCE_LOUNGE = 'Lounge';
 
@@ -10,7 +11,9 @@ export const onLoungeStateChanged = (id: string, onChanged: (lounge?: Lounge) =>
 
   return onValue(loungeReference, (snapshot) => {
     const data = { id: snapshot.key, ...snapshot.val() };
-    if (data.deletedAt) onChanged(undefined);
-    else onChanged(data);
+    const lounge = sanitize(data).val();
+
+    if (lounge.deletedAt) onChanged(undefined);
+    else onChanged(lounge);
   });
 };

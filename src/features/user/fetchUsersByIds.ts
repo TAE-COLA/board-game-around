@@ -1,7 +1,7 @@
 import { firestore } from 'features';
 import { collection as fCollection, query as fQuery, getDocs, where } from 'firebase/firestore';
 import { User } from 'models';
-import { sanitize } from 'shared';
+import { errorNoUser, sanitize } from 'shared';
 
 const USER_COLLECTION = 'Users';
 
@@ -11,9 +11,7 @@ export const fetchUsersByIds = async (ids: string[]): Promise<User[]> => {
   const snapshots = await getDocs(query);
   const data = snapshots.docs.map((doc) => doc.data() as User);
 
-  const sanitizedData = sanitize(data);
-  if (!sanitizedData) {
-    throw new Error('Invalid data');
-  }
-  return sanitizedData;
+  return sanitize(data, () => {
+    throw new Error(errorNoUser);
+  }).val();
 };

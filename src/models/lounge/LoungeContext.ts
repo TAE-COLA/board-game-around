@@ -1,4 +1,5 @@
 import { Game, User } from 'models';
+import { createContext } from 'react';
 
 export interface LoungeContextType {
   loading: boolean;
@@ -10,3 +11,5 @@ export interface LoungeContextType {
   status: 'WAITING' | 'PLAYING' | 'END';
   createdAt: object;
 }
+
+export const LoungeContext = createContext<LoungeContextType | undefined>(undefined);

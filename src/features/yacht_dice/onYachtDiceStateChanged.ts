@@ -1,6 +1,7 @@
 import { database } from 'features';
 import { child, ref as fRefrence, onValue, type Unsubscribe } from 'firebase/database';
 import { YachtDice } from 'models';
+import { errorGameStateFailed, sanitize } from 'shared';
 
 const YACHT_DICE_REFERENCE = 'YachtDice';
 
@@ -9,6 +10,10 @@ export const onYachtDiceStateChanged = (loungeId: string, onChanged: (yachtDice:
   const yachtReference = child(child(reference, YACHT_DICE_REFERENCE), loungeId);
   return onValue(yachtReference, (snapshot) => {
     const data = snapshot.val() as YachtDice;
-    onChanged(data);
+    onChanged(
+      sanitize(data, () => {
+        throw new Error(errorGameStateFailed);
+      }).val()
+    );
   });
 };

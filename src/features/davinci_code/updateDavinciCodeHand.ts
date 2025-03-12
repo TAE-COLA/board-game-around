@@ -37,7 +37,7 @@ export const updateDavinciCodeHand = async (
         await database.ref(`${DAVINCI_CODE_REFERENCE}/${loungeId}/${DAVINCI_CODE_HANDS}/${nextPlayerId}`).get()
       ).val();
 
-      if (sanitize(nextPlayersHand).length !== 0) {
+      if (sanitize(nextPlayersHand).val() !== 0) {
         updates[`/${DAVINCI_CODE_PHASE}`] = 'DRAW';
       }
 
