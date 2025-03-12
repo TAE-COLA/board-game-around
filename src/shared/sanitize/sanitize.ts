@@ -1,12 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { errorSanitizeFailed } from 'shared/error';
+import { CommonError } from 'shared/error';
 
 class Sanitized<T> {
   constructor(private value: T | null) {}
 
   val(): T {
-    if (this.value === undefined || this.value === null) throw new Error(errorSanitizeFailed(typeof this.value));
+    if (this.value === undefined || this.value === null)
+      throw new Error(CommonError.SANITIZE_FAILED(typeof this.value));
+    return this.value;
+  }
+
+  valOrNull(): T | null {
     return this.value;
   }
 
@@ -21,7 +26,7 @@ class Sanitized<T> {
 export const sanitize = <T>(
   obj: T,
   errorCallback: () => void = () => {
-    throw new Error(errorSanitizeFailed(typeof obj));
+    throw new Error(CommonError.SANITIZE_FAILED(typeof obj));
   }
 ): Sanitized<T> => {
   if (obj === undefined) return new Sanitized<T>(null).invalid(errorCallback);
@@ -30,7 +35,7 @@ export const sanitize = <T>(
 
   if (Array.isArray(obj)) {
     const sanitizedArray = obj
-      .filter((item) => sanitize(item, errorCallback).val() !== null)
+      .filter((item) => sanitize(item, errorCallback).valOrNull() !== null)
       .map((item) => sanitize(item, errorCallback).val());
     return new Sanitized(sanitizedArray as unknown as T);
   }
@@ -39,10 +44,7 @@ export const sanitize = <T>(
 
   const result = {} as T;
   for (const key in obj) {
-    const sanitizedValue = sanitize((obj as any)[key], errorCallback).val();
-    if (sanitizedValue !== undefined) {
-      result[key] = sanitizedValue;
-    }
+    result[key] = sanitize((obj as any)[key], errorCallback).valOrNull();
   }
 
   return new Sanitized(result);

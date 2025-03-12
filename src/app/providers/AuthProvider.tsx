@@ -5,7 +5,7 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { AuthContext, User } from 'models';
 import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
-import { createDummy, requireLogin } from 'shared';
+import { CommonToast, createDummy } from 'shared';
 
 export const AuthProvider: React.FC = () => {
   const [user, setUser] = useState(createDummy<User>());
@@ -30,7 +30,7 @@ export const AuthProvider: React.FC = () => {
   useEffect(() => {
     if (!loading && !firebaseAuth.currentUser) {
       navigate(Paths.login, { replace: true });
-      toast(requireLogin);
+      toast(CommonToast.REQUIRE_LOGIN);
     }
   }, [user, loading]);
 

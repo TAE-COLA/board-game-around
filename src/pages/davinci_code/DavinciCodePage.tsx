@@ -5,8 +5,9 @@ import { DavinciCodeBody, DavinciCodeFooter, DavinciCodeHeader, NumberModal, Pag
 import DavinciCodeDrawModal from 'widgets/core/modal/DavinciCodeDrawModal';
 import { useDavinciCodeIntent } from './useDavinciCodeIntent';
 
-const DavinciCodePage: React.FC = () => {
+export const DavinciCodePage: React.FC = () => {
   const { id: authId } = useAuthContext();
+  // TODO: 나중에 여건되면 useIntent<DavinciCodeIntent>로 변경 해보는거로!
   const { state, loading, modal, onEvent } = useDavinciCodeIntent();
 
   return (
@@ -41,5 +42,3 @@ const DavinciCodePage: React.FC = () => {
     </Page>
   );
 };
-
-export default DavinciCodePage;

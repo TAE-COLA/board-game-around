@@ -11,7 +11,7 @@ import {
 import { Game, LoungeContext, User } from 'models';
 import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
-import { createDummy, noLounge } from 'shared';
+import { CommonToast, createDummy } from 'shared';
 
 type LoungeState = {
   id: string;
@@ -47,7 +47,7 @@ export const LoungeProvider: React.FC = () => {
             setLoading(false);
           } else {
             navigate(Paths.main, { replace: true });
-            toast(noLounge);
+            toast(CommonToast.NO_LOUNGE);
           }
         });
 
@@ -55,7 +55,7 @@ export const LoungeProvider: React.FC = () => {
       })
       .catch(() => {
         navigate(Paths.main, { replace: true });
-        toast(noLounge);
+        toast(CommonToast.NO_LOUNGE);
       });
   }, [auth]);
 

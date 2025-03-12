@@ -1,2 +1,2 @@
-export { default as DavinciCodePage } from './DavinciCodePage';
-export { useDavinciCodeIntent } from './useDavinciCodeIntent';
+export * from './DavinciCodePage';
+export * from './useDavinciCodeIntent';

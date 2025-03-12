@@ -1,7 +1,7 @@
 import { firestore } from 'features';
 import { collection as fCollection, getDocs } from 'firebase/firestore';
 import { Game } from 'models';
-import { errorNoGame, sanitize } from 'shared';
+import { CommonError, sanitize } from 'shared';
 
 const GAME_COLLECTION = 'Games';
 
@@ -11,6 +11,6 @@ export const fetchAllGames = async (): Promise<Game[]> => {
   const data = snapshots.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Game));
 
   return sanitize(data, () => {
-    throw new Error(errorNoGame);
+    throw new Error(CommonError.NO_GAME);
   }).val();
 };
