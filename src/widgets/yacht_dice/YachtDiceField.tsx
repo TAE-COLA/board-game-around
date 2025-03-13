@@ -13,7 +13,7 @@ type IProps = FlexProps & {
   onRemoveDiceToKeep: (index: number) => void;
 };
 
-const YachtDiceField: React.FC<IProps> = ({
+export const YachtDiceField: React.FC<IProps> = ({
   dice,
   kept,
   keep,
@@ -44,5 +44,3 @@ const YachtDiceField: React.FC<IProps> = ({
     </Flex>
   );
 };
-
-export default YachtDiceField;

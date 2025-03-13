@@ -7,7 +7,7 @@ type IProps = BoxProps & {
   children: React.ReactNode;
 };
 
-const Page: React.FC<IProps> = ({ loading = false, children, ...props }) => {
+export const Page: React.FC<IProps> = ({ loading = false, children, ...props }) => {
   const paddingX = useBreakpointValue({ base: '4', md: '16' });
   const paddingY = useBreakpointValue({ base: '2', md: '8' });
 
@@ -17,5 +17,3 @@ const Page: React.FC<IProps> = ({ loading = false, children, ...props }) => {
     </Box>
   );
 };
-
-export default Page;

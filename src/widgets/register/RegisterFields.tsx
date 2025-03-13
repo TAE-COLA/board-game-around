@@ -19,7 +19,7 @@ type IProps = FlexProps & {
   onClickSubmitButton: () => void;
 };
 
-const RegisterFields: React.FC<IProps> = ({
+export const RegisterFields: React.FC<IProps> = ({
   email,
   emailDuplicate,
   password,
@@ -95,5 +95,3 @@ const RegisterFields: React.FC<IProps> = ({
     </Flex>
   );
 };
-
-export default RegisterFields;

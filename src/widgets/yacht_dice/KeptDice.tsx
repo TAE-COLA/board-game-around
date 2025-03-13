@@ -11,14 +11,7 @@ type IProps = FlexProps & {
   onRemoveDiceToKeep: (index: number) => void;
 };
 
-const KeptDice: React.FC<IProps> = ({
-  dice,
-  kept,
-  keep,
-  onAddDiceToKeep,
-  onRemoveDiceToKeep,
-  ...props
-}) => {
+export const KeptDice: React.FC<IProps> = ({ dice, kept, keep, onAddDiceToKeep, onRemoveDiceToKeep, ...props }) => {
   const [, drop] = useDrop(() => ({
     accept: 'DIE',
     drop: (item: { index: number }) => {
@@ -65,5 +58,3 @@ const KeptDice: React.FC<IProps> = ({
     </Flex>
   );
 };
-
-export default KeptDice;

@@ -6,7 +6,7 @@ type IProps<Label extends string> = {
   id: string;
   data: FormData<Label, string>;
   onValueChange: (value: string) => void;
-  type?: HTMLInputTypeAttrmodels
+  type?: HTMLInputTypeAttribute;
   placeholder?: string;
   helperText?: string;
   isReadOnly?: boolean;
@@ -14,7 +14,7 @@ type IProps<Label extends string> = {
   children?: React.ReactNode;
 };
 
-const FormInput = <Label extends string>({
+export const FormInput = <Label extends string>({
   id,
   data,
   onValueChange,
@@ -47,8 +47,6 @@ const FormInput = <Label extends string>({
     </FormControl>
   );
 };
-
-export default FormInput;
 
 type HTMLInputTypeAttribute =
   | 'button'

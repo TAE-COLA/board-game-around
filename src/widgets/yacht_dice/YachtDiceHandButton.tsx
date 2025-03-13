@@ -10,17 +10,8 @@ type IProps = CardProps & {
   onClick: () => void;
 };
 
-const YachtDiceHandButton: React.FC<IProps> = ({
-  dice,
-  name,
-  score,
-  isDisabled,
-  onClick,
-  ...props
-}) => {
-  const [variant, setVariant] = React.useState<'filled' | 'elevated'>(
-    isDisabled ? 'filled' : 'elevated'
-  );
+export const YachtDiceHandButton: React.FC<IProps> = ({ dice, name, score, isDisabled, onClick, ...props }) => {
+  const [variant, setVariant] = React.useState<'filled' | 'elevated'>(isDisabled ? 'filled' : 'elevated');
 
   return (
     <Card
@@ -51,5 +42,3 @@ const YachtDiceHandButton: React.FC<IProps> = ({
     </Card>
   );
 };
-
-export default YachtDiceHandButton;

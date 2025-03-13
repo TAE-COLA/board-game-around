@@ -14,7 +14,15 @@ type IProps = CardProps & {
   onClickTile: (index: number) => void;
 };
 
-const DavinciCodeHands: React.FC<IProps> = ({ player, hands, turn, phase, finishedPlayers, onClickTile, ...props }) => {
+export const DavinciCodeHands: React.FC<IProps> = ({
+  player,
+  hands,
+  turn,
+  phase,
+  finishedPlayers,
+  onClickTile,
+  ...props
+}) => {
   const auth = useAuthContext();
   const isMyHand = auth.id === player.id;
 
@@ -41,5 +49,3 @@ const DavinciCodeHands: React.FC<IProps> = ({ player, hands, turn, phase, finish
     </Card>
   );
 };
-
-export default DavinciCodeHands;

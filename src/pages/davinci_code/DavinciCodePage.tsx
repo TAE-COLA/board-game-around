@@ -1,8 +1,14 @@
 import { Flex } from '@chakra-ui/react';
 import { useAuthContext } from 'features';
 import React from 'react';
-import { DavinciCodeBody, DavinciCodeFooter, DavinciCodeHeader, NumberModal, Page } from 'widgets';
-import DavinciCodeDrawModal from 'widgets/core/modal/DavinciCodeDrawModal';
+import {
+  DavinciCodeBody,
+  DavinciCodeDrawModal,
+  DavinciCodeFooter,
+  DavinciCodeHeader,
+  NumberModal,
+  Page,
+} from 'widgets';
 import { useDavinciCodeIntent } from './useDavinciCodeIntent';
 
 export const DavinciCodePage: React.FC = () => {

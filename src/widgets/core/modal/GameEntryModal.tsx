@@ -22,7 +22,7 @@ type IProps = {
   onClickJoinLoungeButton: (code: string) => void;
 };
 
-const GameEntryModal: React.FC<IProps> = ({
+export const GameEntryModal: React.FC<IProps> = ({
   loading,
   modal,
   game,
@@ -64,5 +64,3 @@ const GameEntryModal: React.FC<IProps> = ({
     </Modal>
   );
 };
-
-export default GameEntryModal;

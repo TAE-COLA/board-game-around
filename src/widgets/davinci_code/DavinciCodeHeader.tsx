@@ -5,10 +5,7 @@ type IProps = FlexProps & {
   onClickExitButton: () => void;
 };
 
-const DavinciCodeHeader: React.FC<IProps> = ({
-  onClickExitButton,
-  ...props
-}) => {
+export const DavinciCodeHeader: React.FC<IProps> = ({ onClickExitButton, ...props }) => {
   return (
     <Flex width='100%' justify='space-between' align='center' {...props}>
       <Text fontSize='2xl' fontWeight='bold'>
@@ -20,5 +17,3 @@ const DavinciCodeHeader: React.FC<IProps> = ({
     </Flex>
   );
 };
-
-export default DavinciCodeHeader;

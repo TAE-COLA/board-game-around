@@ -10,7 +10,7 @@ type IProps = CardProps & {
   onClick: () => void;
 };
 
-const DavinciCodeTile: React.FC<IProps> = ({
+export const DavinciCodeTile: React.FC<IProps> = ({
   player,
   tile,
   size = { width: '54px', height: '76px' },
@@ -49,5 +49,3 @@ const DavinciCodeTile: React.FC<IProps> = ({
     </Card>
   );
 };
-
-export default DavinciCodeTile;

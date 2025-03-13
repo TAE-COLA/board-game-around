@@ -19,7 +19,7 @@ type IProps = CardProps & {
   headerSize?: HeadingProps['size'];
 };
 
-const GameCard: React.FC<IProps> = ({ game, onClickGamePlayButton, headerSize = 'md', ...props }) => {
+export const GameCard: React.FC<IProps> = ({ game, onClickGamePlayButton, headerSize = 'md', ...props }) => {
   return (
     <Card {...props}>
       <CardHeader>
@@ -34,5 +34,3 @@ const GameCard: React.FC<IProps> = ({ game, onClickGamePlayButton, headerSize = 
     </Card>
   );
 };
-
-export default GameCard;

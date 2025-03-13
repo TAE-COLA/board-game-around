@@ -5,10 +5,7 @@ type IProps = FlexProps & {
   onClickRegisterButton: () => void;
 };
 
-const RegisterButton: React.FC<IProps> = ({
-  onClickRegisterButton,
-  ...props
-}) => {
+export const RegisterButton: React.FC<IProps> = ({ onClickRegisterButton, ...props }) => {
   return (
     <Flex direction='row' alignItems='Center' {...props}>
       <Text fontSize='sm' paddingRight='2'>
@@ -20,5 +17,3 @@ const RegisterButton: React.FC<IProps> = ({
     </Flex>
   );
 };
-
-export default RegisterButton;

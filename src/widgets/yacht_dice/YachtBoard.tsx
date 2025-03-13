@@ -26,7 +26,7 @@ type IProps = FlexProps & {
   onClickNextBoardButton: () => void;
 };
 
-const YachtBoard: React.FC<IProps> = ({
+export const YachtBoard: React.FC<IProps> = ({
   player,
   board,
   score,
@@ -122,5 +122,3 @@ const YachtBoard: React.FC<IProps> = ({
     </Flex>
   );
 };
-
-export default YachtBoard;

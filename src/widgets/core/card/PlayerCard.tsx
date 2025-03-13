@@ -9,7 +9,7 @@ type IProps = CardProps & {
   isPlayerTurn?: boolean;
 };
 
-const PlayerCard: React.FC<IProps> = ({ player, isOwner = false, isPlayerTurn = true, ...props }) => {
+export const PlayerCard: React.FC<IProps> = ({ player, isOwner = false, isPlayerTurn = true, ...props }) => {
   return (
     <Card
       direction={{ base: 'column', sm: 'row' }}
@@ -26,5 +26,3 @@ const PlayerCard: React.FC<IProps> = ({ player, isOwner = false, isPlayerTurn = 
     </Card>
   );
 };
-
-export default PlayerCard;

@@ -5,7 +5,7 @@ type IProps = FlexProps & {
   onClickExitButton: () => void;
 };
 
-const YachtDiceHeader: React.FC<IProps> = ({ onClickExitButton, ...props }) => {
+export const YachtDiceHeader: React.FC<IProps> = ({ onClickExitButton, ...props }) => {
   return (
     <Flex width='100%' justify='space-between' align='center' {...props}>
       <Text fontSize='2xl' fontWeight='bold'>
@@ -17,5 +17,3 @@ const YachtDiceHeader: React.FC<IProps> = ({ onClickExitButton, ...props }) => {
     </Flex>
   );
 };
-
-export default YachtDiceHeader;

@@ -9,7 +9,7 @@ type IProps = FlexProps & {
   turn?: User;
 };
 
-const PlayerList: React.FC<IProps> = ({ players, owner, turn, ...props }) => {
+export const PlayerList: React.FC<IProps> = ({ players, owner, turn, ...props }) => {
   return (
     <Flex direction='column' gap='4' {...props}>
       {players.map((player) => (
@@ -23,5 +23,3 @@ const PlayerList: React.FC<IProps> = ({ players, owner, turn, ...props }) => {
     </Flex>
   );
 };
-
-export default PlayerList;

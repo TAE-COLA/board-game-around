@@ -1,3 +1,3 @@
-export { default as Header } from './Header';
-export { default as Loading } from './Loading';
-export { default as Page } from './Page';
+export * from './Header';
+export * from './Loading';
+export * from './Page';

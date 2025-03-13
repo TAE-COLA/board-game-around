@@ -1,2 +1,2 @@
-export { default as GameCardGrid } from './GameCardGrid';
-export { default as GreetingUser } from './GreetingUser';
+export * from './GameCardGrid';
+export * from './GreetingUser';

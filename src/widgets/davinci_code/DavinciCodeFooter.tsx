@@ -10,7 +10,7 @@ type IProps = FlexProps & {
   hand: tileEntity[];
 };
 
-const DavinciCodeFooter: React.FC<IProps> = ({ hand, turn, phase, ...props }) => {
+export const DavinciCodeFooter: React.FC<IProps> = ({ hand, turn, phase, ...props }) => {
   const { id: authId, name: authName } = useAuthContext();
 
   return (
@@ -30,5 +30,3 @@ const DavinciCodeFooter: React.FC<IProps> = ({ hand, turn, phase, ...props }) =>
     </Flex>
   );
 };
-
-export default DavinciCodeFooter;

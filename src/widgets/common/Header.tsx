@@ -5,11 +5,11 @@ type IProps = FlexProps & {
   children?: React.ReactNode;
 };
 
-const Header: React.FC<IProps> = ({ children, ...props }) => {
+export const Header: React.FC<IProps> = ({ children, ...props }) => {
   return (
     <Flex
-      justifyContent='space-between'
-      alignItems='center'
+      justify='space-between'
+      align='center'
       paddingX='32px'
       paddingY='16px'
       bg='white'
@@ -23,5 +23,3 @@ const Header: React.FC<IProps> = ({ children, ...props }) => {
     </Flex>
   );
 };
-
-export default Header;

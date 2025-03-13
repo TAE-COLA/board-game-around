@@ -10,7 +10,7 @@ type IProps = FlexProps & {
   onClickSelectHandButton: (key: string, value: number) => void;
 };
 
-const YachtDiceHandRanking: React.FC<IProps> = ({ board, dice, keep, onClickSelectHandButton, ...props }) => {
+export const YachtDiceHandRanking: React.FC<IProps> = ({ board, dice, keep, onClickSelectHandButton, ...props }) => {
   const keptDice = dice.filter((_, index) => keep.includes(index));
   const handRankings = {
     ace: { name: 'Ace', check: checkAce(keptDice), marked: board.ace.marked },
@@ -120,8 +120,6 @@ const YachtDiceHandRanking: React.FC<IProps> = ({ board, dice, keep, onClickSele
     </Flex>
   );
 };
-
-export default YachtDiceHandRanking;
 
 function checkAce(dice: number[]): { dice: number[]; score: number } {
   const available = dice.includes(1);

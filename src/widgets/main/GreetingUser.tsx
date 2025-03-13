@@ -6,7 +6,7 @@ type IProps = FlexProps & {
   onClickLogoutButton: () => void;
 };
 
-const GreetingUser: React.FC<IProps> = ({ onClickLogoutButton, ...props }) => {
+export const GreetingUser: React.FC<IProps> = ({ onClickLogoutButton, ...props }) => {
   const auth = useAuthContext();
 
   return (
@@ -16,5 +16,3 @@ const GreetingUser: React.FC<IProps> = ({ onClickLogoutButton, ...props }) => {
     </Flex>
   );
 };
-
-export default GreetingUser;

@@ -32,7 +32,7 @@ type IProps = FlexProps & {
   onClickSelectHandButton: (key: string, value: number) => void;
 };
 
-const YachtDiceBody: React.FC<IProps> = ({
+export const YachtDiceBody: React.FC<IProps> = ({
   players,
   round,
   boards,
@@ -98,5 +98,3 @@ const YachtDiceBody: React.FC<IProps> = ({
     </Flex>
   );
 };
-
-export default YachtDiceBody;

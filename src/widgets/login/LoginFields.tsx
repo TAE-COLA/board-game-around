@@ -1,11 +1,4 @@
-import {
-  Button,
-  Flex,
-  FlexProps,
-  FormControl,
-  FormLabel,
-  Input,
-} from '@chakra-ui/react';
+import { Button, Flex, FlexProps, FormControl, FormLabel, Input } from '@chakra-ui/react';
 import React, { KeyboardEvent } from 'react';
 
 type IProps = FlexProps & {
@@ -17,7 +10,7 @@ type IProps = FlexProps & {
   onClickLoginButton: () => void;
 };
 
-const LoginFields: React.FC<IProps> = ({
+export const LoginFields: React.FC<IProps> = ({
   loading,
   email,
   password,
@@ -65,16 +58,9 @@ const LoginFields: React.FC<IProps> = ({
           onKeyDown={handleKeyDown}
         />
       </FormControl>
-      <Button
-        onClick={onClickLoginButton}
-        isDisabled={loading}
-        colorScheme='blue'
-        size='lg'
-      >
+      <Button onClick={onClickLoginButton} isDisabled={loading} colorScheme='blue' size='lg'>
         로그인
       </Button>
     </Flex>
   );
 };
-
-export default LoginFields;

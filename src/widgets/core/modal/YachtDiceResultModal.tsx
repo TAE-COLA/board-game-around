@@ -18,7 +18,7 @@ type IProps = {
   modal: { isOpen: boolean; onOpen: () => void; onClose: () => void };
 };
 
-const YachtDiceResultModal: React.FC<IProps> = ({ rank, modal }) => {
+export const YachtDiceResultModal: React.FC<IProps> = ({ rank, modal }) => {
   return (
     <Modal isOpen={modal.isOpen} onClose={modal.onClose} size='xl' isCentered closeOnOverlayClick={false}>
       <ModalOverlay />
@@ -63,5 +63,3 @@ const YachtDiceResultModal: React.FC<IProps> = ({ rank, modal }) => {
     </Modal>
   );
 };
-
-export default YachtDiceResultModal;

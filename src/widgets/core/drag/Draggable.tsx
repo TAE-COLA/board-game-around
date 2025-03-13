@@ -10,7 +10,7 @@ type IProps = FlexProps & {
   onDropOutside?: (index: number) => void;
 };
 
-const Draggable: React.FC<IProps> = ({
+export const Draggable: React.FC<IProps> = ({
   children,
   type,
   index,
@@ -33,14 +33,8 @@ const Draggable: React.FC<IProps> = ({
   }));
 
   return (
-    <Flex
-      ref={!isDisabled ? drag : null}
-      opacity={isDragging ? 0.5 : 1}
-      {...props}
-    >
+    <Flex ref={!isDisabled ? drag : null} opacity={isDragging ? 0.5 : 1} {...props}>
       {children}
     </Flex>
   );
 };
-
-export default Draggable;

@@ -24,7 +24,7 @@ type IProps = {
   modal: { isOpen: boolean; onOpen: () => void; onClose: () => void };
 };
 
-const DavinciCodeDrawModal: React.FC<IProps> = ({
+export const DavinciCodeDrawModal: React.FC<IProps> = ({
   hand,
   drawableTiles,
   pendingTiles,
@@ -195,5 +195,3 @@ const DavinciCodeDrawModal: React.FC<IProps> = ({
     </Modal>
   );
 };
-
-export default DavinciCodeDrawModal;

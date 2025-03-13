@@ -15,7 +15,15 @@ type IProps = FlexProps & {
   onClickTile: (player: User, index: number) => void;
 };
 
-const DavinciCodeBody: React.FC<IProps> = ({ players, hands, turn, phase, finishedPlayers, onClickTile, ...props }) => {
+export const DavinciCodeBody: React.FC<IProps> = ({
+  players,
+  hands,
+  turn,
+  phase,
+  finishedPlayers,
+  onClickTile,
+  ...props
+}) => {
   const { id: authId } = useAuthContext();
 
   return (

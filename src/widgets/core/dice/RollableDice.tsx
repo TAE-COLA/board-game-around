@@ -11,7 +11,7 @@ type IProps = FlexProps & {
   onAddDiceToKeep: (index: number) => void;
 };
 
-const RollableDice: React.FC<IProps> = ({
+export const RollableDice: React.FC<IProps> = ({
   dice,
   keep,
   rolling = false,
@@ -23,9 +23,7 @@ const RollableDice: React.FC<IProps> = ({
   const [values, setValues] = useState<number[]>(dice);
   function randomize(values: number[]): number[] {
     return values.map((value, index) => {
-      const random = keep.includes(index)
-        ? value
-        : Math.floor(Math.random() * 6) + 1;
+      const random = keep.includes(index) ? value : Math.floor(Math.random() * 6) + 1;
       return random;
     });
   }
@@ -73,5 +71,3 @@ const RollableDice: React.FC<IProps> = ({
     </Flex>
   );
 };
-
-export default RollableDice;

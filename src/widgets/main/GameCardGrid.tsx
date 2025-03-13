@@ -8,7 +8,7 @@ type IProps = BoxProps & {
   onClickGamePlayButton: (game: Game) => void;
 };
 
-const GameCardGrid: React.FC<IProps> = ({ gameList, onClickGamePlayButton, ...props }) => {
+export const GameCardGrid: React.FC<IProps> = ({ gameList, onClickGamePlayButton, ...props }) => {
   return (
     <SimpleGrid minChildWidth='240px' spacing='40px' {...props}>
       {gameList.map((game) => (
@@ -17,5 +17,3 @@ const GameCardGrid: React.FC<IProps> = ({ gameList, onClickGamePlayButton, ...pr
     </SimpleGrid>
   );
 };
-
-export default GameCardGrid;

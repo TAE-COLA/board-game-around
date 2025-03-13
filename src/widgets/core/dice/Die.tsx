@@ -7,12 +7,7 @@ type IProps = FlexProps & {
   size?: 'sm' | 'md' | 'lg';
 };
 
-const Die: React.FC<IProps> = ({
-  value,
-  fixed = false,
-  size = 'md',
-  ...props
-}) => {
+export const Die: React.FC<IProps> = ({ value, fixed = false, size = 'md', ...props }) => {
   const flexProps = {
     width: size === 'sm' ? '32px' : size === 'md' ? '64px' : '128px',
     height: size === 'sm' ? '32px' : size === 'md' ? '64px' : '128px',
@@ -122,5 +117,3 @@ const Die: React.FC<IProps> = ({
       return null;
   }
 };
-
-export default Die;

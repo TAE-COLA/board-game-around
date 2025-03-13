@@ -1,3 +1,4 @@
-export { default as GameEntryModal } from './GameEntryModal';
-export { default as NumberModal } from './NumberModal';
-export { default as YachtDiceResultModal } from './YachtDiceResultModal';
+export * from './DavinciCodeDrawModal';
+export * from './GameEntryModal';
+export * from './NumberModal';
+export * from './YachtDiceResultModal';

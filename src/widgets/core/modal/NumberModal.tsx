@@ -21,12 +21,7 @@ type IProps = {
   modal: { isOpen: boolean; onOpen: () => void; onClose: () => void };
 };
 
-const NumberModal: React.FC<IProps> = ({
-  digits,
-  maxDigits,
-  onConfirm,
-  modal,
-}) => {
+export const NumberModal: React.FC<IProps> = ({ digits, maxDigits, onConfirm, modal }) => {
   const [num, setNum] = useState<string>('');
   const [remainingPresses, setRemainingPresses] = useState<number>(maxDigits);
 
@@ -58,12 +53,7 @@ const NumberModal: React.FC<IProps> = ({
   };
 
   return (
-    <Modal
-      isOpen={modal.isOpen}
-      onClose={modal.onClose}
-      isCentered
-      closeOnOverlayClick={false}
-    >
+    <Modal isOpen={modal.isOpen} onClose={modal.onClose} isCentered closeOnOverlayClick={false}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>숫자를 입력해주세요.</ModalHeader>
@@ -101,5 +91,3 @@ const NumberModal: React.FC<IProps> = ({
     </Modal>
   );
 };
-
-export default NumberModal;
