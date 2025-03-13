@@ -44,5 +44,3 @@ export const DavinciCodeBody: React.FC<IProps> = ({
     </Flex>
   );
 };
-
-export default DavinciCodeBody;
