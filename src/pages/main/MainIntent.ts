@@ -10,11 +10,12 @@ const initialState: MainState = {
   selectedGame: null,
 };
 
-type MainEvent =
-  | { type: 'ON_CLICK_LOGOUT_BUTTON' }
-  | { type: 'ON_CLICK_GAME_PLAY_BUTTON'; game: Game }
-  | { type: 'ON_CLICK_CREATE_LOUNGE_BUTTON' }
-  | { type: 'ON_CLICK_JOIN_LOUNGE_BUTTON'; code: string };
+type MainEvent = {
+  onClickLogoutButton: () => void;
+  onClickGamePlayButton: (game: Game) => void;
+  onClickCreateLoungeButton: () => void;
+  onClickJoinLoungeButton: (code: string) => void;
+};
 
 type MainReduce = { type: 'GAME_LIST'; gameList: Game[] } | { type: 'SELECTED_GAME'; selectedGame: Game | null };
 

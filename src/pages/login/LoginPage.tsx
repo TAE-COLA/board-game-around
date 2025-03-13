@@ -7,14 +7,14 @@ export const LoginPage: React.FC = () => {
 
   return (
     <Page loading={loading} height='100vh'>
-      <LoginContainer onClickRegisterButton={() => onEvent({ type: 'ON_CLICK_REGISTER_BUTTON' })}>
+      <LoginContainer onClickRegisterButton={onEvent.onClickRegisterButton}>
         <LoginFields
           loading={loading}
           email={state.email}
           password={state.password}
-          onEmailChange={(email) => onEvent({ type: 'ON_EMAIL_CHANGE', email })}
-          onPasswordChange={(password) => onEvent({ type: 'ON_PASSWORD_CHANGE', password })}
-          onClickLoginButton={() => onEvent({ type: 'ON_CLICK_LOGIN_BUTTON' })}
+          onEmailChange={onEvent.onEmailChange}
+          onPasswordChange={onEvent.onPasswordChange}
+          onClickLoginButton={onEvent.onClickLoginButton}
         />
       </LoginContainer>
     </Page>

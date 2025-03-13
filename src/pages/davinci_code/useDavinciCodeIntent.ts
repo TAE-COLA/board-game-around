@@ -55,26 +55,24 @@ export const useDavinciCodeIntent = () => {
     },
   };
 
-  const onEvent = async (event: Intent.event) => {
-    switch (event.type) {
-      case 'ON_CLICK_EXIT_BUTTON':
-        await launch(setLoading, async () => {
-          await exitLounge(lounge.id, auth.id);
-          await exitDavinciCode(lounge.id, auth.id);
-          toast(CommonToast.EXIT_LOUNGE);
-          navigate(Paths.main, { replace: true });
-        });
-        break;
-      case 'ON_CLICK_DRAW_BUTTON':
-        await drawDavinciCodeTile(lounge.id, event.isWhite);
-        break;
-      case 'ON_SUBMIT_HAND':
-        await updateDavinciCodeHand(lounge.id, auth.id, event.hand, true);
-        break;
-      case 'ON_CLICK_TILE':
-        modal.numberModal.onOpen();
-        break;
-    }
+  const onEvent: Intent.event = {
+    onClickExitButton: () => {
+      launch(setLoading, async () => {
+        await exitLounge(lounge.id, auth.id);
+        await exitDavinciCode(lounge.id, auth.id);
+        toast(CommonToast.EXIT_LOUNGE);
+        navigate(Paths.main, { replace: true });
+      });
+    },
+    onClickDrawButton: (isWhite) => {
+      drawDavinciCodeTile(lounge.id, isWhite);
+    },
+    onSubmitHand: (hand) => {
+      updateDavinciCodeHand(lounge.id, auth.id, hand, true);
+    },
+    onClickTile: () => {
+      modal.numberModal.onOpen();
+    },
   };
 
   useEffect(() => {

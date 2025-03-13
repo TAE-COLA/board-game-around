@@ -15,58 +15,54 @@ export function useRegisterIntent() {
   const toast = useToast();
   const auth = getAuth();
 
-  const onEvent = async (event: Intent.event) => {
-    switch (event.type) {
-      case 'ON_EMAIL_CHANGE':
-        dispatch({
-          type: 'EMAIL',
-          email: { label: 'email', value: event.email, error: checkValidity(event.email, 'email') },
-        });
-        dispatch({ type: 'VALID', valid: checkValid(state) });
-        break;
-      case 'ON_CLICK_CHECK_FOR_DUPLICATES_BUTTON': {
-        const emailDuplicate = await checkEmailForDuplicate(state.email.value);
+  const onEvent: Intent.event = {
+    onEmailChange: (email) => {
+      dispatch({ type: 'EMAIL', email: { label: 'email', value: email, error: checkValidity(email, 'email') } });
+      dispatch({ type: 'VALID', valid: checkValid(state) });
+    },
+    onClickCheckForDuplicatesButton: () => {
+      checkEmailForDuplicate(state.email.value).then((emailDuplicate) => {
         dispatch({
           type: 'EMAIL',
           email: { label: 'email', value: state.email.value, error: emailDuplicate ? '중복된 이메일입니다.' : null },
         });
-        dispatch({ type: 'EMAIL_DUPLICATE', emailDuplicate: emailDuplicate });
+        dispatch({ type: 'EMAIL_DUPLICATE', emailDuplicate });
         dispatch({ type: 'VALID', valid: checkValid(state) });
-        break;
-      }
-      case 'ON_PASSWORD_CHANGE':
-        dispatch({
-          type: 'PASSWORD',
-          password: { label: 'password', value: event.password, error: checkValidity(event.password, 'password') },
-        });
-        dispatch({ type: 'VALID', valid: checkValid(state) });
-        break;
-      case 'ON_PASSWORD_CONFIRM_CHANGE':
-        dispatch({
-          type: 'PASSWORD_CONFIRM',
-          passwordConfirm: {
-            label: 'passwordConfrim',
-            value: event.passwordConfirm,
-            error: checkValidity(event.passwordConfirm, 'passwordConfirm', state.password.value),
-          },
-        });
-        dispatch({ type: 'VALID', valid: checkValid(state) });
-        break;
-      case 'ON_NICKNAME_CHANGE':
-        dispatch({
-          type: 'NICKNAME',
-          nickname: { label: 'nickname', value: event.nickname, error: checkValidity(event.nickname, 'nickname') },
-        });
-        dispatch({ type: 'VALID', valid: checkValid(state) });
-        break;
-      case 'ON_CLICK_SUBMIT_BUTTON':
-        await launch(setLoading, async () => {
-          await signUpWithEmailAndPassword(state.email.value, state.password.value, state.nickname.value);
-        });
+      });
+    },
+    onPasswordChange: (password) => {
+      dispatch({
+        type: 'PASSWORD',
+        password: { label: 'password', value: password, error: checkValidity(password, 'password') },
+      });
+      dispatch({ type: 'VALID', valid: checkValid(state) });
+    },
+    onPasswordConfirmChange: (passwordConfirm) => {
+      dispatch({
+        type: 'PASSWORD_CONFIRM',
+        passwordConfirm: {
+          label: 'passwordConfrim',
+          value: passwordConfirm,
+          error: checkValidity(passwordConfirm, 'passwordConfirm', state.password.value),
+        },
+      });
+      dispatch({ type: 'VALID', valid: checkValid(state) });
+    },
+    onNicknameChange: (nickname) => {
+      dispatch({
+        type: 'NICKNAME',
+        nickname: { label: 'nickname', value: nickname, error: checkValidity(nickname, 'nickname') },
+      });
+      dispatch({ type: 'VALID', valid: checkValid(state) });
+    },
+    onClickSubmitButton: () => {
+      launch(setLoading, async () => {
+        await signUpWithEmailAndPassword(state.email.value, state.password.value, state.nickname.value);
+
         toast(CommonToast.REGIST_SUCCESS);
         navigate(Paths.main, { replace: true });
-        break;
-    }
+      });
+    },
   };
 
   useEffect(() => {

@@ -29,15 +29,16 @@ const initialState: YatchDiceState = {
   rolling: false,
 };
 
-type YatchDiceEvent =
-  | { type: 'ON_CLICK_EXIT_BUTTON' }
-  | { type: 'ON_CLICK_PREV_BOARD_BUTTON' }
-  | { type: 'ON_CLICK_NEXT_BOARD_BUTTON' }
-  | { type: 'ON_CLICK_ROLL_BUTTON' }
-  | { type: 'ON_ROLL_FINISH'; values: number[] }
-  | { type: 'ON_ADD_DICE_TO_KEEP'; index: number }
-  | { type: 'ON_REMOVE_DICE_TO_KEEP'; index: number }
-  | { type: 'ON_CLICK_SELECT_HAND_BUTTON'; key: string; value: number };
+type YatchDiceEvent = {
+  onClickExitButton: () => void;
+  onClickPrevBoardButton: () => void;
+  onClickNextBoardButton: () => void;
+  onClickRollButton: () => void;
+  onRollFinish: (values: number[]) => void;
+  onAddDiceToKeep: (index: number) => void;
+  onRemoveDiceToKeep: (index: number) => void;
+  onClickSelectHandButton: (key: string, value: number) => void;
+};
 
 type YatchDiceReduce =
   | { type: 'PLAYERS'; players: User[] }

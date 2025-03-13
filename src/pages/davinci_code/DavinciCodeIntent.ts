@@ -23,11 +23,12 @@ const initialState: DavinciCodeState = {
   drawableTiles: 0,
 };
 
-type DavinciCodeEvent =
-  | { type: 'ON_CLICK_EXIT_BUTTON' }
-  | { type: 'ON_CLICK_DRAW_BUTTON'; isWhite: boolean }
-  | { type: 'ON_SUBMIT_HAND'; hand: DavinciCodeTile[] }
-  | { type: 'ON_CLICK_TILE'; player: User; index: number };
+type DavinciCodeEvent = {
+  onClickExitButton: () => void;
+  onClickDrawButton: (isWhite: boolean) => void;
+  onSubmitHand: (hand: DavinciCodeTile[]) => void;
+  onClickTile: (player: User, index: number) => void;
+};
 
 type DavinciCodeReduce =
   | { type: 'PLAYERS'; players: User[] }

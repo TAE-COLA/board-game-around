@@ -37,57 +37,53 @@ export function useYachtDiceIntent() {
   const [state, dispatch] = useReducer(Intent.reducer, Intent.initialState);
   const [loading, setLoading] = useState(true);
 
-  const onEvent = async (event: Intent.event) => {
-    switch (event.type) {
-      case 'ON_CLICK_EXIT_BUTTON':
-        await launch(setLoading, async () => {
-          await exitLounge(lounge.id, auth.id);
-          await exitYachtDice(lounge.id, auth.id);
-          toast(CommonToast.EXIT_LOUNGE);
-          navigate(Paths.main, { replace: true });
-        });
-        break;
-      case 'ON_CLICK_PREV_BOARD_BUTTON': {
-        const currentIndex = state.players.findIndex((player) => player.id === state.currentBoardPlayer.id);
-        const prevBoardPlayer = state.players[(currentIndex - 1 + state.players.length) % state.players.length];
-        dispatch({ type: 'CURRENT_BOARD_PLAYER', currentBoardPlayer: prevBoardPlayer });
-        break;
+  const onEvent: Intent.event = {
+    onClickExitButton: () => {
+      launch(setLoading, async () => {
+        await exitLounge(lounge.id, auth.id);
+        await exitYachtDice(lounge.id, auth.id);
+        toast(CommonToast.EXIT_LOUNGE);
+        navigate(Paths.main, { replace: true });
+      });
+    },
+    onClickPrevBoardButton: () => {
+      const currentIndex = state.players.findIndex((player) => player.id === state.currentBoardPlayer.id);
+      const prevBoardPlayer = state.players[(currentIndex - 1 + state.players.length) % state.players.length];
+      dispatch({ type: 'CURRENT_BOARD_PLAYER', currentBoardPlayer: prevBoardPlayer });
+    },
+    onClickNextBoardButton: () => {
+      const nextIndex = state.players.findIndex((player) => player.id === state.currentBoardPlayer.id);
+      const nextBoardPlayer = state.players[(nextIndex + 1) % state.players.length];
+      dispatch({ type: 'CURRENT_BOARD_PLAYER', currentBoardPlayer: nextBoardPlayer });
+    },
+    onClickRollButton: () => {
+      if (auth.id !== state.turn.id) toast(CommonToast.NOT_MY_TURN);
+      else {
+        dispatch({ type: 'SAVE_KEPT' });
+        dispatch({ type: 'ROLLING', rolling: true });
       }
-      case 'ON_CLICK_NEXT_BOARD_BUTTON': {
-        const nextIndex = state.players.findIndex((player) => player.id === state.currentBoardPlayer.id);
-        const nextBoardPlayer = state.players[(nextIndex + 1) % state.players.length];
-        dispatch({ type: 'CURRENT_BOARD_PLAYER', currentBoardPlayer: nextBoardPlayer });
-        break;
-      }
-      case 'ON_CLICK_ROLL_BUTTON':
-        if (auth.id !== state.turn.id) toast(CommonToast.NOT_MY_TURN);
-        else {
-          dispatch({ type: 'SAVE_KEPT' });
-          dispatch({ type: 'ROLLING', rolling: true });
-        }
-        break;
-      case 'ON_ROLL_FINISH':
-        dispatch({ type: 'ROLLING', rolling: false });
-        await updateYachtDiceState(lounge.id, { dice: event.values, 'rolls-decrease': 1 }).catch((error) => {
-          if (error.code === CommonError.PERMISSION_DENIED) toast(CommonToast.NOT_MY_TURN);
-        });
-        break;
-      case 'ON_ADD_DICE_TO_KEEP':
-        await updateYachtDiceState(lounge.id, { 'keep-add': event.index }).catch((error) => {
-          if (error.code === CommonError.PERMISSION_DENIED) toast(CommonToast.NOT_MY_TURN);
-        });
-        break;
-      case 'ON_REMOVE_DICE_TO_KEEP':
-        await updateYachtDiceState(lounge.id, { 'keep-remove': event.index }).catch((error) => {
-          if (error.code === CommonError.PERMISSION_DENIED) toast(CommonToast.NOT_MY_TURN);
-        });
-        break;
-      case 'ON_CLICK_SELECT_HAND_BUTTON':
-        await updateYachtDiceState(lounge.id, { boards: { key: event.key, value: event.value } }).catch((error) => {
-          if (error.code === CommonError.PERMISSION_DENIED) toast(CommonToast.NOT_MY_TURN);
-        });
-        break;
-    }
+    },
+    onRollFinish: (values: number[]) => {
+      dispatch({ type: 'ROLLING', rolling: false });
+      updateYachtDiceState(lounge.id, { dice: values, 'rolls-decrease': 1 }).catch((error) => {
+        if (error.code === CommonError.PERMISSION_DENIED) toast(CommonToast.NOT_MY_TURN);
+      });
+    },
+    onAddDiceToKeep: (index: number) => {
+      updateYachtDiceState(lounge.id, { 'keep-add': index }).catch((error) => {
+        if (error.code === CommonError.PERMISSION_DENIED) toast(CommonToast.NOT_MY_TURN);
+      });
+    },
+    onRemoveDiceToKeep: (index: number) => {
+      updateYachtDiceState(lounge.id, { 'keep-remove': index }).catch((error) => {
+        if (error.code === CommonError.PERMISSION_DENIED) toast(CommonToast.NOT_MY_TURN);
+      });
+    },
+    onClickSelectHandButton: (key: string, value: number) => {
+      updateYachtDiceState(lounge.id, { boards: { key, value } }).catch((error) => {
+        if (error.code === CommonError.PERMISSION_DENIED) toast(CommonToast.NOT_MY_TURN);
+      });
+    },
   };
 
   useEffect(() => {

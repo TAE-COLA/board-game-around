@@ -10,8 +10,8 @@ export const YachtDicePage: React.FC = () => {
 
   return (
     <Page loading={loading} height='100vh'>
-      <Flex direction='column' width='100%' height='100%' gap='8'>
-        <YachtDiceHeader onClickExitButton={() => onEvent({ type: 'ON_CLICK_EXIT_BUTTON' })} />
+      <Flex direction='column' width='100%' height='100%' gap={8}>
+        <YachtDiceHeader onClickExitButton={onEvent.onClickExitButton} />
         <YachtDiceBody
           players={state.players}
           round={state.round}
@@ -23,14 +23,14 @@ export const YachtDicePage: React.FC = () => {
           keep={state.keep}
           rolls={state.rolls}
           rolling={state.rolling}
-          onClickPrevBoardButton={() => onEvent({ type: 'ON_CLICK_PREV_BOARD_BUTTON' })}
-          onClickNextBoardButton={() => onEvent({ type: 'ON_CLICK_NEXT_BOARD_BUTTON' })}
-          onClickRollButton={() => onEvent({ type: 'ON_CLICK_ROLL_BUTTON' })}
-          onRollFinish={(values) => onEvent({ type: 'ON_ROLL_FINISH', values })}
-          onAddDiceToKeep={(index) => onEvent({ type: 'ON_ADD_DICE_TO_KEEP', index })}
-          onRemoveDiceToKeep={(index) => onEvent({ type: 'ON_REMOVE_DICE_TO_KEEP', index })}
-          onClickSelectHandButton={(key, value) => onEvent({ type: 'ON_CLICK_SELECT_HAND_BUTTON', key, value })}
-          flex='1'
+          onClickPrevBoardButton={onEvent.onClickPrevBoardButton}
+          onClickNextBoardButton={onEvent.onClickNextBoardButton}
+          onClickRollButton={onEvent.onClickRollButton}
+          onRollFinish={onEvent.onRollFinish}
+          onAddDiceToKeep={onEvent.onAddDiceToKeep}
+          onRemoveDiceToKeep={onEvent.onRemoveDiceToKeep}
+          onClickSelectHandButton={onEvent.onClickSelectHandButton}
+          flex={1}
         />
         <YachtDiceResultModal rank={lounge.players.map((player) => ({ player, score: 0 }))} modal={modal.resultModal} />
       </Flex>

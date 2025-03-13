@@ -14,29 +14,27 @@ export function useLoginIntent() {
   const [state, dispatch] = useReducer(Intent.reducer, Intent.initialState);
   const [loading, setLoading] = useState(true);
 
-  const onEvent = async (event: Intent.event) => {
-    switch (event.type) {
-      case 'ON_EMAIL_CHANGE':
-        dispatch({ type: 'EMAIL', email: event.email });
-        break;
-      case 'ON_PASSWORD_CHANGE':
-        dispatch({ type: 'PASSWORD', password: event.password });
-        break;
-      case 'ON_CLICK_LOGIN_BUTTON':
-        await launch(setLoading, async () => {
-          try {
-            await signInWithEmailAndPassword(firebaseAuth, state.email, state.password);
-            toast(CommonToast.LOGIN_SUCCESS);
-            navigate(Paths.main, { replace: true });
-          } catch {
-            toast(CommonToast.LOGIN_FAILED);
-          }
-        });
-        break;
-      case 'ON_CLICK_REGISTER_BUTTON':
-        navigate(Paths.register);
-        break;
-    }
+  const onEvent: Intent.event = {
+    onEmailChange: (email) => {
+      dispatch({ type: 'EMAIL', email });
+    },
+    onPasswordChange: (password) => {
+      dispatch({ type: 'PASSWORD', password });
+    },
+    onClickLoginButton: () => {
+      launch(setLoading, async () => {
+        try {
+          await signInWithEmailAndPassword(firebaseAuth, state.email, state.password);
+          toast(CommonToast.LOGIN_SUCCESS);
+          navigate(Paths.main, { replace: true });
+        } catch {
+          toast(CommonToast.LOGIN_FAILED);
+        }
+      });
+    },
+    onClickRegisterButton: () => {
+      navigate(Paths.register);
+    },
   };
 
   useEffect(() => {

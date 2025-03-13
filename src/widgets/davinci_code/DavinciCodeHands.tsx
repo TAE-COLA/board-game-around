@@ -10,7 +10,7 @@ type IProps = CardProps & {
   hands: tileEntity[];
   turn: User;
   phase: 'INITIAL_DRAW' | 'DRAW' | 'GUESS';
-  finishedPlayers: User[];
+  isFinishedPlayer: boolean;
   onClickTile: (index: number) => void;
 };
 
@@ -19,7 +19,7 @@ export const DavinciCodeHands: React.FC<IProps> = ({
   hands,
   turn,
   phase,
-  finishedPlayers,
+  isFinishedPlayer,
   onClickTile,
   ...props
 }) => {
@@ -27,11 +27,19 @@ export const DavinciCodeHands: React.FC<IProps> = ({
   const isMyHand = auth.id === player.id;
 
   return (
-    <Card width='fit-content' height='fit-content' align='center' gap='4' padding='4' {...props}>
-      <CardHeader fontWeight='bold' padding='1'>
+    <Card
+      width='fit-content'
+      height='fit-content'
+      align='center'
+      gap={4}
+      padding={4}
+      opacity={isFinishedPlayer ? 0.5 : 1}
+      {...props}
+    >
+      <CardHeader fontWeight='bold' padding={1}>
         {isMyHand ? '나' : player.name}
       </CardHeader>
-      <Flex direction='row' alignItems='center' gap='3'>
+      <Flex direction='row' alignItems='center' gap={3}>
         {hands.map((tile, index) => (
           <Flex direction='column' gap={2} align='center' key={index}>
             <DavinciCodeTile player={player} tile={tile} onClick={() => onClickTile(index)} />

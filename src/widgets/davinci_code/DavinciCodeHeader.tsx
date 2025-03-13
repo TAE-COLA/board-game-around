@@ -11,7 +11,7 @@ export const DavinciCodeHeader: React.FC<IProps> = ({ onClickExitButton, ...prop
       <Text fontSize='2xl' fontWeight='bold'>
         다빈치코드
       </Text>
-      <Button onClick={onClickExitButton} height='12' paddingX='6'>
+      <Button onClick={onClickExitButton} height={12} paddingX={6}>
         게임방 나가기
       </Button>
     </Flex>

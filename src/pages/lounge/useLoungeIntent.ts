@@ -16,32 +16,30 @@ export function useLoungeIntent() {
   const auth = useAuthContext();
   const lounge = useLoungeContext();
 
-  const onEvent = async (event: Intent.event) => {
-    switch (event.type) {
-      case 'ON_CLICK_EXIT_BUTTON':
-        await launch(setLoading, async () => {
-          await exitLounge(lounge.id, auth.id);
-          toast(CommonToast.EXIT_LOUNGE);
-          navigate(Paths.main, { replace: true });
-        });
-        break;
-      case 'ON_CLICK_COPY_BUTTON':
-        navigator.clipboard.writeText(lounge.code);
-        toast(CommonToast.COPY_LOUNGE_CODE);
-        break;
-      case 'ON_CLICK_START_BUTTON':
-        await launch(setLoading, async () => {
-          switch (lounge.game.name) {
-            case GameName.YatchDice.korean:
-              await startYachtDice(lounge.id);
-              break;
-            case GameName.DavinciCode.korean:
-              await startDavinciCode(lounge.id);
-              break;
-          }
-        });
-        break;
-    }
+  const onEvent: Intent.event = {
+    onClickExitButton: () => {
+      launch(setLoading, async () => {
+        await exitLounge(lounge.id, auth.id);
+        toast(CommonToast.EXIT_LOUNGE);
+        navigate(Paths.main, { replace: true });
+      });
+    },
+    onClickCopyButton: () => {
+      navigator.clipboard.writeText(lounge.code);
+      toast(CommonToast.COPY_LOUNGE_CODE);
+    },
+    onClickStartButton: () => {
+      launch(setLoading, async () => {
+        switch (lounge.game.name) {
+          case GameName.YatchDice.korean:
+            await startYachtDice(lounge.id);
+            break;
+          case GameName.DavinciCode.korean:
+            await startDavinciCode(lounge.id);
+            break;
+        }
+      });
+    },
   };
 
   useEffect(() => {

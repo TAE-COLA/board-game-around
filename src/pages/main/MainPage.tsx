@@ -9,14 +9,14 @@ export const MainPage: React.FC = () => {
   return (
     <Page loading={loading}>
       <Header>
-        <GreetingUser onClickLogoutButton={() => onEvent({ type: 'ON_CLICK_LOGOUT_BUTTON' })} />
+        <GreetingUser onClickLogoutButton={onEvent.onClickLogoutButton} />
       </Header>
       {!state.gameList || state.gameList.length === 0 ? (
         <Box>No games found.</Box>
       ) : (
         <GameCardGrid
           gameList={state.gameList}
-          onClickGamePlayButton={(game) => onEvent({ type: 'ON_CLICK_GAME_PLAY_BUTTON', game })}
+          onClickGamePlayButton={onEvent.onClickGamePlayButton}
           marginTop='32px'
         />
       )}
@@ -25,8 +25,8 @@ export const MainPage: React.FC = () => {
           loading={loading}
           modal={modal.gameEntryModal}
           game={state.selectedGame}
-          onClickCreateLoungeButton={() => onEvent({ type: 'ON_CLICK_CREATE_LOUNGE_BUTTON' })}
-          onClickJoinLoungeButton={(code) => onEvent({ type: 'ON_CLICK_JOIN_LOUNGE_BUTTON', code })}
+          onClickCreateLoungeButton={onEvent.onClickCreateLoungeButton}
+          onClickJoinLoungeButton={onEvent.onClickJoinLoungeButton}
         />
       )}
     </Page>

@@ -37,7 +37,7 @@ export const DavinciCodeBody: React.FC<IProps> = ({
             hands={hands[player.id]}
             turn={turn}
             phase={phase}
-            finishedPlayers={finishedPlayers}
+            isFinishedPlayer={finishedPlayers.includes(player)}
             onClickTile={(index) => onClickTile(player, index)}
           />
         ))}

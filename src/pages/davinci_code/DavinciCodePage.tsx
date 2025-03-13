@@ -18,15 +18,15 @@ export const DavinciCodePage: React.FC = () => {
 
   return (
     <Page loading={loading} height='100vh'>
-      <Flex direction='column' width='100%' height='100%' gap='8'>
-        <DavinciCodeHeader onClickExitButton={() => onEvent({ type: 'ON_CLICK_EXIT_BUTTON' })} />
+      <Flex direction='column' width='100%' height='100%' gap={8}>
+        <DavinciCodeHeader onClickExitButton={onEvent.onClickExitButton} />
         <DavinciCodeBody
           players={state.players}
           hands={state.hands}
           turn={state.turn}
           phase={state.phase}
           finishedPlayers={state.finishedPlayers}
-          onClickTile={(player, index) => onEvent({ type: 'ON_CLICK_TILE', player, index })}
+          onClickTile={onEvent.onClickTile}
           flex='1'
         />
         <DavinciCodeFooter hand={state.hands[authId]} turn={state.turn} phase={state.phase} />
@@ -35,8 +35,8 @@ export const DavinciCodePage: React.FC = () => {
         hand={state.hands[authId]}
         drawableTiles={state.drawableTiles}
         pendingTiles={state.pendingTiles}
-        onClickDrawButton={(isWhite) => onEvent({ type: 'ON_CLICK_DRAW_BUTTON', isWhite })}
-        onSubmitHand={(hand) => onEvent({ type: 'ON_SUBMIT_HAND', hand })}
+        onClickDrawButton={onEvent.onClickDrawButton}
+        onSubmitHand={onEvent.onSubmitHand}
         modal={modal.drawModal}
       />
       <NumberModal

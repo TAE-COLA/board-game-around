@@ -21,7 +21,7 @@ export const DavinciCodeFooter: React.FC<IProps> = ({ hand, turn, phase, ...prop
         hands={hand}
         turn={turn}
         phase={phase}
-        finishedPlayers={[]}
+        isFinishedPlayer={false}
         onClickTile={() => {}}
       />
       <Flex position='absolute' bottom={0} right={0}>

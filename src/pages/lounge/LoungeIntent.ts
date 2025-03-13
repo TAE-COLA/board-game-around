@@ -1,6 +1,7 @@
-type LoungeEvent =
-  | { type: 'ON_CLICK_EXIT_BUTTON' }
-  | { type: 'ON_CLICK_COPY_BUTTON' }
-  | { type: 'ON_CLICK_START_BUTTON' };
+type LoungeEvent = {
+  onClickExitButton: () => void;
+  onClickCopyButton: () => void;
+  onClickStartButton: () => void;
+};
 
 export { LoungeEvent as event };

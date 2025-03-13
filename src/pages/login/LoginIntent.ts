@@ -8,11 +8,12 @@ const initialState: LoginState = {
   password: '',
 };
 
-type LoginEvent =
-  | { type: 'ON_EMAIL_CHANGE'; email: string }
-  | { type: 'ON_PASSWORD_CHANGE'; password: string }
-  | { type: 'ON_CLICK_LOGIN_BUTTON' }
-  | { type: 'ON_CLICK_REGISTER_BUTTON' };
+type LoginEvent = {
+  onEmailChange: (email: string) => void;
+  onPasswordChange: (password: string) => void;
+  onClickLoginButton: () => void;
+  onClickRegisterButton: () => void;
+};
 
 type LoginReduce = { type: 'EMAIL'; email: string } | { type: 'PASSWORD'; password: string };
 

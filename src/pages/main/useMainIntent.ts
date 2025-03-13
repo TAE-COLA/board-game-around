@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { CommonToast, launch } from 'shared';
 import * as Intent from './MainIntent';
 
-export function useMainIntent() {
+export const useMainIntent = () => {
   const auth = useAuthContext();
 
   const navigate = useNavigate();
@@ -29,46 +29,46 @@ export function useMainIntent() {
   const [state, dispatch] = useReducer(Intent.reducer, Intent.initialState);
   const [loading, setLoading] = useState(true);
 
-  const onEvent = async (event: Intent.event) => {
-    switch (event.type) {
-      case 'ON_CLICK_LOGOUT_BUTTON':
-        await launch(setLoading, async () => {
-          await signOut(firebaseAuth);
-          navigate(Paths.login, { replace: true });
-          toast(CommonToast.LOGOUT_SUCCESS);
-        });
-        break;
-      case 'ON_CLICK_GAME_PLAY_BUTTON':
-        dispatch({ type: 'SELECTED_GAME', selectedGame: event.game });
-        modal.gameEntryModal.onOpen();
-        break;
-      case 'ON_CLICK_CREATE_LOUNGE_BUTTON':
-        await launch(setLoading, async () => {
+  const onEvent: Intent.event = {
+    onClickLogoutButton: () => {
+      launch(setLoading, async () => {
+        await signOut(firebaseAuth);
+        navigate(Paths.login, { replace: true });
+        toast(CommonToast.LOGOUT_SUCCESS);
+      });
+    },
+    onClickGamePlayButton: (game) => {
+      dispatch({ type: 'SELECTED_GAME', selectedGame: game });
+      modal.gameEntryModal.onOpen();
+    },
+    onClickCreateLoungeButton: () => {
+      launch(setLoading, async () => {
+        if (state.selectedGame) {
+          await createLounge(state.selectedGame.id, auth.id);
+          navigate(Paths.lounge);
+        }
+
+        modal.gameEntryModal.onClose();
+      });
+    },
+    onClickJoinLoungeButton: (code) => {
+      launch(setLoading, async () => {
+        try {
           if (state.selectedGame) {
-            await createLounge(state.selectedGame.id, auth.id);
+            await joinLounge(code, state.selectedGame.id, auth.id);
             navigate(Paths.lounge);
           }
-        });
+        } catch {
+          toast(CommonToast.INVALID_GAME_ID);
+        }
+
         modal.gameEntryModal.onClose();
-        break;
-      case 'ON_CLICK_JOIN_LOUNGE_BUTTON':
-        await launch(setLoading, async () => {
-          try {
-            if (state.selectedGame) {
-              await joinLounge(event.code, state.selectedGame.id, auth.id);
-              navigate(Paths.lounge);
-            }
-          } catch {
-            toast(CommonToast.INVALID_GAME_ID);
-          }
-        });
-        modal.gameEntryModal.onClose();
-        break;
-    }
+      });
+    },
   };
 
   useEffect(() => {
-    setLoading((prevLoding) => prevLoding || auth.loading);
+    setLoading((prevLoading) => prevLoading || auth.loading);
   }, [auth.loading]);
 
   useEffect(() => {
@@ -79,4 +79,4 @@ export function useMainIntent() {
   }, []);
 
   return { state, loading, modal, onEvent };
-}
+};

@@ -18,13 +18,14 @@ const initialState: RegisterState = {
   valid: false,
 };
 
-type RegisterEvent =
-  | { type: 'ON_EMAIL_CHANGE'; email: string }
-  | { type: 'ON_CLICK_CHECK_FOR_DUPLICATES_BUTTON' }
-  | { type: 'ON_PASSWORD_CHANGE'; password: string }
-  | { type: 'ON_PASSWORD_CONFIRM_CHANGE'; passwordConfirm: string }
-  | { type: 'ON_NICKNAME_CHANGE'; nickname: string }
-  | { type: 'ON_CLICK_SUBMIT_BUTTON' };
+type RegisterEvent = {
+  onEmailChange: (email: string) => void;
+  onClickCheckForDuplicatesButton: () => void;
+  onPasswordChange: (password: string) => void;
+  onPasswordConfirmChange: (passwordConfirm: string) => void;
+  onNicknameChange: (nickname: string) => void;
+  onClickSubmitButton: () => void;
+};
 
 type RegisterReduce =
   | { type: 'EMAIL'; email: FormData<'email', string> }
