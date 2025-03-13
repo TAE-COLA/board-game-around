@@ -1,2 +1,2 @@
-export { default as LoginPage } from './LoginPage';
-export { useLoginIntent } from './useLoginIntent';
+export * from './LoginPage';
+export * from './useLoginIntent';

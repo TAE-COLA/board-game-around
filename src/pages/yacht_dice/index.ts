@@ -1,2 +1,2 @@
-export { useYachtDiceIntent } from './useYachtDiceIntent';
-export { default as YachtDicePage } from './YachtDicePage';
+export * from './useYachtDiceIntent';
+export * from './YachtDicePage';

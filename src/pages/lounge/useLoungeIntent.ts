@@ -1,19 +1,11 @@
 import { useToast } from '@chakra-ui/react';
-import {
-  exitLounge,
-  startDavinciCode,
-  startYachtDice,
-  useAuthContext,
-  useLoungeContext,
-} from 'features';
+import { Paths } from 'app';
+import { exitLounge, startDavinciCode, startYachtDice, useAuthContext, useLoungeContext } from 'features';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { launch } from 'shared';
-
-type LoungeEvent =
-  | { type: 'ON_CLICK_EXIT_BUTTON' }
-  | { type: 'ON_CLICK_COPY_BUTTON' }
-  | { type: 'ON_CLICK_START_BUTTON' };
+import { CommonToast, launch } from 'shared';
+import { GameName } from 'shared/string';
+import * as Intent from './LoungeIntent';
 
 export function useLoungeIntent() {
   const [loading, setLoading] = useState(true);
@@ -24,38 +16,30 @@ export function useLoungeIntent() {
   const auth = useAuthContext();
   const lounge = useLoungeContext();
 
-  const onEvent = async (event: LoungeEvent) => {
+  const onEvent = async (event: Intent.event) => {
     switch (event.type) {
       case 'ON_CLICK_EXIT_BUTTON':
         await launch(setLoading, async () => {
           await exitLounge(lounge.id, auth.id);
-          toast({ title: '게임방을 나왔습니다.', duration: 2000 });
-          navigate('/main', { replace: true });
+          toast(CommonToast.EXIT_LOUNGE);
+          navigate(Paths.main, { replace: true });
         });
         break;
       case 'ON_CLICK_COPY_BUTTON':
         navigator.clipboard.writeText(lounge.code);
-        toast({
-          title: '게임방 코드가 복사되었습니다.',
-          status: 'success',
-          duration: 2000,
-        });
+        toast(CommonToast.COPY_LOUNGE_CODE);
         break;
       case 'ON_CLICK_START_BUTTON':
         await launch(setLoading, async () => {
           switch (lounge.game.name) {
-            case '요트다이스':
+            case GameName.YatchDice.korean:
               await startYachtDice(lounge.id);
               break;
-            case '다빈치코드':
+            case GameName.DavinciCode.korean:
               await startDavinciCode(lounge.id);
-              break;
-            default:
               break;
           }
         });
-        break;
-      default:
         break;
     }
   };
@@ -67,20 +51,15 @@ export function useLoungeIntent() {
   useEffect(() => {
     if (lounge?.status === 'PLAYING') {
       switch (lounge.game.name) {
-        case '요트다이스':
-          navigate('/yatchdice', { replace: true });
+        case GameName.YatchDice.korean:
+          navigate(Paths.yachtDice, { replace: true });
           break;
-        case '다빈치코드':
-          navigate('/davincicode', { replace: true });
-          break;
-        default:
+        case GameName.DavinciCode.korean:
+          navigate(Paths.davinciCode, { replace: true });
           break;
       }
     }
   }, [lounge.status]);
 
-  return {
-    loading,
-    onEvent,
-  };
+  return { loading, onEvent };
 }

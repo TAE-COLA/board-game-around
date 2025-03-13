@@ -9,4 +9,6 @@ export class CommonError {
   static readonly NO_LOUNGE = 'No lounge found';
 
   static readonly GAME_STATE_FAILED = 'Failed to get game state';
+
+  static readonly PERMISSION_DENIED = 'PERMISSION_DENIED';
 }

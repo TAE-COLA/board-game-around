@@ -14,6 +14,7 @@ import {
 import { useEffect, useReducer, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CommonToast, launch } from 'shared';
+import { GameName } from 'shared/string';
 import * as Intent from './DavinciCodeIntent';
 
 export const useDavinciCodeIntent = () => {
@@ -73,28 +74,32 @@ export const useDavinciCodeIntent = () => {
       case 'ON_CLICK_TILE':
         modal.numberModal.onOpen();
         break;
-      default:
-        break;
     }
   };
 
   useEffect(() => {
     if (lounge.loading) return;
 
-    if (lounge.game.name !== '다빈치코드') {
+    if (lounge.game.name !== GameName.DavinciCode.korean) {
       toast(CommonToast.NO_LOUNGE);
       navigate(Paths.main, { replace: true });
       return;
     }
 
     const unsubscribe = onDavinciCodeStateChanged(lounge.id, async (game) => {
-      dispatch({ type: 'PLAYERS', players: await fetchUsersByIds(game.playerIds) });
+      const players = await fetchUsersByIds(game.playerIds);
+      const turn = await fetchUserById(game.turn);
+      const finishedPlayers = await fetchUsersByIds(game.finishedPlayerIds);
+
+      dispatch({ type: 'PLAYERS', players });
       dispatch({ type: 'HANDS', hands: game.hands });
-      dispatch({ type: 'TURN', turn: await fetchUserById(game.turn) });
+      dispatch({ type: 'TURN', turn });
       dispatch({ type: 'PHASE', phase: game.phase });
-      dispatch({ type: 'FINISHED_PLAYERS', finishedPlayers: await fetchUsersByIds(game.finishedPlayerIds) });
+      dispatch({ type: 'FINISHED_PLAYERS', finishedPlayers });
+
       if (game.turn === auth.id && game.phase !== 'GUESS') {
         dispatch({ type: 'PENDING_TILES', pendingTiles: game.pendingTiles });
+
         if (game.phase === 'INITIAL_DRAW') dispatch({ type: 'DRAWABLE_TILES', drawableTiles: 4 });
         else if (game.phase === 'DRAW') dispatch({ type: 'DRAWABLE_TILES', drawableTiles: 1 });
 
@@ -104,9 +109,9 @@ export const useDavinciCodeIntent = () => {
       if (game.finishedAt) modal.resultModal.onOpen();
 
       setLoading(false);
-
-      return () => unsubscribe();
     });
+
+    return () => unsubscribe();
   }, [lounge.id, lounge.loading]);
 
   return { state, loading, modal, onEvent };

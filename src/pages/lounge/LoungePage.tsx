@@ -3,7 +3,7 @@ import { useLoungeIntent } from 'pages';
 import React from 'react';
 import { LoungeBody, LoungeHeader, Page } from 'widgets';
 
-const LoungePage: React.FC = () => {
+export const LoungePage: React.FC = () => {
   const { loading, onEvent } = useLoungeIntent();
 
   return (
@@ -13,13 +13,8 @@ const LoungePage: React.FC = () => {
           onClickCopyButton={() => onEvent({ type: 'ON_CLICK_COPY_BUTTON' })}
           onClickExitButton={() => onEvent({ type: 'ON_CLICK_EXIT_BUTTON' })}
         />
-        <LoungeBody
-          onClickStartButton={() => onEvent({ type: 'ON_CLICK_START_BUTTON' })}
-          flex='1'
-        />
+        <LoungeBody onClickStartButton={() => onEvent({ type: 'ON_CLICK_START_BUTTON' })} flex='1' />
       </Flex>
     </Page>
   );
 };
-
-export default LoungePage;

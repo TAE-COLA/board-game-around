@@ -2,6 +2,7 @@ import { AuthProvider, LoungeProvider } from 'app';
 import { DavinciCodePage, LoginPage, LoungePage, MainPage, RegisterPage, YachtDicePage } from 'pages';
 import React from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { GameName } from 'shared/string';
 
 export const PageRouter: React.FC = () => {
   const location = useLocation();
@@ -30,7 +31,7 @@ export const Paths = {
   login: '/login',
   register: '/register',
   lounge: '/lounge',
-  yachtDice: '/yachtdice',
-  davinciCode: '/davincicode',
+  yachtDice: GameName.YatchDice.path,
+  davinciCode: GameName.DavinciCode.path,
   notFound: '*',
 };

@@ -2,23 +2,16 @@ import { Flex } from '@chakra-ui/react';
 import { useLoungeContext } from 'features';
 import { useYachtDiceIntent } from 'pages';
 import React from 'react';
-import {
-  Page,
-  YachtDiceBody,
-  YachtDiceHeader,
-  YachtDiceResultModal,
-} from 'widgets';
+import { Page, YachtDiceBody, YachtDiceHeader, YachtDiceResultModal } from 'widgets';
 
-const YachtDicePage: React.FC = () => {
+export const YachtDicePage: React.FC = () => {
   const { state, loading, modal, onEvent } = useYachtDiceIntent();
   const lounge = useLoungeContext();
 
   return (
     <Page loading={loading} height='100vh'>
       <Flex direction='column' width='100%' height='100%' gap='8'>
-        <YachtDiceHeader
-          onClickExitButton={() => onEvent({ type: 'ON_CLICK_EXIT_BUTTON' })}
-        />
+        <YachtDiceHeader onClickExitButton={() => onEvent({ type: 'ON_CLICK_EXIT_BUTTON' })} />
         <YachtDiceBody
           players={state.players}
           round={state.round}
@@ -30,32 +23,17 @@ const YachtDicePage: React.FC = () => {
           keep={state.keep}
           rolls={state.rolls}
           rolling={state.rolling}
-          onClickPrevBoardButton={() =>
-            onEvent({ type: 'ON_CLICK_PREV_BOARD_BUTTON' })
-          }
-          onClickNextBoardButton={() =>
-            onEvent({ type: 'ON_CLICK_NEXT_BOARD_BUTTON' })
-          }
+          onClickPrevBoardButton={() => onEvent({ type: 'ON_CLICK_PREV_BOARD_BUTTON' })}
+          onClickNextBoardButton={() => onEvent({ type: 'ON_CLICK_NEXT_BOARD_BUTTON' })}
           onClickRollButton={() => onEvent({ type: 'ON_CLICK_ROLL_BUTTON' })}
           onRollFinish={(values) => onEvent({ type: 'ON_ROLL_FINISH', values })}
-          onAddDiceToKeep={(index) =>
-            onEvent({ type: 'ON_ADD_DICE_TO_KEEP', index })
-          }
-          onRemoveDiceToKeep={(index) =>
-            onEvent({ type: 'ON_REMOVE_DICE_TO_KEEP', index })
-          }
-          onClickSelectHandButton={(key, value) =>
-            onEvent({ type: 'ON_CLICK_SELECT_HAND_BUTTON', key, value })
-          }
+          onAddDiceToKeep={(index) => onEvent({ type: 'ON_ADD_DICE_TO_KEEP', index })}
+          onRemoveDiceToKeep={(index) => onEvent({ type: 'ON_REMOVE_DICE_TO_KEEP', index })}
+          onClickSelectHandButton={(key, value) => onEvent({ type: 'ON_CLICK_SELECT_HAND_BUTTON', key, value })}
           flex='1'
         />
-        <YachtDiceResultModal
-          rank={lounge.players.map((player) => ({ player, score: 0 }))}
-          modal={modal}
-        />
+        <YachtDiceResultModal rank={lounge.players.map((player) => ({ player, score: 0 }))} modal={modal.resultModal} />
       </Flex>
     </Page>
   );
 };
-
-export default YachtDicePage;

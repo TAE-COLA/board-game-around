@@ -1,2 +1,2 @@
-export { default as RegisterPage } from './RegisterPage';
-export { useRegisterIntent } from './useRegisterIntent';
+export * from './RegisterPage';
+export * from './useRegisterIntent';

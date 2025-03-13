@@ -1,2 +1,2 @@
-export { default as LoungePage } from './LoungePage';
-export { useLoungeIntent } from './useLoungeIntent';
+export * from './LoungePage';
+export * from './useLoungeIntent';

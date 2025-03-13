@@ -1,2 +1,2 @@
-export { default as MainPage } from './MainPage';
-export { useMainIntent } from './useMainIntent';
+export * from './MainPage';
+export * from './useMainIntent';
