@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { CommonError } from 'shared/error';
+import { isEmptyData } from './emptyData';
 
 class Sanitized<T> {
   constructor(private value: T | null) {}
@@ -40,7 +41,7 @@ export const sanitize = <T>(
     return new Sanitized(sanitizedArray as unknown as T);
   }
 
-  if (obj && typeof obj === 'object' && 'placeholder' in obj) return new Sanitized<T>(null);
+  if (isEmptyData(obj)) return new Sanitized<T>(null);
 
   const result = {} as T;
   for (const key in obj) {

@@ -1,7 +1,7 @@
 import { database } from 'features';
 import { child, ref as fReference, get, update } from 'firebase/database';
-import { DavinciCodeTile, EmptyData, Lounge } from 'models';
-import { emptyData } from 'shared';
+import { DavinciCodeTile, Lounge } from 'models';
+import { emptyData, EmptyData } from 'shared';
 
 const DAVINCI_CODE_REFERENCE = 'DavinciCode';
 const LOUNGE_REFERENCE = 'Lounge';

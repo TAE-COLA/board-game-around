@@ -1,7 +1,7 @@
 import { database } from 'features';
 import { child, ref, update } from 'firebase/database';
-import { DavinciCodeTile, EmptyData } from 'models';
-import { emptyData, sanitize } from 'shared';
+import { DavinciCodeTile } from 'models';
+import { emptyData, EmptyData, sanitize } from 'shared';
 
 const DAVINCI_CODE_REFERENCE = 'DavinciCode';
 const DAVINCI_CODE_PLAYER_IDS = 'playerIds';
@@ -26,7 +26,9 @@ export const updateDavinciCodeHand = async (
   if (clearPendingTiles) {
     updates[`/${DAVINCI_CODE_PENDING_TILES}`] = [emptyData];
 
-    const phase = (await database.ref(`${DAVINCI_CODE_REFERENCE}/${loungeId}/${DAVINCI_CODE_PHASE}`).get()).val();
+    const phase = (
+      await database.ref(`${DAVINCI_CODE_REFERENCE}/${loungeId}/${DAVINCI_CODE_PHASE}`).get()
+    ).val();
     console.log(phase);
     if (phase === 'INITIAL_DRAW') {
       const playerIds = (
@@ -34,7 +36,9 @@ export const updateDavinciCodeHand = async (
       ).val();
       const nextPlayerId = playerIds[(playerIds.indexOf(playerId) + 1) % playerIds.length];
       const nextPlayersHand = (
-        await database.ref(`${DAVINCI_CODE_REFERENCE}/${loungeId}/${DAVINCI_CODE_HANDS}/${nextPlayerId}`).get()
+        await database
+          .ref(`${DAVINCI_CODE_REFERENCE}/${loungeId}/${DAVINCI_CODE_HANDS}/${nextPlayerId}`)
+          .get()
       ).val();
 
       if (sanitize(nextPlayersHand).val() !== 0) {
