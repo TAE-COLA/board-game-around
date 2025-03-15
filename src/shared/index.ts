@@ -5,5 +5,7 @@ export * from './generateCode';
 export * from './getOrdinal';
 export * from './launch';
 export * from './sanitize';
+export * from './shuffle';
 export * from './stringResources';
 export * from './toasts';
+export * from './updates';

@@ -1,6 +1,6 @@
 import { useToast } from '@chakra-ui/react';
 import { Paths, useAuthContext, useLoungeContext } from 'app';
-import { exitLounge, startDavinciCode, startYachtDice } from 'features';
+import { DavinciCodeApi, exitLounge, startYachtDice } from 'features';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CommonToast, GameName, launch } from 'shared';
@@ -34,7 +34,7 @@ export function useLoungeIntent() {
             await startYachtDice(lounge.id);
             break;
           case GameName.DavinciCode.korean:
-            await startDavinciCode(lounge.id);
+            await DavinciCodeApi.start(lounge.id);
             break;
         }
       });

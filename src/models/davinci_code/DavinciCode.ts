@@ -16,3 +16,18 @@ export interface DavinciCode {
   pendingTiles: DavinciCodeTile[];
   finishedAt?: object;
 }
+
+export const DAVINCI_CODE = {
+  reference: 'DavinciCode',
+  loungeId: 'loungeId',
+  playerIds: 'playerIds',
+  hands: 'hands',
+  turn: 'turn',
+  phase: 'phase',
+  finishedPlayerIds: 'finishedPlayerIds',
+  remainingTiles: 'remainingTiles',
+  white: 'white',
+  black: 'black',
+  pendingTiles: 'pendingTiles',
+  finishedAt: 'finishedAt',
+} as const;

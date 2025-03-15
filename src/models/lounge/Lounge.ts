@@ -8,3 +8,15 @@ export interface Lounge {
   createdAt: object;
   deletedAt?: object;
 }
+
+export const LOUNGE = {
+  reference: 'Lounge',
+  id: 'id',
+  gameId: 'gameId',
+  code: 'code',
+  ownerId: 'ownerId',
+  playerIds: 'playerIds',
+  status: 'status',
+  createdAt: 'createdAt',
+  deletedAt: 'deletedAt',
+} as const;

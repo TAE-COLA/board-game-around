@@ -1,14 +1,6 @@
 import { useDisclosure, useToast } from '@chakra-ui/react';
 import { Paths, useAuthContext, useLoungeContext } from 'app';
-import {
-  drawDavinciCodeTile,
-  exitDavinciCode,
-  exitLounge,
-  fetchUserById,
-  fetchUsersByIds,
-  onDavinciCodeStateChanged,
-  updateDavinciCodeHand,
-} from 'features';
+import { DavinciCodeApi, exitLounge, fetchUserById, fetchUsersByIds } from 'features';
 import { useEffect, useReducer, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CommonToast, GameName, launch } from 'shared';
@@ -56,16 +48,16 @@ export const useDavinciCodeIntent = () => {
     onClickExitButton: () => {
       launch(setLoading, async () => {
         await exitLounge(lounge.id, auth.id);
-        await exitDavinciCode(lounge.id, auth.id);
+        await DavinciCodeApi.exit(lounge.id, auth.id);
         toast(CommonToast.EXIT_LOUNGE);
         navigate(Paths.main, { replace: true });
       });
     },
     onClickDrawButton: (isWhite) => {
-      drawDavinciCodeTile(lounge.id, isWhite);
+      DavinciCodeApi.drawTile(lounge.id, isWhite);
     },
     onSubmitHand: (hand) => {
-      updateDavinciCodeHand(lounge.id, auth.id, hand, true);
+      DavinciCodeApi.updateHand(lounge.id, auth.id, hand, true);
     },
     onClickTile: () => {
       modal.numberModal.onOpen();
@@ -81,7 +73,7 @@ export const useDavinciCodeIntent = () => {
       return;
     }
 
-    const unsubscribe = onDavinciCodeStateChanged(lounge.id, async (game) => {
+    const unsubscribe = DavinciCodeApi.onStateChanged(lounge.id, async (game) => {
       const players = await fetchUsersByIds(game.playerIds);
       const turn = await fetchUserById(game.turn);
       const finishedPlayers = await fetchUsersByIds(game.finishedPlayerIds);
