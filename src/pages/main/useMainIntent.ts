@@ -1,6 +1,6 @@
 import { useDisclosure, useToast } from '@chakra-ui/react';
-import { Paths } from 'app';
-import { createLounge, fetchAllGames, joinLounge, useAuthContext } from 'features';
+import { Paths, useAuthContext } from 'app';
+import { createLounge, fetchAllGames, joinLounge } from 'features';
 import { getAuth, signOut } from 'firebase/auth';
 import { useEffect, useReducer, useState } from 'react';
 import { useNavigate } from 'react-router-dom';

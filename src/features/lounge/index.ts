@@ -4,4 +4,3 @@ export * from './fetchLoungeById';
 export * from './fetchLoungeIdByUserId';
 export * from './joinLounge';
 export * from './onLoungeStateChanged';
-export * from './useLoungeContext';

@@ -6,22 +6,12 @@ import {
   fetchUserById,
   fetchUsersByIds,
   onLoungeStateChanged,
-  useAuthContext,
 } from 'features';
-import { Game, LoungeContext, User } from 'models';
 import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
-import { CommonToast, createDummy } from 'shared';
-
-type LoungeState = {
-  id: string;
-  game: Game;
-  code: string;
-  owner: User;
-  players: User[];
-  status: 'WAITING' | 'PLAYING' | 'END';
-  createdAt: object;
-};
+import { CommonToast } from 'shared';
+import { useAuthContext } from '../auth';
+import { LoungeContext, LoungeContextType } from './LoungeContext';
 
 export const LoungeProvider: React.FC = () => {
   const auth = useAuthContext();
@@ -29,8 +19,7 @@ export const LoungeProvider: React.FC = () => {
   const navigate = useNavigate();
   const toast = useToast();
 
-  const [loading, setLoading] = useState(true);
-  const [loungeState, setLoungeState] = useState(createDummy<LoungeState>());
+  const [loungeState, setLoungeState] = useState<LoungeContextType>();
 
   useEffect(() => {
     if (auth.loading) return;
@@ -43,8 +32,7 @@ export const LoungeProvider: React.FC = () => {
             const owner = await fetchUserById(lounge.ownerId);
             const players = await fetchUsersByIds(lounge.playerIds);
 
-            setLoungeState({ ...lounge, game, owner, players });
-            setLoading(false);
+            setLoungeState({ loading: false, game, owner, players, ...lounge });
           } else {
             navigate(Paths.main, { replace: true });
             toast(CommonToast.NO_LOUNGE);
@@ -60,7 +48,7 @@ export const LoungeProvider: React.FC = () => {
   }, [auth]);
 
   return (
-    <LoungeContext.Provider value={{ loading, ...loungeState }}>
+    <LoungeContext.Provider value={loungeState}>
       <Outlet />
     </LoungeContext.Provider>
   );

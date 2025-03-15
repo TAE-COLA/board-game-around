@@ -10,7 +10,7 @@ import {
   ModalOverlay,
   Text,
 } from '@chakra-ui/react';
-import { useAuthContext } from 'features';
+import { useAuthContext } from 'app';
 import { DavinciCodeTile as tileEntity, User } from 'models';
 import React, { useEffect } from 'react';
 import { DavinciCodeTile } from 'widgets/davinci_code';
@@ -127,7 +127,13 @@ export const DavinciCodeDrawModal: React.FC<IProps> = ({
   }, [hand]);
 
   return (
-    <Modal isOpen={modal.isOpen} onClose={modal.onClose} isCentered closeOnOverlayClick={false} size='xl'>
+    <Modal
+      isOpen={modal.isOpen}
+      onClose={modal.onClose}
+      isCentered
+      closeOnOverlayClick={false}
+      size='xl'
+    >
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>{step === 0 ? '타일을 뽑아주세요.' : '타일을 배치해주세요.'}</ModalHeader>
@@ -135,7 +141,11 @@ export const DavinciCodeDrawModal: React.FC<IProps> = ({
           <Flex direction='column' gap={4}>
             <Flex gap={4}>
               {Array.from({ length: drawableTiles }).map((_, index) => (
-                <Box key={index} onClick={() => handleSelectTile(index)} {...boxProps(selectedTileIndex === index)}>
+                <Box
+                  key={index}
+                  onClick={() => handleSelectTile(index)}
+                  {...boxProps(selectedTileIndex === index)}
+                >
                   {pendingTiles[index] ? (
                     <DavinciCodeTile
                       player={{ id: authId, name: authName } as User}
@@ -180,7 +190,11 @@ export const DavinciCodeDrawModal: React.FC<IProps> = ({
                 <Button variant='outline' onClick={() => onClickDrawButton(true)}>
                   흰 타일 뽑기
                 </Button>
-                <Button colorScheme='blackAlpha' background='black' onClick={() => onClickDrawButton(false)}>
+                <Button
+                  colorScheme='blackAlpha'
+                  background='black'
+                  onClick={() => onClickDrawButton(false)}
+                >
                   검은 타일 뽑기
                 </Button>
               </Flex>

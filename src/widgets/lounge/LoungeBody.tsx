@@ -1,5 +1,6 @@
 import { Button, Flex, FlexProps } from '@chakra-ui/react';
-import { useAuthContext, useLoungeContext } from 'features';
+import { useAuthContext } from 'app';
+import { useLoungeContext } from 'features';
 import React from 'react';
 import { PlayerList, RuleBox } from 'widgets';
 
@@ -16,7 +17,12 @@ export const LoungeBody: React.FC<IProps> = ({ onClickStartButton, ...props }) =
       <RuleBox flex='2' />
       <Flex direction='column' flex='1'>
         <PlayerList players={lounge.players} owner={lounge.owner} flex='1' />
-        <Button onClick={onClickStartButton} size='lg' colorScheme='pink' isDisabled={auth.id !== lounge.owner.id}>
+        <Button
+          onClick={onClickStartButton}
+          size='lg'
+          colorScheme='pink'
+          isDisabled={auth.id !== lounge.owner.id}
+        >
           시작하기
         </Button>
       </Flex>

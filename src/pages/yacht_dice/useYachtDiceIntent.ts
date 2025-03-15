@@ -1,5 +1,5 @@
 import { useDisclosure, useToast } from '@chakra-ui/react';
-import { Paths } from 'app';
+import { useAuthContext, Paths } from 'app';
 import {
   exitLounge,
   exitYachtDice,
@@ -7,7 +7,6 @@ import {
   fetchUsersByIds,
   onYachtDiceStateChanged,
   updateYachtDiceState,
-  useAuthContext,
   useLoungeContext,
 } from 'features';
 import { useEffect, useReducer, useState } from 'react';
@@ -47,12 +46,17 @@ export function useYachtDiceIntent() {
       });
     },
     onClickPrevBoardButton: () => {
-      const currentIndex = state.players.findIndex((player) => player.id === state.currentBoardPlayer.id);
-      const prevBoardPlayer = state.players[(currentIndex - 1 + state.players.length) % state.players.length];
+      const currentIndex = state.players.findIndex(
+        (player) => player.id === state.currentBoardPlayer.id
+      );
+      const prevBoardPlayer =
+        state.players[(currentIndex - 1 + state.players.length) % state.players.length];
       dispatch({ type: 'CURRENT_BOARD_PLAYER', currentBoardPlayer: prevBoardPlayer });
     },
     onClickNextBoardButton: () => {
-      const nextIndex = state.players.findIndex((player) => player.id === state.currentBoardPlayer.id);
+      const nextIndex = state.players.findIndex(
+        (player) => player.id === state.currentBoardPlayer.id
+      );
       const nextBoardPlayer = state.players[(nextIndex + 1) % state.players.length];
       dispatch({ type: 'CURRENT_BOARD_PLAYER', currentBoardPlayer: nextBoardPlayer });
     },

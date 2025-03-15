@@ -1,5 +1,5 @@
 import { Card, CardBody, CardProps, Divider, Flex, Spacer, Text } from '@chakra-ui/react';
-import { useAuthContext } from 'features';
+import { useAuthContext } from 'app';
 import { DavinciCodeTile as TileEntity, User } from 'models';
 import React, { useCallback } from 'react';
 

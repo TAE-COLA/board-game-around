@@ -1,6 +1,6 @@
 import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons';
 import { Card, CardFooter, CardHeader, CardProps, Flex } from '@chakra-ui/react';
-import { useAuthContext } from 'features';
+import { useAuthContext } from 'app';
 import { DavinciCodeTile as tileEntity, User } from 'models';
 import React from 'react';
 import { DavinciCodeTile } from 'widgets';

@@ -1,6 +1,6 @@
-import { AuthContext } from 'models';
 import { useContext } from 'react';
 import { CommonError } from 'shared';
+import { AuthContext } from './AuthContext';
 
 export const useAuthContext = () => {
   const context = useContext(AuthContext);

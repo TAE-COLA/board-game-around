@@ -2,40 +2,38 @@ import { useToast } from '@chakra-ui/react';
 import { Paths } from 'app/route';
 import { fetchUserById } from 'features';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { AuthContext, User } from 'models';
 import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
-import { CommonToast, createDummy } from 'shared';
+import { CommonToast } from 'shared';
+import { AuthContext, AuthContextType } from './AuthContext';
 
 export const AuthProvider: React.FC = () => {
-  const [user, setUser] = useState(createDummy<User>());
-  const [loading, setLoading] = useState(true);
-
   const navigate = useNavigate();
   const toast = useToast();
   const firebaseAuth = getAuth();
 
+  const [authState, setAuthState] = useState<AuthContextType>();
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(firebaseAuth, async (currentUser) => {
       if (currentUser) {
-        const data = await fetchUserById(currentUser.uid);
-        if (data) setUser(data);
+        const user = await fetchUserById(currentUser.uid);
+        if (user) setAuthState({ loading: false, ...user });
       }
-      setLoading(false);
     });
 
     return () => unsubscribe();
   }, [firebaseAuth]);
 
   useEffect(() => {
-    if (!loading && !firebaseAuth.currentUser) {
+    if (!authState?.loading && !firebaseAuth.currentUser) {
       navigate(Paths.login, { replace: true });
       toast(CommonToast.REQUIRE_LOGIN);
     }
-  }, [user, loading]);
+  }, [authState]);
 
   return (
-    <AuthContext.Provider value={{ loading, ...user }}>
+    <AuthContext.Provider value={authState}>
       <Outlet />
     </AuthContext.Provider>
   );

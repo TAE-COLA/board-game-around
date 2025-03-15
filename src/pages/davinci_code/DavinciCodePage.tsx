@@ -1,5 +1,5 @@
 import { Flex } from '@chakra-ui/react';
-import { useAuthContext } from 'features';
+import { useAuthContext } from 'app';
 import React from 'react';
 import {
   DavinciCodeBody,

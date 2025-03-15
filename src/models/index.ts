@@ -1,4 +1,3 @@
-export * from './auth';
 export * from './davinci_code';
 export * from './game';
 export * from './lounge';

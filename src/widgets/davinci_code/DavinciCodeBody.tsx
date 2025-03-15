@@ -1,5 +1,5 @@
 import { Flex, FlexProps } from '@chakra-ui/react';
-import { useAuthContext } from 'features';
+import { useAuthContext } from 'app';
 import { DavinciCodeTile as tileEntity, User } from 'models';
 import React from 'react';
 import { DavinciCodeHands } from 'widgets';
@@ -27,7 +27,14 @@ export const DavinciCodeBody: React.FC<IProps> = ({
   const { id: authId } = useAuthContext();
 
   return (
-    <Flex width='100%' direction={{ base: 'column', lg: 'row' }} justify='center' align='center' gap='8' {...props}>
+    <Flex
+      width='100%'
+      direction={{ base: 'column', lg: 'row' }}
+      justify='center'
+      align='center'
+      gap='8'
+      {...props}
+    >
       {players
         .filter((player) => player.id !== authId)
         .map((player) => (

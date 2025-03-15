@@ -1,6 +1,6 @@
 import { useToast } from '@chakra-ui/react';
-import { Paths } from 'app';
-import { exitLounge, startDavinciCode, startYachtDice, useAuthContext, useLoungeContext } from 'features';
+import { Paths, useAuthContext } from 'app';
+import { exitLounge, startDavinciCode, startYachtDice, useLoungeContext } from 'features';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CommonToast, launch } from 'shared';
