@@ -1,5 +1,5 @@
 import { useDisclosure, useToast } from '@chakra-ui/react';
-import { Paths, useAuthContext } from 'app';
+import { Paths, useAuthContext, useLoungeContext } from 'app';
 import {
   drawDavinciCodeTile,
   exitDavinciCode,
@@ -8,7 +8,6 @@ import {
   fetchUsersByIds,
   onDavinciCodeStateChanged,
   updateDavinciCodeHand,
-  useLoungeContext,
 } from 'features';
 import { useEffect, useReducer, useState } from 'react';
 import { useNavigate } from 'react-router-dom';

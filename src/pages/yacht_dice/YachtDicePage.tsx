@@ -1,5 +1,5 @@
 import { Flex } from '@chakra-ui/react';
-import { useLoungeContext } from 'features';
+import { useLoungeContext } from 'app';
 import { useYachtDiceIntent } from 'pages';
 import React from 'react';
 import { Page, YachtDiceBody, YachtDiceHeader, YachtDiceResultModal } from 'widgets';
@@ -32,7 +32,10 @@ export const YachtDicePage: React.FC = () => {
           onClickSelectHandButton={onEvent.onClickSelectHandButton}
           flex={1}
         />
-        <YachtDiceResultModal rank={lounge.players.map((player) => ({ player, score: 0 }))} modal={modal.resultModal} />
+        <YachtDiceResultModal
+          rank={lounge.players.map((player) => ({ player, score: 0 }))}
+          modal={modal.resultModal}
+        />
       </Flex>
     </Page>
   );

@@ -4,7 +4,7 @@ import { fetchUserById } from 'features';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
-import { CommonToast } from 'shared';
+import { CommonToast, createDummy } from 'shared';
 import { AuthContext, AuthContextType } from './AuthContext';
 
 export const AuthProvider: React.FC = () => {
@@ -12,7 +12,7 @@ export const AuthProvider: React.FC = () => {
   const toast = useToast();
   const firebaseAuth = getAuth();
 
-  const [authState, setAuthState] = useState<AuthContextType>();
+  const [authState, setAuthState] = useState({ ...createDummy<AuthContextType>(), loading: true });
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(firebaseAuth, async (currentUser) => {

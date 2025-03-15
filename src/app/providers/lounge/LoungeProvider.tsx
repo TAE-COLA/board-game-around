@@ -9,7 +9,7 @@ import {
 } from 'features';
 import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
-import { CommonToast } from 'shared';
+import { CommonToast, createDummy } from 'shared';
 import { useAuthContext } from '../auth';
 import { LoungeContext, LoungeContextType } from './LoungeContext';
 
@@ -19,7 +19,10 @@ export const LoungeProvider: React.FC = () => {
   const navigate = useNavigate();
   const toast = useToast();
 
-  const [loungeState, setLoungeState] = useState<LoungeContextType>();
+  const [loungeState, setLoungeState] = useState({
+    ...createDummy<LoungeContextType>(),
+    loading: true,
+  });
 
   useEffect(() => {
     if (auth.loading) return;

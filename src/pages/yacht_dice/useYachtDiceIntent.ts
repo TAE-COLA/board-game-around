@@ -1,5 +1,5 @@
 import { useDisclosure, useToast } from '@chakra-ui/react';
-import { useAuthContext, Paths } from 'app';
+import { Paths, useAuthContext, useLoungeContext } from 'app';
 import {
   exitLounge,
   exitYachtDice,
@@ -7,7 +7,6 @@ import {
   fetchUsersByIds,
   onYachtDiceStateChanged,
   updateYachtDiceState,
-  useLoungeContext,
 } from 'features';
 import { useEffect, useReducer, useState } from 'react';
 import { useNavigate } from 'react-router-dom';

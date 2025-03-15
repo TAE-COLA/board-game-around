@@ -1,6 +1,5 @@
 import { Button, Flex, FlexProps } from '@chakra-ui/react';
-import { useAuthContext } from 'app';
-import { useLoungeContext } from 'features';
+import { useAuthContext, useLoungeContext } from 'app';
 import React from 'react';
 import { PlayerList, RuleBox } from 'widgets';
 
@@ -11,6 +10,8 @@ type IProps = FlexProps & {
 export const LoungeBody: React.FC<IProps> = ({ onClickStartButton, ...props }) => {
   const auth = useAuthContext();
   const lounge = useLoungeContext();
+
+  console.log(lounge);
 
   return (
     <Flex width='100%' gap='8' {...props}>
