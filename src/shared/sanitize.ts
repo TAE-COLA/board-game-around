@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { CommonError } from 'shared/error';
+import { CommonError } from 'shared';
 import { isEmptyData } from './emptyData';
 
 class Sanitized<T> {

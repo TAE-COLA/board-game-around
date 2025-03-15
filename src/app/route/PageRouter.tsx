@@ -1,8 +1,15 @@
 import { AuthProvider, LoungeProvider } from 'app';
-import { DavinciCodePage, LoginPage, LoungePage, MainPage, RegisterPage, YachtDicePage } from 'pages';
+import {
+  DavinciCodePage,
+  LoginPage,
+  LoungePage,
+  MainPage,
+  RegisterPage,
+  YachtDicePage,
+} from 'pages';
 import React from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
-import { GameName } from 'shared/string';
+import { GameName } from 'shared';
 
 export const PageRouter: React.FC = () => {
   const location = useLocation();

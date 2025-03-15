@@ -3,8 +3,7 @@ import { Paths, useAuthContext, useLoungeContext } from 'app';
 import { exitLounge, startDavinciCode, startYachtDice } from 'features';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CommonToast, launch } from 'shared';
-import { GameName } from 'shared/string';
+import { CommonToast, GameName, launch } from 'shared';
 import * as Intent from './LoungeIntent';
 
 export function useLoungeIntent() {

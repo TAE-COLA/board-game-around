@@ -1,16 +1,16 @@
-import { createUser } from 'features';
-import { createUserWithEmailAndPassword, User as FUser, getAuth } from 'firebase/auth';
+import * as FirebaseAuth from 'firebase/auth';
 import { User } from 'models';
+import { createUser } from '../user';
 
 export const signUpWithEmailAndPassword = async (
   email: string,
   password: string,
   nickname: string
 ): Promise<string> => {
-  const auth = getAuth();
-  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+  const auth = FirebaseAuth.getAuth();
+  const userCredential = await FirebaseAuth.createUserWithEmailAndPassword(auth, email, password);
+  const data: FirebaseAuth.User = userCredential.user;
 
-  const data: FUser = userCredential.user;
   const user: User = {
     id: data.uid,
     name: nickname,

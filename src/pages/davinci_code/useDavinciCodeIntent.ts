@@ -11,8 +11,7 @@ import {
 } from 'features';
 import { useEffect, useReducer, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CommonToast, launch } from 'shared';
-import { GameName } from 'shared/string';
+import { CommonToast, GameName, launch } from 'shared';
 import * as Intent from './DavinciCodeIntent';
 
 export const useDavinciCodeIntent = () => {
