@@ -1,6 +1,6 @@
 import { useToast } from '@chakra-ui/react';
 import { Paths, useAuthContext, useLoungeContext } from 'app';
-import { DavinciCodeApi, exitLounge, startYachtDice } from 'features';
+import { DavinciCodeApi, LoungeApi, startYachtDice } from 'features';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CommonToast, GameName, launch } from 'shared';
@@ -18,7 +18,7 @@ export function useLoungeIntent() {
   const onEvent: Intent.event = {
     onClickExitButton: () => {
       launch(setLoading, async () => {
-        await exitLounge(lounge.id, auth.id);
+        await LoungeApi.exit(lounge.id, auth.id);
         toast(CommonToast.EXIT_LOUNGE);
         navigate(Paths.main, { replace: true });
       });

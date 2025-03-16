@@ -13,3 +13,19 @@ export interface YachtDiceBoard {
   lgStraight: { value: number; marked: boolean };
   yacht: { value: number; marked: boolean };
 }
+
+export const YACHT_DICE_BOARD: (keyof YachtDiceBoard)[] = [
+  'ace',
+  'double',
+  'triple',
+  'quadra',
+  'penta',
+  'hexa',
+  'bonus',
+  'choice',
+  'fourKind',
+  'fullHouse',
+  'smStraight',
+  'lgStraight',
+  'yacht',
+];

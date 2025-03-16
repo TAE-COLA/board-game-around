@@ -1,10 +1,9 @@
 import { useDisclosure, useToast } from '@chakra-ui/react';
 import { Paths, useAuthContext, useLoungeContext } from 'app';
 import {
-  exitLounge,
+  LoungeApi,
+  UserApi,
   exitYachtDice,
-  fetchUserById,
-  fetchUsersByIds,
   onYachtDiceStateChanged,
   updateYachtDiceState,
 } from 'features';
@@ -37,7 +36,7 @@ export function useYachtDiceIntent() {
   const onEvent: Intent.event = {
     onClickExitButton: () => {
       launch(setLoading, async () => {
-        await exitLounge(lounge.id, auth.id);
+        await LoungeApi.exit(lounge.id, auth.id);
         await exitYachtDice(lounge.id, auth.id);
         toast(CommonToast.EXIT_LOUNGE);
         navigate(Paths.main, { replace: true });
@@ -98,8 +97,10 @@ export function useYachtDiceIntent() {
     }
 
     const unsubscribe = onYachtDiceStateChanged(lounge.id, async (game) => {
-      const players = await fetchUsersByIds(game.playerIds);
-      const turn = await fetchUserById(game.turn);
+      const [players, turn] = await Promise.all([
+        Promise.all(game.playerIds.map(UserApi.fetchById)),
+        UserApi.fetchById(game.turn),
+      ]);
 
       dispatch({ type: 'PLAYERS', players });
       dispatch({ type: 'ROUND', round: game.round });

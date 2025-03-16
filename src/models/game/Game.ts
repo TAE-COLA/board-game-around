@@ -4,3 +4,10 @@ export interface Game {
   description: string;
   image: string;
 }
+
+export const GAME = {
+  collection: 'Games',
+  name: 'name',
+  description: 'description',
+  image: 'image',
+} as const;

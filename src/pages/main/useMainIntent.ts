@@ -1,6 +1,6 @@
 import { useDisclosure, useToast } from '@chakra-ui/react';
 import { Paths, useAuthContext } from 'app';
-import { createLounge, fetchAllGames, joinLounge } from 'features';
+import { GameApi, LoungeApi } from 'features';
 import { getAuth, signOut } from 'firebase/auth';
 import { useEffect, useReducer, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -44,7 +44,7 @@ export const useMainIntent = () => {
     onClickCreateLoungeButton: () => {
       launch(setLoading, async () => {
         if (state.selectedGame) {
-          await createLounge(state.selectedGame.id, auth.id);
+          await LoungeApi.create(state.selectedGame.id, auth.id);
           navigate(Paths.lounge);
         }
 
@@ -55,7 +55,7 @@ export const useMainIntent = () => {
       launch(setLoading, async () => {
         try {
           if (state.selectedGame) {
-            await joinLounge(code, state.selectedGame.id, auth.id);
+            await LoungeApi.join(code, state.selectedGame.id, auth.id);
             navigate(Paths.lounge);
           }
         } catch {
@@ -73,7 +73,7 @@ export const useMainIntent = () => {
 
   useEffect(() => {
     launch(setLoading, async () => {
-      const gameList = await fetchAllGames();
+      const gameList = await GameApi.fetchAll();
       dispatch({ type: 'GAME_LIST', gameList });
     });
   }, []);

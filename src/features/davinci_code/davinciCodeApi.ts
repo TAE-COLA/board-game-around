@@ -75,12 +75,11 @@ export const onStateChanged = (
 ): db.Unsubscribe => {
   return db.onValue(davinciCodeReference(loungeId), (snapshot) => {
     const data = snapshot.val() as DavinciCode;
+    const davinciCode = sanitize(data, () => {
+      throw new Error(CommonError.GAME_STATE_FAILED);
+    }).val();
 
-    onChanged(
-      sanitize(data, () => {
-        throw new Error(CommonError.GAME_STATE_FAILED);
-      }).val()
-    );
+    onChanged(davinciCode);
   });
 };
 
@@ -135,6 +134,7 @@ export const drawTile = async (loungeId: string, isWhite: boolean): Promise<void
   pendingTiles.push(drawnTile);
 
   const updates = initialUpdates();
+
   updates[
     `/${DAVINCI_CODE.reference}/${loungeId}/${DAVINCI_CODE.remainingTiles}/${
       isWhite ? DAVINCI_CODE.white : DAVINCI_CODE.black

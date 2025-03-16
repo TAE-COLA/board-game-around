@@ -1,6 +1,6 @@
 import { useDisclosure, useToast } from '@chakra-ui/react';
 import { Paths, useAuthContext, useLoungeContext } from 'app';
-import { DavinciCodeApi, exitLounge, fetchUserById, fetchUsersByIds } from 'features';
+import { DavinciCodeApi, LoungeApi, UserApi } from 'features';
 import { useEffect, useReducer, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CommonToast, GameName, launch } from 'shared';
@@ -47,7 +47,7 @@ export const useDavinciCodeIntent = () => {
   const onEvent: Intent.event = {
     onClickExitButton: () => {
       launch(setLoading, async () => {
-        await exitLounge(lounge.id, auth.id);
+        await LoungeApi.exit(lounge.id, auth.id);
         await DavinciCodeApi.exit(lounge.id, auth.id);
         toast(CommonToast.EXIT_LOUNGE);
         navigate(Paths.main, { replace: true });
@@ -74,9 +74,11 @@ export const useDavinciCodeIntent = () => {
     }
 
     const unsubscribe = DavinciCodeApi.onStateChanged(lounge.id, async (game) => {
-      const players = await fetchUsersByIds(game.playerIds);
-      const turn = await fetchUserById(game.turn);
-      const finishedPlayers = await fetchUsersByIds(game.finishedPlayerIds);
+      const [players, turn, finishedPlayers] = await Promise.all([
+        Promise.all(game.playerIds.map(UserApi.fetchById)),
+        UserApi.fetchById(game.turn),
+        Promise.all(game.finishedPlayerIds.map(UserApi.fetchById)),
+      ]);
 
       dispatch({ type: 'PLAYERS', players });
       dispatch({ type: 'HANDS', hands: game.hands });

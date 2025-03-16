@@ -1,6 +1,6 @@
 import { useToast } from '@chakra-ui/react';
 import { Paths } from 'app';
-import { checkEmailForDuplicate, signUpWithEmailAndPassword } from 'features';
+import { UserApi } from 'features';
 import { getAuth } from 'firebase/auth';
 import { useEffect, useReducer, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -17,14 +17,21 @@ export function useRegisterIntent() {
 
   const onEvent: Intent.event = {
     onEmailChange: (email) => {
-      dispatch({ type: 'EMAIL', email: { label: 'email', value: email, error: checkValidity(email, 'email') } });
+      dispatch({
+        type: 'EMAIL',
+        email: { label: 'email', value: email, error: checkValidity(email, 'email') },
+      });
       dispatch({ type: 'VALID', valid: checkValid(state) });
     },
     onClickCheckForDuplicatesButton: () => {
-      checkEmailForDuplicate(state.email.value).then((emailDuplicate) => {
+      UserApi.checkForEmailDuplicates(state.email.value).then((emailDuplicate) => {
         dispatch({
           type: 'EMAIL',
-          email: { label: 'email', value: state.email.value, error: emailDuplicate ? '중복된 이메일입니다.' : null },
+          email: {
+            label: 'email',
+            value: state.email.value,
+            error: emailDuplicate ? '중복된 이메일입니다.' : null,
+          },
         });
         dispatch({ type: 'EMAIL_DUPLICATE', emailDuplicate });
         dispatch({ type: 'VALID', valid: checkValid(state) });
@@ -33,7 +40,11 @@ export function useRegisterIntent() {
     onPasswordChange: (password) => {
       dispatch({
         type: 'PASSWORD',
-        password: { label: 'password', value: password, error: checkValidity(password, 'password') },
+        password: {
+          label: 'password',
+          value: password,
+          error: checkValidity(password, 'password'),
+        },
       });
       dispatch({ type: 'VALID', valid: checkValid(state) });
     },
@@ -51,13 +62,21 @@ export function useRegisterIntent() {
     onNicknameChange: (nickname) => {
       dispatch({
         type: 'NICKNAME',
-        nickname: { label: 'nickname', value: nickname, error: checkValidity(nickname, 'nickname') },
+        nickname: {
+          label: 'nickname',
+          value: nickname,
+          error: checkValidity(nickname, 'nickname'),
+        },
       });
       dispatch({ type: 'VALID', valid: checkValid(state) });
     },
     onClickSubmitButton: () => {
       launch(setLoading, async () => {
-        await signUpWithEmailAndPassword(state.email.value, state.password.value, state.nickname.value);
+        await UserApi.signUpWithEmailAndPassword(
+          state.email.value,
+          state.password.value,
+          state.nickname.value
+        );
 
         toast(CommonToast.REGIST_SUCCESS);
         navigate(Paths.main, { replace: true });
@@ -98,7 +117,9 @@ function checkValidity(
     case 'passwordConfirm':
       return value !== password ? '비밀번호가 일치하지 않습니다.' : null;
     case 'nickname':
-      return value.length < 2 || value.length > 10 ? '닉네임은 2자 이상 10자 이하로 입력하세요.' : null;
+      return value.length < 2 || value.length > 10
+        ? '닉네임은 2자 이상 10자 이하로 입력하세요.'
+        : null;
     default:
       return null;
   }
@@ -107,7 +128,8 @@ function checkValidity(
 function checkValid(state: Intent.state): boolean {
   if (state.email.error !== null || state.email.value.length === 0) return false;
   if (state.password.error !== null || state.password.value.length === 0) return false;
-  if (state.passwordConfirm.error !== null || state.passwordConfirm.value.length === 0) return false;
+  if (state.passwordConfirm.error !== null || state.passwordConfirm.value.length === 0)
+    return false;
   if (state.nickname.error !== null || state.nickname.value.length === 0) return false;
   if (state.emailDuplicate === true) return false;
   return true;

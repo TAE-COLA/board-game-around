@@ -1,12 +1,6 @@
 import { useToast } from '@chakra-ui/react';
 import { Paths } from 'app/route';
-import {
-  fetchGameById,
-  fetchLoungeIdByUserId,
-  fetchUserById,
-  fetchUsersByIds,
-  onLoungeStateChanged,
-} from 'features';
+import { GameApi, LoungeApi, UserApi } from 'features';
 import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { CommonToast, createDummy } from 'shared';
@@ -27,28 +21,31 @@ export const LoungeProvider: React.FC = () => {
   useEffect(() => {
     if (auth.loading) return;
 
-    fetchLoungeIdByUserId(auth.id)
-      .then((loungeId) => {
-        const unsubscribe = onLoungeStateChanged(loungeId, async (lounge) => {
-          if (lounge) {
-            const game = await fetchGameById(lounge.gameId);
-            const owner = await fetchUserById(lounge.ownerId);
-            const players = await fetchUsersByIds(lounge.playerIds);
+    LoungeApi.fetchByUserId(auth.id).then((loungeId) => {
+      setLoungeState((prevState) => ({ ...prevState, id: loungeId }));
+    });
+  }, [auth.loading, auth.id]);
 
-            setLoungeState({ loading: false, game, owner, players, ...lounge });
-          } else {
-            navigate(Paths.main, { replace: true });
-            toast(CommonToast.NO_LOUNGE);
-          }
-        });
+  useEffect(() => {
+    if (auth.loading || !loungeState.id) return;
 
-        return () => unsubscribe();
-      })
-      .catch(() => {
+    const unsubscribe = LoungeApi.onStateChanged(loungeState.id, async (lounge) => {
+      if (lounge) {
+        const [game, owner, players] = await Promise.all([
+          GameApi.fetchById(lounge.gameId),
+          UserApi.fetchById(lounge.ownerId),
+          Promise.all(lounge.playerIds.map(UserApi.fetchById)),
+        ]);
+
+        setLoungeState({ loading: false, game, owner, players, ...lounge });
+      } else {
         navigate(Paths.main, { replace: true });
         toast(CommonToast.NO_LOUNGE);
-      });
-  }, [auth]);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [auth.loading, loungeState.id]);
 
   return (
     <LoungeContext.Provider value={loungeState}>

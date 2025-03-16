@@ -4,3 +4,11 @@ export interface User {
   email: string;
   createdAt: Date;
 }
+
+export const USER = {
+  collection: 'User',
+  id: 'id',
+  name: 'name',
+  email: 'email',
+  createdAt: 'createdAt',
+} as const;

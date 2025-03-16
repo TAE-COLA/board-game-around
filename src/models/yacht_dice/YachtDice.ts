@@ -13,3 +13,16 @@ export interface YachtDice {
   rolls: number;
   finishedAt?: object;
 }
+
+export const YACHT_DICE = {
+  reference: 'YachtDice',
+  loungeId: 'loungeId',
+  playerIds: 'playerIds',
+  round: 'round',
+  boards: 'boards',
+  turn: 'turn',
+  dice: 'dice',
+  keep: 'keep',
+  rolls: 'rolls',
+  finishedAt: 'finishedAt',
+} as const;

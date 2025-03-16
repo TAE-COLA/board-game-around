@@ -1,5 +1,6 @@
 export class CommonError {
-  static readonly SANITIZE_FAILED = (type: string) => `Invalid data: failed to sanitize data. Type is ${type}`;
+  static readonly SANITIZE_FAILED = (type: string) =>
+    `Invalid data: failed to sanitize data. Type is ${type}`;
 
   static readonly NO_AUTH_CONTEXT = 'useAuthContext must be used within an AuthProvider';
   static readonly NO_LOUNGE_CONTEXT = 'useLoungeContext must be used within an LoungeProvider';
@@ -8,7 +9,10 @@ export class CommonError {
   static readonly NO_USER = 'No user found';
   static readonly NO_LOUNGE = 'No lounge found';
 
+  static readonly LOUNGE_STATE_FAILED = 'Failed to get lounge state';
   static readonly GAME_STATE_FAILED = 'Failed to get game state';
+
+  static readonly NOT_THIS_GAME = 'Not this game';
 
   static readonly PERMISSION_DENIED = 'PERMISSION_DENIED';
 }

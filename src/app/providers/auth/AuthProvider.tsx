@@ -1,6 +1,6 @@
 import { useToast } from '@chakra-ui/react';
 import { Paths } from 'app/route';
-import { fetchUserById } from 'features';
+import { UserApi } from 'features';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
@@ -17,7 +17,7 @@ export const AuthProvider: React.FC = () => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(firebaseAuth, async (currentUser) => {
       if (currentUser) {
-        const user = await fetchUserById(currentUser.uid);
+        const user = await UserApi.fetchById(currentUser.uid);
         if (user) setAuthState({ loading: false, ...user });
       }
     });

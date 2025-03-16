@@ -1,1 +1,1 @@
-export * as DavinciCodeApi from './davinciCodeApi';
+export * as DavinciCodeApi from './DavinciCodeApi';
