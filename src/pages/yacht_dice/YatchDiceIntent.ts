@@ -37,7 +37,7 @@ type YatchDiceEvent = {
   onRollFinish: (values: number[]) => void;
   onAddDiceToKeep: (index: number) => void;
   onRemoveDiceToKeep: (index: number) => void;
-  onClickSelectHandButton: (key: string, value: number) => void;
+  onClickSelectHandButton: (key: keyof YachtDiceBoard, value: number) => void;
 };
 
 type YatchDiceReduce =

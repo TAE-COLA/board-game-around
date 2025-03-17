@@ -29,7 +29,7 @@ type IProps = FlexProps & {
   onRollFinish: (values: number[]) => void;
   onAddDiceToKeep: (index: number) => void;
   onRemoveDiceToKeep: (index: number) => void;
-  onClickSelectHandButton: (key: string, value: number) => void;
+  onClickSelectHandButton: (key: keyof YachtDiceBoard, value: number) => void;
 };
 
 export const YachtDiceBody: React.FC<IProps> = ({

@@ -1,12 +1,7 @@
 import { useDisclosure, useToast } from '@chakra-ui/react';
 import { Paths, useAuthContext, useLoungeContext } from 'app';
-import {
-  LoungeApi,
-  UserApi,
-  exitYachtDice,
-  onYachtDiceStateChanged,
-  updateYachtDiceState,
-} from 'features';
+import { LoungeApi, UserApi, YachtDiceApi } from 'features';
+import { YachtDiceBoard } from 'models';
 import { useEffect, useReducer, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CommonError, CommonToast, GameName, launch } from 'shared';
@@ -37,7 +32,7 @@ export function useYachtDiceIntent() {
     onClickExitButton: () => {
       launch(setLoading, async () => {
         await LoungeApi.exit(lounge.id, auth.id);
-        await exitYachtDice(lounge.id, auth.id);
+        await YachtDiceApi.exit(lounge.id, auth.id);
         toast(CommonToast.EXIT_LOUNGE);
         navigate(Paths.main, { replace: true });
       });
@@ -66,22 +61,25 @@ export function useYachtDiceIntent() {
     },
     onRollFinish: (values: number[]) => {
       dispatch({ type: 'ROLLING', rolling: false });
-      updateYachtDiceState(lounge.id, { dice: values, 'rolls-decrease': 1 }).catch((error) => {
+      YachtDiceApi.decreaseRolls(lounge.id).catch((error) => {
+        if (error.code === CommonError.PERMISSION_DENIED) toast(CommonToast.NOT_MY_TURN);
+      });
+      YachtDiceApi.updateDice(lounge.id, values).catch((error) => {
         if (error.code === CommonError.PERMISSION_DENIED) toast(CommonToast.NOT_MY_TURN);
       });
     },
     onAddDiceToKeep: (index: number) => {
-      updateYachtDiceState(lounge.id, { 'keep-add': index }).catch((error) => {
+      YachtDiceApi.addKeep(lounge.id, state.dice[index]).catch((error) => {
         if (error.code === CommonError.PERMISSION_DENIED) toast(CommonToast.NOT_MY_TURN);
       });
     },
     onRemoveDiceToKeep: (index: number) => {
-      updateYachtDiceState(lounge.id, { 'keep-remove': index }).catch((error) => {
+      YachtDiceApi.removeKeep(lounge.id, state.keep[index]).catch((error) => {
         if (error.code === CommonError.PERMISSION_DENIED) toast(CommonToast.NOT_MY_TURN);
       });
     },
-    onClickSelectHandButton: (key: string, value: number) => {
-      updateYachtDiceState(lounge.id, { boards: { key, value } }).catch((error) => {
+    onClickSelectHandButton: (key: keyof YachtDiceBoard, value: number) => {
+      YachtDiceApi.updateBoards(lounge.id, key, value).catch((error) => {
         if (error.code === CommonError.PERMISSION_DENIED) toast(CommonToast.NOT_MY_TURN);
       });
     },
@@ -96,7 +94,7 @@ export function useYachtDiceIntent() {
       return;
     }
 
-    const unsubscribe = onYachtDiceStateChanged(lounge.id, async (game) => {
+    const unsubscribe = YachtDiceApi.onStateChanged(lounge.id, async (game) => {
       const [players, turn] = await Promise.all([
         Promise.all(game.playerIds.map(UserApi.fetchById)),
         UserApi.fetchById(game.turn),

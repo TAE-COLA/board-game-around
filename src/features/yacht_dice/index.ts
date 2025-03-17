@@ -1,4 +1,1 @@
-export { exitYachtDice } from './exitYachtDice';
-export { onYachtDiceStateChanged } from './onYachtDiceStateChanged';
-export { startYachtDice } from './startYachtDice';
-export { updateYachtDiceState } from './updateYachtDiceState';
+export * as YachtDiceApi from './YachtDiceApi';

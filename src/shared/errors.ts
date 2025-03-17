@@ -14,5 +14,7 @@ export class CommonError {
 
   static readonly NOT_THIS_GAME = 'Not this game';
 
+  static readonly YACHT_DICE_NO_MORE_ROLLS = 'No more rolls left';
+
   static readonly PERMISSION_DENIED = 'PERMISSION_DENIED';
 }

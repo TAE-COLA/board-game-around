@@ -7,10 +7,16 @@ type IProps = FlexProps & {
   board: YachtDiceBoard;
   dice: number[];
   keep: number[];
-  onClickSelectHandButton: (key: string, value: number) => void;
+  onClickSelectHandButton: (key: keyof YachtDiceBoard, value: number) => void;
 };
 
-export const YachtDiceHandRanking: React.FC<IProps> = ({ board, dice, keep, onClickSelectHandButton, ...props }) => {
+export const YachtDiceHandRanking: React.FC<IProps> = ({
+  board,
+  dice,
+  keep,
+  onClickSelectHandButton,
+  ...props
+}) => {
   const keptDice = dice.filter((_, index) => keep.includes(index));
   const handRankings = {
     ace: { name: 'Ace', check: checkAce(keptDice), marked: board.ace.marked },
@@ -66,8 +72,12 @@ export const YachtDiceHandRanking: React.FC<IProps> = ({ board, dice, keep, onCl
     },
   };
 
-  const availableHandRankings = Object.entries(handRankings).filter(([, value]) => value.check.dice.length > 0);
-  const unavailableHandRankings = Object.entries(handRankings).filter(([, value]) => value.check.dice.length === 0);
+  const availableHandRankings = Object.entries(handRankings).filter(
+    ([, value]) => value.check.dice.length > 0
+  );
+  const unavailableHandRankings = Object.entries(handRankings).filter(
+    ([, value]) => value.check.dice.length === 0
+  );
 
   return (
     <Flex direction='column' justify='end' gap='4' {...props}>
@@ -81,7 +91,9 @@ export const YachtDiceHandRanking: React.FC<IProps> = ({ board, dice, keep, onCl
                 name={value.name}
                 score={value.check.score}
                 isDisabled={value.marked}
-                onClick={() => onClickSelectHandButton(key, value.check.score)}
+                onClick={() =>
+                  onClickSelectHandButton(key as keyof YachtDiceBoard, value.check.score)
+                }
               />
             </GridItem>
           ))}
@@ -99,7 +111,9 @@ export const YachtDiceHandRanking: React.FC<IProps> = ({ board, dice, keep, onCl
               name={value.name}
               score={0}
               isDisabled={value.marked}
-              onClick={() => onClickSelectHandButton(key, value.check.score)}
+              onClick={() =>
+                onClickSelectHandButton(key as keyof YachtDiceBoard, value.check.score)
+              }
             />
           </GridItem>
         ))}
@@ -111,7 +125,7 @@ export const YachtDiceHandRanking: React.FC<IProps> = ({ board, dice, keep, onCl
         score={dice.reduce((acc, value) => acc + value, 0)}
         onClick={() =>
           onClickSelectHandButton(
-            'choice',
+            'choice' as keyof YachtDiceBoard,
             dice.reduce((acc, value) => acc + value, 0)
           )
         }
@@ -238,7 +252,11 @@ function checkLargeStraight(dice: number[]): { dice: number[]; score: number } {
   const values =
     dice.includes(1) && dice.includes(2) && dice.includes(3) && dice.includes(4) && dice.includes(5)
       ? [1, 2, 3, 4, 5]
-      : dice.includes(2) && dice.includes(3) && dice.includes(4) && dice.includes(5) && dice.includes(6)
+      : dice.includes(2) &&
+        dice.includes(3) &&
+        dice.includes(4) &&
+        dice.includes(5) &&
+        dice.includes(6)
       ? [2, 3, 4, 5, 6]
       : [];
   if (values.length > 0) {
