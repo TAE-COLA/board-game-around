@@ -1,1 +1,1 @@
-export * from './UserLounge';
+export * from './user-lounge.model';

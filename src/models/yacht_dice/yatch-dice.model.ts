@@ -1,4 +1,4 @@
-import type { YachtDiceBoard } from './YachtDiceBoard';
+import type { YachtDiceBoard } from './yatch-dice-board.model';
 
 export interface YachtDice {
   loungeId: string;
@@ -11,7 +11,7 @@ export interface YachtDice {
   dice: number[];
   keep: number[];
   rolls: number;
-  finishedAt?: object;
+  finishedAt?: Date;
 }
 
 export const YACHT_DICE = {

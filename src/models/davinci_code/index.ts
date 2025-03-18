@@ -1,2 +1,2 @@
-export * from './DavinciCode';
-export * from './DavinciCodeTile';
+export * from './davinci-code-tile.model';
+export * from './davinci-code.model';

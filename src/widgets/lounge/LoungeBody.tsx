@@ -11,8 +11,6 @@ export const LoungeBody: React.FC<IProps> = ({ onClickStartButton, ...props }) =
   const auth = useAuthContext();
   const lounge = useLoungeContext();
 
-  console.log(lounge);
-
   return (
     <Flex width='100%' gap='8' {...props}>
       <RuleBox flex='2' />

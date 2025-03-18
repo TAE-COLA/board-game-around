@@ -1,4 +1,4 @@
-import { DavinciCodeTile } from './DavinciCodeTile';
+import { DavinciCodeTile } from './davinci-code-tile.model';
 
 export interface DavinciCode {
   loungeId: string;
@@ -14,7 +14,7 @@ export interface DavinciCode {
     black: DavinciCodeTile[];
   };
   pendingTiles: DavinciCodeTile[];
-  finishedAt?: object;
+  finishedAt: Date;
 }
 
 export const DAVINCI_CODE = {

@@ -1,6 +1,15 @@
 import * as db from 'firebase/database';
-import { LOUNGE, Lounge, YACHT_DICE, YACHT_DICE_BOARD, YachtDice, YachtDiceBoard } from 'models';
-import { CommonError, initialUpdates, sanitize, shuffle } from 'shared';
+import {
+  FModel,
+  Lounge,
+  LOUNGE,
+  YACHT_DICE,
+  YACHT_DICE_BOARD,
+  YachtDice,
+  YachtDiceBoard,
+} from 'models';
+import { CommonError, initialUpdates, placeholder, shuffle } from 'shared';
+import { getRef } from '../firebase.util';
 import { database } from '../firebase_config';
 
 const reference = db.ref(database);
@@ -11,8 +20,10 @@ const yachtDiceReference = (loungeId: string) =>
   db.child(db.child(reference, YACHT_DICE.reference), loungeId);
 
 export const start = async (loungeId: string): Promise<void> => {
-  const loungeSnapshot = await db.get(loungeReference(loungeId));
-  const lounge = sanitize(loungeSnapshot.val() as Lounge).val();
+  const loungeSnapshot = await getRef(loungeReference(loungeId), () => {
+    throw new Error(CommonError.NO_LOUNGE);
+  });
+  const lounge = new FModel<Lounge>(loungeSnapshot).sanitize();
 
   const shuffledPlayerIds = shuffle(lounge.playerIds);
   const initialYachtDiceBoard: YachtDiceBoard = YACHT_DICE_BOARD.reduce((acc, key) => {
@@ -25,13 +36,15 @@ export const start = async (loungeId: string): Promise<void> => {
   }, {} as { [key: string]: YachtDiceBoard });
 
   const yachtDice = {
+    loungeId,
     playerIds: shuffledPlayerIds,
     round: 1,
     boards: initialBoards,
     turn: shuffledPlayerIds[0],
     dice: [1, 1, 1, 1, 1],
-    keep: [],
+    keep: [placeholder],
     rolls: 3,
+    finishedAt: placeholder,
   };
 
   const updates = initialUpdates();
@@ -47,18 +60,18 @@ export const onStateChanged = (
   onChanged: (yachtDice: YachtDice) => void
 ): db.Unsubscribe => {
   return db.onValue(yachtDiceReference(loungeId), (snapshot) => {
-    const data = snapshot.val() as YachtDice;
-    const yachtDice = sanitize(data, () => {
-      throw new Error(CommonError.GAME_STATE_FAILED);
-    }).val();
+    if (!snapshot.exists()) throw new Error(CommonError.GAME_STATE_FAILED);
+    const yachtDice = new FModel<YachtDice>(snapshot).sanitize();
 
     onChanged(yachtDice);
   });
 };
 
 export const exit = async (loungeId: string, userId: string): Promise<void> => {
-  const yachtDiceSnapshot = await db.get(yachtDiceReference(loungeId));
-  const yachtDice = sanitize(yachtDiceSnapshot.val() as YachtDice).val();
+  const yachtDiceSnapshot = await getRef(yachtDiceReference(loungeId), () => {
+    throw new Error(CommonError.NO_GAME_LOUNGE);
+  });
+  const yachtDice = new FModel<YachtDice>(yachtDiceSnapshot).sanitize();
 
   const filteredPlayerIds = yachtDice.playerIds.filter((id: string) => id !== userId);
 
@@ -84,8 +97,10 @@ export const updateBoards = async (
   key: keyof YachtDiceBoard,
   value: number
 ): Promise<void> => {
-  const yachtDiceSnapshot = await db.get(yachtDiceReference(loungeId));
-  const yachtDice = sanitize(yachtDiceSnapshot.val() as YachtDice).val();
+  const yachtDiceSnapshot = await getRef(yachtDiceReference(loungeId), () => {
+    throw new Error(CommonError.NO_GAME_LOUNGE);
+  });
+  const yachtDice = new FModel<YachtDice>(yachtDiceSnapshot).sanitize();
 
   const playerIndex = yachtDice.playerIds.indexOf(yachtDice.turn);
   const nextPlayerId = yachtDice.playerIds[(playerIndex + 1) % yachtDice.playerIds.length];
@@ -136,8 +151,10 @@ export const updateDice = async (loungeId: string, dice: number[]): Promise<void
 };
 
 export const addKeep = async (loungeId: string, die: number): Promise<void> => {
-  const yachtDiceSnapshot = await db.get(yachtDiceReference(loungeId));
-  const yachtDice = sanitize(yachtDiceSnapshot.val() as YachtDice).val();
+  const yachtDiceSnapshot = await getRef(yachtDiceReference(loungeId), () => {
+    throw new Error(CommonError.NO_GAME_LOUNGE);
+  });
+  const yachtDice = new FModel<YachtDice>(yachtDiceSnapshot).sanitize();
 
   const newKeep = [...yachtDice.keep, die];
 
@@ -149,10 +166,12 @@ export const addKeep = async (loungeId: string, die: number): Promise<void> => {
 };
 
 export const removeKeep = async (loungeId: string, die: number): Promise<void> => {
-  const yachtDiceSnapshot = await db.get(yachtDiceReference(loungeId));
-  const yachtDice = sanitize(yachtDiceSnapshot.val() as YachtDice).val();
+  const yachtDiceSnapshot = await getRef(yachtDiceReference(loungeId), () => {
+    throw new Error(CommonError.NO_GAME_LOUNGE);
+  });
+  const yachtDice = new FModel<YachtDice>(yachtDiceSnapshot).sanitize();
 
-  const newKeep = yachtDice.keep.filter((d: number) => d !== die);
+  const newKeep = yachtDice.keep.filter((keep) => keep !== die);
 
   const updates = initialUpdates();
 
@@ -162,8 +181,10 @@ export const removeKeep = async (loungeId: string, die: number): Promise<void> =
 };
 
 export const decreaseRolls = async (loungeId: string): Promise<void> => {
-  const yachtDiceSnapshot = await db.get(yachtDiceReference(loungeId));
-  const yachtDice = sanitize(yachtDiceSnapshot.val() as YachtDice).val();
+  const yachtDiceSnapshot = await getRef(yachtDiceReference(loungeId), () => {
+    throw new Error(CommonError.NO_GAME_LOUNGE);
+  });
+  const yachtDice = new FModel<YachtDice>(yachtDiceSnapshot).sanitize();
 
   if (yachtDice.rolls === 0) {
     throw new Error(CommonError.YACHT_DICE_NO_MORE_ROLLS);

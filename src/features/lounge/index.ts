@@ -1,1 +1,1 @@
-export * as LoungeApi from './LoungeApi';
+export * as LoungeApi from './lounge.api';

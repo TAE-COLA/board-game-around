@@ -1,6 +1,7 @@
 import * as fs from 'firebase/firestore';
 import { Game, GAME } from 'models';
-import { CommonError, sanitize } from 'shared';
+import { CommonError } from 'shared';
+import { getDoc, getDocs } from '../firebase.util';
 import { firestore } from '../firebase_config';
 
 const collection = fs.collection(firestore, GAME.collection);
@@ -12,12 +13,12 @@ const collection = fs.collection(firestore, GAME.collection);
  * 모든 게임 목록을 가져옵니다.
  */
 export const fetchAll = async () => {
-  const snapshots = await fs.getDocs(collection);
-  const data = snapshots.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Game));
-
-  return sanitize(data, () => {
+  const snapshots = await getDocs(collection, () => {
     throw new Error(CommonError.NO_GAME);
-  }).val();
+  });
+  const games = snapshots.docs.map((snapshot) => ({ id: snapshot.id, ...snapshot.data() } as Game));
+
+  return games;
 };
 
 /**
@@ -29,10 +30,10 @@ export const fetchAll = async () => {
  */
 export const fetchById = async (id: string): Promise<Game> => {
   const document = fs.doc(collection, id);
-  const snapshot = await fs.getDoc(document);
-  const data = { id: snapshot.id, ...snapshot.data() } as Game;
-
-  return sanitize(data, () => {
+  const snapshot = await getDoc(document, () => {
     throw new Error(CommonError.NO_GAME);
-  }).val();
+  });
+  const game = { id: snapshot.id, ...snapshot.data() } as Game;
+
+  return game;
 };

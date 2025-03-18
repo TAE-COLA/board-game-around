@@ -1,6 +1,7 @@
 import * as db from 'firebase/database';
-import { DAVINCI_CODE, DavinciCode, DavinciCodeTile, LOUNGE, Lounge } from 'models';
-import { CommonError, emptyData, EmptyData, initialUpdates, sanitize, shuffle } from 'shared';
+import { DAVINCI_CODE, DavinciCode, DavinciCodeTile, FModel, Lounge, LOUNGE } from 'models';
+import { CommonError, initialUpdates, Nullable, placeholder, shuffle } from 'shared';
+import { getRef } from '../firebase.util';
 import { database } from '../firebase_config';
 
 const reference = db.ref(database);
@@ -18,14 +19,16 @@ const davinciCodeReference = (loungeId: string) =>
  * 다빈치코드 게임을 시작합니다.
  */
 export const start = async (loungeId: string): Promise<void> => {
-  const loungeSnapshot = await db.get(loungeReference(loungeId));
-  const lounge = sanitize(loungeSnapshot.val() as Lounge).val();
+  const loungeSnapshot = await getRef(loungeReference(loungeId), () => {
+    throw new Error(CommonError.NO_LOUNGE);
+  });
+  const lounge = new FModel<Lounge>(loungeSnapshot).sanitize();
 
   const shuffledPlayerIds = shuffle(lounge.playerIds);
   const initialHands = shuffledPlayerIds.reduce((acc, playerId) => {
-    acc[playerId] = [emptyData];
+    acc[playerId] = [placeholder];
     return acc;
-  }, {} as { [key: string]: (DavinciCodeTile | EmptyData)[] });
+  }, {} as { [key: string]: Nullable<DavinciCodeTile>[] });
   const shuffledTiles = {
     white: shuffle(
       Array.from({ length: 13 }, (_, i) => ({
@@ -48,9 +51,9 @@ export const start = async (loungeId: string): Promise<void> => {
     hands: initialHands,
     turn: shuffledPlayerIds[0],
     phase: 'INITIAL_DRAW',
-    finishedPlayerIds: [emptyData],
+    finishedPlayerIds: [placeholder],
     remainingTiles: shuffledTiles,
-    pendingTiles: [emptyData],
+    pendingTiles: [placeholder],
   };
 
   const updates = initialUpdates();
@@ -74,10 +77,8 @@ export const onStateChanged = (
   onChanged: (davinciCode: DavinciCode) => void
 ): db.Unsubscribe => {
   return db.onValue(davinciCodeReference(loungeId), (snapshot) => {
-    const data = snapshot.val() as DavinciCode;
-    const davinciCode = sanitize(data, () => {
-      throw new Error(CommonError.GAME_STATE_FAILED);
-    }).val();
+    if (!snapshot.exists()) throw new Error(CommonError.GAME_STATE_FAILED);
+    const davinciCode = new FModel<DavinciCode>(snapshot).sanitize();
 
     onChanged(davinciCode);
   });
@@ -92,8 +93,10 @@ export const onStateChanged = (
  * 다빈치코드 게임에서 나갑니다.
  */
 export const exit = async (loungeId: string, userId: string): Promise<void> => {
-  const davinciCodeSnapshot = await db.get(davinciCodeReference(loungeId));
-  const davinciCode = sanitize(davinciCodeSnapshot.val() as DavinciCode).val();
+  const davinciCodeSnapshot = await getRef(davinciCodeReference(loungeId), () => {
+    throw new Error(CommonError.NO_GAME_LOUNGE);
+  });
+  const davinciCode = new FModel<DavinciCode>(davinciCodeSnapshot).sanitize();
 
   const filteredPlayerIds = davinciCode.playerIds.filter((id: string) => id !== userId);
 
@@ -123,8 +126,10 @@ export const exit = async (loungeId: string, userId: string): Promise<void> => {
  * 다빈치코드 타일을 뽑습니다.
  */
 export const drawTile = async (loungeId: string, isWhite: boolean): Promise<void> => {
-  const davinciCodeSnapshot = await db.get(davinciCodeReference(loungeId));
-  const davinciCode = sanitize(davinciCodeSnapshot.val() as DavinciCode).val();
+  const davinciCodeSnapshot = await getRef(davinciCodeReference(loungeId), () => {
+    throw new Error(CommonError.NO_GAME_LOUNGE);
+  });
+  const davinciCode = new FModel<DavinciCode>(davinciCodeSnapshot).sanitize();
 
   const remainingTiles =
     davinciCode.remainingTiles[isWhite ? DAVINCI_CODE.white : DAVINCI_CODE.black];
@@ -139,7 +144,7 @@ export const drawTile = async (loungeId: string, isWhite: boolean): Promise<void
     `/${DAVINCI_CODE.reference}/${loungeId}/${DAVINCI_CODE.remainingTiles}/${
       isWhite ? DAVINCI_CODE.white : DAVINCI_CODE.black
     }`
-  ] = updatedTiles.length === 0 ? emptyData : updatedTiles;
+  ] = updatedTiles.length === 0 ? placeholder : updatedTiles;
   updates[`/${DAVINCI_CODE.reference}/${loungeId}/${DAVINCI_CODE.pendingTiles}`] = pendingTiles;
 
   await db.update(reference, updates);
@@ -161,15 +166,17 @@ export const updateHand = async (
   hand: DavinciCodeTile[],
   clearPendingTiles: boolean
 ): Promise<void> => {
-  const davinciCodeSnapshot = await db.get(davinciCodeReference(loungeId));
-  const davinciCode = sanitize(davinciCodeSnapshot.val() as DavinciCode).val();
+  const davinciCodeSnapshot = await getRef(davinciCodeReference(loungeId), () => {
+    throw new Error(CommonError.NO_GAME_LOUNGE);
+  });
+  const davinciCode = new FModel<DavinciCode>(davinciCodeSnapshot).sanitize();
 
   const updates = initialUpdates();
 
   updates[`/${DAVINCI_CODE.reference}/${loungeId}/${DAVINCI_CODE.hands}/${playerId}`] = hand;
 
   if (clearPendingTiles) {
-    updates[`/${DAVINCI_CODE.reference}/${loungeId}/${DAVINCI_CODE.pendingTiles}`] = [emptyData];
+    updates[`/${DAVINCI_CODE.reference}/${loungeId}/${DAVINCI_CODE.pendingTiles}`] = [placeholder];
 
     if (davinciCode.phase === 'INITIAL_DRAW') {
       const playerIds = davinciCode.playerIds;

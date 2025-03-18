@@ -5,13 +5,12 @@ export interface Lounge {
   ownerId: string;
   playerIds: string[];
   status: 'WAITING' | 'PLAYING' | 'END';
-  createdAt: object;
-  deletedAt?: object;
+  createdAt: Date;
+  deletedAt?: Date;
 }
 
 export const LOUNGE = {
   reference: 'Lounge',
-  id: 'id',
   gameId: 'gameId',
   code: 'code',
   ownerId: 'ownerId',

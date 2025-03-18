@@ -1,1 +1,1 @@
-export * from './Lounge';
+export * from './lounge.model';

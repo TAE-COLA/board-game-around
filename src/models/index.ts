@@ -1,3 +1,5 @@
+export * from './firebase.model';
+
 export * from './davinci_code';
 export * from './game';
 export * from './lounge';

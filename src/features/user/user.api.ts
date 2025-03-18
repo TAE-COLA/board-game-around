@@ -1,7 +1,8 @@
 import * as fa from 'firebase/auth';
 import * as fs from 'firebase/firestore';
 import { USER, User } from 'models';
-import { CommonError, sanitize } from 'shared';
+import { CommonError } from 'shared';
+import { getDoc } from '../firebase.util';
 import { firestore } from '../firebase_config';
 
 const collection = fs.collection(firestore, USER.collection);
@@ -37,10 +38,10 @@ export const checkForEmailDuplicates = async (email: string): Promise<boolean> =
 
 export const fetchById = async (id: string): Promise<User> => {
   const document = fs.doc(collection, id);
-  const snapshot = await fs.getDoc(document);
-  const data = { id, ...snapshot.data() } as User;
-
-  return sanitize(data, () => {
+  const snapshot = await getDoc(document, () => {
     throw new Error(CommonError.NO_USER);
-  }).val();
+  });
+  const user = { id: snapshot.id, ...snapshot.data() } as User;
+
+  return user;
 };

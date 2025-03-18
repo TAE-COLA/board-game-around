@@ -3,10 +3,11 @@ export interface User {
   name: string;
   email: string;
   createdAt: Date;
+  deletedAt?: Date;
 }
 
 export const USER = {
-  collection: 'User',
+  collection: 'Users',
   id: 'id',
   name: 'name',
   email: 'email',

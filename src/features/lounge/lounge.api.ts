@@ -1,6 +1,7 @@
 import * as db from 'firebase/database';
-import { LOUNGE, Lounge, USER_LOUNGE, UserLounge } from 'models';
-import { CommonError, generateCode, initialUpdates, sanitize } from 'shared';
+import { FModel, LOUNGE, Lounge, USER_LOUNGE, UserLounge } from 'models';
+import { CommonError, generateCode, initialUpdates, placeholder } from 'shared';
+import { getRef } from '../firebase.util';
 import { database } from '../firebase_config';
 
 const reference = db.ref(database);
@@ -41,8 +42,9 @@ export const create = async (gameId: string, ownerId: string): Promise<string> =
     code,
     ownerId,
     playerIds,
-    createdAt: db.serverTimestamp(),
     status: 'WAITING',
+    createdAt: db.serverTimestamp(),
+    deletedAt: placeholder,
   };
 
   const updates = initialUpdates();
@@ -70,8 +72,10 @@ export const join = async (
   userId: string
 ): Promise<string | null> => {
   const query = db.query(loungeReference, db.orderByChild(LOUNGE.code), db.equalTo(code));
-  const loungeSnapshot = await db.get(query);
-  const lounge = sanitize({ id: loungeSnapshot.key, ...loungeSnapshot.val() } as Lounge).val();
+  const loungeSnapshot = await getRef(query, () => {
+    throw new Error(CommonError.NO_LOUNGE);
+  });
+  const lounge = new FModel<Lounge>(loungeSnapshot).sanitize();
 
   if (gameId !== lounge.gameId) throw new Error(CommonError.NOT_THIS_GAME);
 
@@ -93,8 +97,10 @@ export const join = async (
  * Lounge ID로 Lounge를 가져옵니다.
  */
 export const fetchById = async (id: string): Promise<Lounge> => {
-  const loungeSnapshot = await db.get(db.child(loungeReference, id));
-  const lounge = sanitize(loungeSnapshot.val() as Lounge).val();
+  const loungeSnapshot = await getRef(db.child(loungeReference, id), () => {
+    throw new Error(CommonError.NO_LOUNGE);
+  });
+  const lounge = new FModel<Lounge>(loungeSnapshot).sanitize();
 
   return lounge;
 };
@@ -107,8 +113,10 @@ export const fetchById = async (id: string): Promise<Lounge> => {
  * User ID로 Lounge ID를 가져옵니다.
  */
 export const fetchByUserId = async (id: string): Promise<string> => {
-  const userLoungeSnapshot = await db.get(db.child(userLoungeReference, id));
-  const userLounge = sanitize(userLoungeSnapshot.val() as UserLounge).val();
+  const userLoungeSnapshot = await getRef(db.child(userLoungeReference, id), () => {
+    throw new Error(CommonError.NO_USER_LOUNGE);
+  });
+  const userLounge = new FModel<UserLounge>(userLoungeSnapshot).sanitize();
 
   return userLounge.loungeId;
 };
@@ -126,10 +134,8 @@ export const onStateChanged = (
   onChanged: (lounge?: Lounge) => void
 ): db.Unsubscribe => {
   return db.onValue(db.child(loungeReference, id), (snapshot) => {
-    const data = { id: snapshot.key, ...snapshot.val() };
-    const lounge = sanitize(data, () => {
-      throw new Error(CommonError.LOUNGE_STATE_FAILED);
-    }).val();
+    if (!snapshot.exists()) throw new Error(CommonError.LOUNGE_STATE_FAILED);
+    const lounge = new FModel<Lounge>(snapshot).sanitize();
 
     if (lounge.deletedAt) onChanged(undefined);
     else onChanged(lounge);
@@ -145,8 +151,10 @@ export const onStateChanged = (
  * Lounge에서 나갑니다.
  */
 export const exit = async (loungeId: string, userId: string): Promise<void> => {
-  const loungeSnapshot = await db.get(db.child(loungeReference, loungeId));
-  const lounge = sanitize(loungeSnapshot.val() as Lounge).val();
+  const loungeSnapshot = await getRef(db.child(loungeReference, loungeId), () => {
+    throw new Error(CommonError.NO_LOUNGE);
+  });
+  const lounge = new FModel<Lounge>(loungeSnapshot).sanitize();
 
   const filteredPlayerIds = lounge.playerIds.filter((id) => id !== userId);
 
