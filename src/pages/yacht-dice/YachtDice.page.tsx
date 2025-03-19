@@ -1,7 +1,8 @@
 import { Flex } from '@chakra-ui/react';
 import { PageProps } from 'app';
 import React, { useEffect } from 'react';
-import { Page, YachtDiceBody, YachtDiceHeader, YachtDiceResultModal } from 'widgets';
+import { Page, YachtDiceBody, YachtDiceHeader } from 'widgets';
+import { YachtDiceResultModal } from './ResultModal.modal';
 import { useYachtDiceIntent } from './useYachtDiceIntent';
 
 export const YachtDicePage: React.FC<PageProps> = ({ navigate, toast }) => {

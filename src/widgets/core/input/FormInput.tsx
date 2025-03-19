@@ -1,6 +1,13 @@
-import { FormControl, FormErrorMessage, FormHelperText, Input, InputGroup, InputRightElement } from '@chakra-ui/react';
-import { FormData } from 'models';
+import {
+  FormControl,
+  FormErrorMessage,
+  FormHelperText,
+  Input,
+  InputGroup,
+  InputRightElement,
+} from '@chakra-ui/react';
 import React from 'react';
+import { FormData } from 'shared';
 
 type IProps<Label extends string> = {
   id: string;

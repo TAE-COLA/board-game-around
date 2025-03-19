@@ -1,14 +1,8 @@
 import { Flex } from '@chakra-ui/react';
 import { PageProps, Paths, useAuthContext } from 'app';
 import React, { useEffect } from 'react';
-import {
-  DavinciCodeBody,
-  DavinciCodeDrawModal,
-  DavinciCodeFooter,
-  DavinciCodeHeader,
-  NumberModal,
-  Page,
-} from 'widgets';
+import { DavinciCodeBody, DavinciCodeFooter, DavinciCodeHeader, NumberModal, Page } from 'widgets';
+import { DavinciCodeDrawModal } from './DrawModal.modal';
 import { useDavinciCodeIntent } from './useDavinciCodeIntent';
 
 export const DavinciCodePage: React.FC<PageProps> = ({ navigate, toast }) => {

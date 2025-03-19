@@ -13,7 +13,7 @@ import {
 import { useAuthContext } from 'app';
 import { DavinciCodeTile as tileEntity, User } from 'models';
 import React, { useEffect } from 'react';
-import { DavinciCodeTile } from 'widgets/davinci_code';
+import { DavinciCodeTile } from 'widgets';
 
 type IProps = {
   hand: tileEntity[];
