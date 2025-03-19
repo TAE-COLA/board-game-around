@@ -3,8 +3,8 @@ import { GameApi, LoungeApi, UserApi } from 'features';
 import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { CommonToast, createDummy } from 'shared';
+import { Paths } from '../../route';
 import { useAuthContext } from '../auth';
-import { Paths } from '../route';
 import { LoungeContext, LoungeContextType } from './LoungeContext';
 
 export const LoungeProvider: React.FC = () => {

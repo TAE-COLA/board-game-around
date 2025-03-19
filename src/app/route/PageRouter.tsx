@@ -1,8 +1,8 @@
 import { useToast } from '@chakra-ui/react';
-import { AuthProvider, LoungeProvider } from 'app';
 import React from 'react';
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { GameName } from 'shared';
+import { AuthProvider, LoungeProvider } from '../context';
 import { pageRegistry } from './PageRegistry';
 
 export const PageRouter: React.FC = () => {

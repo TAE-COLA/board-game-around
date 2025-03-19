@@ -4,7 +4,7 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { CommonToast, createDummy } from 'shared';
-import { Paths } from '../route';
+import { Paths } from '../../route';
 import { AuthContext, AuthContextType } from './AuthContext';
 
 export const AuthProvider: React.FC = () => {
