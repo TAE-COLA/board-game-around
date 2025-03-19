@@ -1,10 +1,25 @@
 import { Box } from '@chakra-ui/react';
-import { useMainIntent } from 'pages';
-import React from 'react';
+import { PageProps } from 'app';
+import React, { useEffect } from 'react';
 import { GameCardGrid, GameEntryModal, GreetingUser, Header, Page } from 'widgets';
+import { useMainIntent } from './useMainIntent';
 
-export const MainPage: React.FC = () => {
-  const { state, loading, modal, onEvent } = useMainIntent();
+export const MainPage: React.FC<PageProps> = ({ navigate, toast }) => {
+  const { state, loading, modal, onEvent, sideEffect } = useMainIntent();
+
+  useEffect(() => {
+    switch (sideEffect?.type) {
+      case 'NAVIGATE_TO_LOGIN':
+        navigate('login');
+        break;
+      case 'NAVIGATE_TO_LOUNGE':
+        navigate('lounge');
+        break;
+      case 'SHOW_TOAST':
+        toast(sideEffect.options);
+        break;
+    }
+  }, [sideEffect]);
 
   return (
     <Page loading={loading}>

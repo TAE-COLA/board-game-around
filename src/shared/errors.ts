@@ -3,6 +3,8 @@ export class CommonError {
     `Invalid data: failed to sanitize data. Type is ${type}`;
   static readonly TYPE_NO_ID = 'This type does not have an ID field';
 
+  static readonly PAGE_NOT_INITIALIZED = (page: string) => `${page} Page is not initialized`;
+
   static readonly NO_AUTH_CONTEXT = 'useAuthContext must be used within an AuthProvider';
   static readonly NO_LOUNGE_CONTEXT = 'useLoungeContext must be used within an LoungeProvider';
 

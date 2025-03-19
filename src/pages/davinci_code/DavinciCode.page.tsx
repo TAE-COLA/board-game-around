@@ -1,6 +1,6 @@
 import { Flex } from '@chakra-ui/react';
-import { useAuthContext } from 'app';
-import React from 'react';
+import { PageProps, Paths, useAuthContext } from 'app';
+import React, { useEffect } from 'react';
 import {
   DavinciCodeBody,
   DavinciCodeDrawModal,
@@ -11,10 +11,20 @@ import {
 } from 'widgets';
 import { useDavinciCodeIntent } from './useDavinciCodeIntent';
 
-export const DavinciCodePage: React.FC = () => {
+export const DavinciCodePage: React.FC<PageProps> = ({ navigate, toast }) => {
   const { id: authId } = useAuthContext();
-  // TODO: 나중에 여건되면 useIntent<DavinciCodeIntent>로 변경 해보는거로!
-  const { state, loading, modal, onEvent } = useDavinciCodeIntent();
+  const { state, loading, modal, onEvent, sideEffect } = useDavinciCodeIntent();
+
+  useEffect(() => {
+    switch (sideEffect?.type) {
+      case 'NAVIGATE_TO_MAIN':
+        navigate(Paths.main);
+        break;
+      case 'SHOW_TOAST':
+        toast(sideEffect.options);
+        break;
+    }
+  }, [sideEffect]);
 
   return (
     <Page loading={loading} height='100vh'>
@@ -27,7 +37,7 @@ export const DavinciCodePage: React.FC = () => {
           phase={state.phase}
           finishedPlayers={state.finishedPlayers}
           onClickTile={onEvent.onClickTile}
-          flex='1'
+          flex={1}
         />
         <DavinciCodeFooter hand={state.hands[authId]} turn={state.turn} phase={state.phase} />
       </Flex>

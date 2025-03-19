@@ -20,7 +20,13 @@ type IProps = {
 
 export const YachtDiceResultModal: React.FC<IProps> = ({ rank, modal }) => {
   return (
-    <Modal isOpen={modal.isOpen} onClose={modal.onClose} size='xl' isCentered closeOnOverlayClick={false}>
+    <Modal
+      isOpen={modal.isOpen}
+      onClose={modal.onClose}
+      size='xl'
+      isCentered
+      closeOnOverlayClick={false}
+    >
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>요트다이스 결과</ModalHeader>

@@ -1,12 +1,22 @@
 import { Flex } from '@chakra-ui/react';
-import { useLoungeContext } from 'app';
-import { useYachtDiceIntent } from 'pages';
-import React from 'react';
+import { PageProps } from 'app';
+import React, { useEffect } from 'react';
 import { Page, YachtDiceBody, YachtDiceHeader, YachtDiceResultModal } from 'widgets';
+import { useYachtDiceIntent } from './useYachtDiceIntent';
 
-export const YachtDicePage: React.FC = () => {
-  const { state, loading, modal, onEvent } = useYachtDiceIntent();
-  const lounge = useLoungeContext();
+export const YachtDicePage: React.FC<PageProps> = ({ navigate, toast }) => {
+  const { state, loading, modal, onEvent, sideEffect } = useYachtDiceIntent();
+
+  useEffect(() => {
+    switch (sideEffect?.type) {
+      case 'POP_BACK_STACK':
+        navigate(-1);
+        break;
+      case 'SHOW_TOAST':
+        toast(sideEffect.options);
+        break;
+    }
+  }, [sideEffect]);
 
   return (
     <Page loading={loading} height='100vh'>
@@ -32,11 +42,11 @@ export const YachtDicePage: React.FC = () => {
           onClickSelectHandButton={onEvent.onClickSelectHandButton}
           flex={1}
         />
-        <YachtDiceResultModal
-          rank={lounge.players.map((player) => ({ player, score: 0 }))}
-          modal={modal.resultModal}
-        />
       </Flex>
+      <YachtDiceResultModal
+        rank={state.players.map((player) => ({ player, score: 0 }))}
+        modal={modal.resultModal}
+      />
     </Page>
   );
 };

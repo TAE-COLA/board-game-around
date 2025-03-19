@@ -1,56 +1,48 @@
-import { useDisclosure, useToast } from '@chakra-ui/react';
-import { Paths, useAuthContext, useLoungeContext } from 'app';
+import { useDisclosure } from '@chakra-ui/react';
+import { useAuthContext, useLoungeContext } from 'app';
 import { DavinciCodeApi, LoungeApi, UserApi } from 'features';
 import { useEffect, useReducer, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { CommonToast, GameName, launch } from 'shared';
-import * as Intent from './DavinciCodeIntent';
+import * as Intent from './DavinciCode.intent';
 
 export const useDavinciCodeIntent = () => {
-  const navigate = useNavigate();
-  const toast = useToast();
-
   const auth = useAuthContext();
   const lounge = useLoungeContext();
+
+  const [state, dispatch] = useReducer(Intent.reducer, new Intent.State({}));
+  const [loading, setLoading] = useState(true);
+
+  const [sideEffect, setSideEffect] = useState<Intent.SideEffect>();
 
   const resultModal = useDisclosure();
   const drawModal = useDisclosure();
   const numberModal = useDisclosure();
 
-  const [state, dispatch] = useReducer(Intent.reducer, Intent.initialState);
-  const [loading, setLoading] = useState(true);
-
   const modal = {
     resultModal: {
-      isOpen: resultModal.isOpen,
-      onOpen: resultModal.onOpen,
+      ...resultModal,
       onClose() {
-        navigate(Paths.main, { replace: true });
+        setSideEffect({ type: 'NAVIGATE_TO_MAIN' });
         resultModal.onClose();
       },
     },
     drawModal: {
-      isOpen: drawModal.isOpen,
-      onOpen: drawModal.onOpen,
+      ...drawModal,
       onClose() {
-        dispatch({ type: 'DRAWABLE_TILES', drawableTiles: 0 });
+        dispatch({ type: 'UPDATE_DRAWABLE_TILES', drawableTiles: 0 });
         drawModal.onClose();
       },
     },
-    numberModal: {
-      isOpen: numberModal.isOpen,
-      onOpen: numberModal.onOpen,
-      onClose: numberModal.onClose,
-    },
+    numberModal,
   };
 
-  const onEvent: Intent.event = {
+  const onEvent: Intent.Event = {
     onClickExitButton: () => {
       launch(setLoading, async () => {
         await LoungeApi.exit(lounge.id, auth.id);
         await DavinciCodeApi.exit(lounge.id, auth.id);
-        toast(CommonToast.EXIT_LOUNGE);
-        navigate(Paths.main, { replace: true });
+        setSideEffect({ type: 'SHOW_TOAST', options: CommonToast.EXIT_LOUNGE });
+        setSideEffect({ type: 'NAVIGATE_TO_MAIN' });
       });
     },
     onClickDrawButton: (isWhite) => {
@@ -68,8 +60,8 @@ export const useDavinciCodeIntent = () => {
     if (lounge.loading) return;
 
     if (lounge.game.name !== GameName.DavinciCode.korean) {
-      toast(CommonToast.NO_LOUNGE);
-      navigate(Paths.main, { replace: true });
+      setSideEffect({ type: 'SHOW_TOAST', options: CommonToast.NO_LOUNGE });
+      setSideEffect({ type: 'NAVIGATE_TO_MAIN' });
       return;
     }
 
@@ -80,17 +72,19 @@ export const useDavinciCodeIntent = () => {
         Promise.all(game.finishedPlayerIds.map(UserApi.fetchById)),
       ]);
 
-      dispatch({ type: 'PLAYERS', players });
-      dispatch({ type: 'HANDS', hands: game.hands });
-      dispatch({ type: 'TURN', turn });
-      dispatch({ type: 'PHASE', phase: game.phase });
-      dispatch({ type: 'FINISHED_PLAYERS', finishedPlayers });
+      dispatch({ type: 'UPDATE_PLAYERS', players });
+      dispatch({ type: 'UPDATE_HANDS', hands: game.hands });
+      dispatch({ type: 'UPDATE_TURN', turn });
+      dispatch({ type: 'UPDATE_PHASE', phase: game.phase });
+      dispatch({ type: 'UPDATE_FINISHED_PLAYERS', finishedPlayers });
 
       if (game.turn === auth.id && game.phase !== 'GUESS') {
-        dispatch({ type: 'PENDING_TILES', pendingTiles: game.pendingTiles });
+        dispatch({ type: 'UPDATE_PENDING_TILES', pendingTiles: game.pendingTiles });
 
-        if (game.phase === 'INITIAL_DRAW') dispatch({ type: 'DRAWABLE_TILES', drawableTiles: 4 });
-        else if (game.phase === 'DRAW') dispatch({ type: 'DRAWABLE_TILES', drawableTiles: 1 });
+        if (game.phase === 'INITIAL_DRAW')
+          dispatch({ type: 'UPDATE_DRAWABLE_TILES', drawableTiles: 4 });
+        else if (game.phase === 'DRAW')
+          dispatch({ type: 'UPDATE_DRAWABLE_TILES', drawableTiles: 1 });
 
         modal.drawModal.onOpen();
       }
@@ -103,5 +97,5 @@ export const useDavinciCodeIntent = () => {
     return () => unsubscribe();
   }, [lounge.id, lounge.loading]);
 
-  return { state, loading, modal, onEvent };
+  return { state, loading, modal, onEvent, sideEffect };
 };

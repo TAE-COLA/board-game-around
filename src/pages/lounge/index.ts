@@ -1,2 +1,1 @@
-export * from './LoungePage';
-export * from './useLoungeIntent';
+export * from './Lounge.page';

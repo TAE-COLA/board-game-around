@@ -1,2 +1,1 @@
-export * from './RegisterPage';
-export * from './useRegisterIntent';
+export * from './Register.page';

@@ -1,2 +1,1 @@
-export * from './DavinciCodePage';
-export * from './useDavinciCodeIntent';
+export * from './DavinciCode.page';

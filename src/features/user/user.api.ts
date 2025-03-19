@@ -29,11 +29,29 @@ export const signUpWithEmailAndPassword = async (
   return user.id;
 };
 
+export const login = async (email: string, password: string): Promise<void> => {
+  const auth = fa.getAuth();
+
+  await fa.signInWithEmailAndPassword(auth, email, password);
+};
+
+export const logout = async (): Promise<void> => {
+  const auth = fa.getAuth();
+
+  await fa.signOut(auth);
+};
+
 export const checkForEmailDuplicates = async (email: string): Promise<boolean> => {
   const query = fs.query(collection, fs.where(USER.email, '==', email));
   const snapshot = await fs.getDocs(query);
 
   return !snapshot.empty;
+};
+
+export const hasSession = (): boolean => {
+  const auth = fa.getAuth();
+
+  return !!auth.currentUser;
 };
 
 export const fetchById = async (id: string): Promise<User> => {

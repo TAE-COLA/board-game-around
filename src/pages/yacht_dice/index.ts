@@ -1,2 +1,1 @@
-export * from './useYachtDiceIntent';
-export * from './YachtDicePage';
+export * from './YachtDice.page';
