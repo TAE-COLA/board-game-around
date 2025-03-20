@@ -1,2 +1,1 @@
-export * from './MainPage';
-export * from './useMainIntent';
+export * from './Main.page';

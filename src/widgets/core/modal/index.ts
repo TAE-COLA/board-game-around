@@ -1,4 +1,2 @@
-export * from './DavinciCodeDrawModal';
-export * from './GameEntryModal';
-export * from './NumberModal';
-export * from './YachtDiceResultModal';
+export * from './GameEntryModal.modal';
+export * from './NumberModal.modal';

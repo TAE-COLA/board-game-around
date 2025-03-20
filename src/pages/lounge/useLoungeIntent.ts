@@ -1,41 +1,37 @@
-import { useToast } from '@chakra-ui/react';
-import { Paths } from 'app';
-import { exitLounge, startDavinciCode, startYachtDice, useAuthContext, useLoungeContext } from 'features';
+import { useAuthContext, useLoungeContext } from 'app';
+import { DavinciCodeApi, LoungeApi, YachtDiceApi } from 'features';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { CommonToast, launch } from 'shared';
-import { GameName } from 'shared/string';
-import * as Intent from './LoungeIntent';
+import { CommonToast, GameName, launch } from 'shared';
+import * as Intent from './Lounge.intent';
 
 export function useLoungeIntent() {
-  const [loading, setLoading] = useState(true);
-
-  const navigate = useNavigate();
-  const toast = useToast();
-
   const auth = useAuthContext();
   const lounge = useLoungeContext();
 
-  const onEvent: Intent.event = {
+  const [loading, setLoading] = useState(true);
+
+  const [sideEffect, setSideEffect] = useState<Intent.SideEffect>();
+
+  const onEvent: Intent.Event = {
     onClickExitButton: () => {
       launch(setLoading, async () => {
-        await exitLounge(lounge.id, auth.id);
-        toast(CommonToast.EXIT_LOUNGE);
-        navigate(Paths.main, { replace: true });
+        await LoungeApi.exit(lounge.id, auth.id);
+        setSideEffect({ type: 'SHOW_TOAST', options: CommonToast.EXIT_LOUNGE });
+        setSideEffect({ type: 'POP_BACK_STACK' });
       });
     },
     onClickCopyButton: () => {
-      navigator.clipboard.writeText(lounge.code);
-      toast(CommonToast.COPY_LOUNGE_CODE);
+      setSideEffect({ type: 'COPY_CLIPBOARD', value: lounge.code });
+      setSideEffect({ type: 'SHOW_TOAST', options: CommonToast.COPY_LOUNGE_CODE });
     },
     onClickStartButton: () => {
       launch(setLoading, async () => {
         switch (lounge.game.name) {
           case GameName.YatchDice.korean:
-            await startYachtDice(lounge.id);
+            await YachtDiceApi.start(lounge.id);
             break;
           case GameName.DavinciCode.korean:
-            await startDavinciCode(lounge.id);
+            await DavinciCodeApi.start(lounge.id);
             break;
         }
       });
@@ -50,14 +46,14 @@ export function useLoungeIntent() {
     if (lounge?.status === 'PLAYING') {
       switch (lounge.game.name) {
         case GameName.YatchDice.korean:
-          navigate(Paths.yachtDice, { replace: true });
+          setSideEffect({ type: 'NAVIGATE_TO_YACHT_DICE' });
           break;
         case GameName.DavinciCode.korean:
-          navigate(Paths.davinciCode, { replace: true });
+          setSideEffect({ type: 'NAVIGATE_TO_DAVINCI_CODE' });
           break;
       }
     }
   }, [lounge.status]);
 
-  return { loading, onEvent };
+  return { loading, onEvent, sideEffect };
 }

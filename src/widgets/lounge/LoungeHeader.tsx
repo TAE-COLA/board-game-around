@@ -1,5 +1,5 @@
 import { Button, Flex, FlexProps } from '@chakra-ui/react';
-import { useLoungeContext } from 'features';
+import { useLoungeContext } from 'app';
 import React from 'react';
 import { LoungeCodeBox } from 'widgets';
 
@@ -8,7 +8,11 @@ type IProps = FlexProps & {
   onClickExitButton: () => void;
 };
 
-export const LoungeHeader: React.FC<IProps> = ({ onClickCopyButton, onClickExitButton, ...props }) => {
+export const LoungeHeader: React.FC<IProps> = ({
+  onClickCopyButton,
+  onClickExitButton,
+  ...props
+}) => {
   const lounge = useLoungeContext();
 
   return (

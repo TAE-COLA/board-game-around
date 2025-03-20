@@ -1,2 +1,1 @@
-export * from './LoginPage';
-export * from './useLoginIntent';
+export * from './Login.page';

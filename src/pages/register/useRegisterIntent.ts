@@ -1,84 +1,96 @@
-import { useToast } from '@chakra-ui/react';
-import { Paths } from 'app';
-import { checkEmailForDuplicate, signUpWithEmailAndPassword } from 'features';
-import { getAuth } from 'firebase/auth';
+import { UserApi } from 'features';
 import { useEffect, useReducer, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { CommonToast, launch } from 'shared';
-import * as Intent from './RegisterIntent';
+import * as Intent from './Register.intent';
 
 export function useRegisterIntent() {
-  const [state, dispatch] = useReducer(Intent.reducer, Intent.initialState);
+  const [state, dispatch] = useReducer(Intent.reducer, new Intent.State({}));
   const [loading, setLoading] = useState(true);
 
-  const navigate = useNavigate();
-  const toast = useToast();
-  const auth = getAuth();
+  const [sideEffect, setSideEffect] = useState<Intent.SideEffect>();
 
-  const onEvent: Intent.event = {
+  const onEvent: Intent.Event = {
     onEmailChange: (email) => {
-      dispatch({ type: 'EMAIL', email: { label: 'email', value: email, error: checkValidity(email, 'email') } });
-      dispatch({ type: 'VALID', valid: checkValid(state) });
+      dispatch({
+        type: 'UPDATE_EMAIL',
+        email: { label: 'email', value: email, error: checkValidity(email, 'email') },
+      });
+      dispatch({ type: 'UPDATE_VALID', valid: checkValid(state) });
     },
     onClickCheckForDuplicatesButton: () => {
-      checkEmailForDuplicate(state.email.value).then((emailDuplicate) => {
+      UserApi.checkForEmailDuplicates(state.email.value).then((emailDuplicate) => {
         dispatch({
-          type: 'EMAIL',
-          email: { label: 'email', value: state.email.value, error: emailDuplicate ? '중복된 이메일입니다.' : null },
+          type: 'UPDATE_EMAIL',
+          email: {
+            label: 'email',
+            value: state.email.value,
+            error: emailDuplicate ? '중복된 이메일입니다.' : null,
+          },
         });
-        dispatch({ type: 'EMAIL_DUPLICATE', emailDuplicate });
-        dispatch({ type: 'VALID', valid: checkValid(state) });
+        dispatch({ type: 'UPDATE_EMAIL_DUPLICATE', emailDuplicate });
+        dispatch({ type: 'UPDATE_VALID', valid: checkValid(state) });
       });
     },
     onPasswordChange: (password) => {
       dispatch({
-        type: 'PASSWORD',
-        password: { label: 'password', value: password, error: checkValidity(password, 'password') },
+        type: 'UPDATE_PASSWORD',
+        password: {
+          label: 'password',
+          value: password,
+          error: checkValidity(password, 'password'),
+        },
       });
-      dispatch({ type: 'VALID', valid: checkValid(state) });
+      dispatch({ type: 'UPDATE_VALID', valid: checkValid(state) });
     },
     onPasswordConfirmChange: (passwordConfirm) => {
       dispatch({
-        type: 'PASSWORD_CONFIRM',
+        type: 'UPDATE_PASSWORD_CONFIRM',
         passwordConfirm: {
           label: 'passwordConfrim',
           value: passwordConfirm,
           error: checkValidity(passwordConfirm, 'passwordConfirm', state.password.value),
         },
       });
-      dispatch({ type: 'VALID', valid: checkValid(state) });
+      dispatch({ type: 'UPDATE_VALID', valid: checkValid(state) });
     },
     onNicknameChange: (nickname) => {
       dispatch({
-        type: 'NICKNAME',
-        nickname: { label: 'nickname', value: nickname, error: checkValidity(nickname, 'nickname') },
+        type: 'UPDATE_NICKNAME',
+        nickname: {
+          label: 'nickname',
+          value: nickname,
+          error: checkValidity(nickname, 'nickname'),
+        },
       });
-      dispatch({ type: 'VALID', valid: checkValid(state) });
+      dispatch({ type: 'UPDATE_VALID', valid: checkValid(state) });
     },
     onClickSubmitButton: () => {
       launch(setLoading, async () => {
-        await signUpWithEmailAndPassword(state.email.value, state.password.value, state.nickname.value);
-
-        toast(CommonToast.REGIST_SUCCESS);
-        navigate(Paths.main, { replace: true });
+        await UserApi.signUpWithEmailAndPassword(
+          state.email.value,
+          state.password.value,
+          state.nickname.value
+        );
+        setSideEffect({ type: 'SHOW_TOAST', options: CommonToast.REGIST_SUCCESS });
+        setSideEffect({ type: 'NAVIGATE_TO_MAIN' });
       });
     },
   };
 
   useEffect(() => {
     const timeout = setTimeout(() => {
-      if (auth.currentUser) {
-        navigate(Paths.main, { replace: true });
-        toast(CommonToast.ALREADY_LOGIN);
+      if (UserApi.hasSession()) {
+        setSideEffect({ type: 'SHOW_TOAST', options: CommonToast.ALREADY_LOGIN });
+        setSideEffect({ type: 'NAVIGATE_TO_MAIN' });
       } else {
         setLoading(false);
       }
     }, 1000);
 
     return () => clearTimeout(timeout);
-  }, [auth.currentUser]);
+  }, []);
 
-  return { state, loading, onEvent };
+  return { state, loading, onEvent, sideEffect };
 }
 
 function checkValidity(
@@ -98,16 +110,19 @@ function checkValidity(
     case 'passwordConfirm':
       return value !== password ? '비밀번호가 일치하지 않습니다.' : null;
     case 'nickname':
-      return value.length < 2 || value.length > 10 ? '닉네임은 2자 이상 10자 이하로 입력하세요.' : null;
+      return value.length < 2 || value.length > 10
+        ? '닉네임은 2자 이상 10자 이하로 입력하세요.'
+        : null;
     default:
       return null;
   }
 }
 
-function checkValid(state: Intent.state): boolean {
+function checkValid(state: Intent.State): boolean {
   if (state.email.error !== null || state.email.value.length === 0) return false;
   if (state.password.error !== null || state.password.value.length === 0) return false;
-  if (state.passwordConfirm.error !== null || state.passwordConfirm.value.length === 0) return false;
+  if (state.passwordConfirm.error !== null || state.passwordConfirm.value.length === 0)
+    return false;
   if (state.nickname.error !== null || state.nickname.value.length === 0) return false;
   if (state.emailDuplicate === true) return false;
   return true;

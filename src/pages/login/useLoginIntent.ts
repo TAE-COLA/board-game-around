@@ -1,54 +1,49 @@
-import { useToast } from '@chakra-ui/react';
-import { Paths } from 'app';
-import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import { UserApi } from 'features';
 import { useEffect, useReducer, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { CommonToast, launch } from 'shared';
-import * as Intent from './LoginIntent';
+import * as Intent from './Login.intent';
 
 export function useLoginIntent() {
-  const navigate = useNavigate();
-  const toast = useToast();
-  const firebaseAuth = getAuth();
-
-  const [state, dispatch] = useReducer(Intent.reducer, Intent.initialState);
+  const [state, dispatch] = useReducer(Intent.reducer, new Intent.State({}));
   const [loading, setLoading] = useState(true);
 
-  const onEvent: Intent.event = {
+  const [sideEffect, setSideEffect] = useState<Intent.SideEffect>();
+
+  const onEvent: Intent.Event = {
     onEmailChange: (email) => {
-      dispatch({ type: 'EMAIL', email });
+      dispatch({ type: 'UPDATE_EMAIL', email });
     },
     onPasswordChange: (password) => {
-      dispatch({ type: 'PASSWORD', password });
+      dispatch({ type: 'UPDATE_PASSWORD', password });
     },
     onClickLoginButton: () => {
       launch(setLoading, async () => {
         try {
-          await signInWithEmailAndPassword(firebaseAuth, state.email, state.password);
-          toast(CommonToast.LOGIN_SUCCESS);
-          navigate(Paths.main, { replace: true });
+          UserApi.login(state.email, state.password);
+          setSideEffect({ type: 'SHOW_TOAST', options: CommonToast.LOGIN_SUCCESS });
+          setSideEffect({ type: 'NAVIGATE_TO_MAIN' });
         } catch {
-          toast(CommonToast.LOGIN_FAILED);
+          setSideEffect({ type: 'SHOW_TOAST', options: CommonToast.LOGIN_FAILED });
         }
       });
     },
     onClickRegisterButton: () => {
-      navigate(Paths.register);
+      setSideEffect({ type: 'NAVIGATE_TO_REGISTER' });
     },
   };
 
   useEffect(() => {
     const timeout = setTimeout(() => {
-      if (firebaseAuth.currentUser) {
-        navigate(Paths.main, { replace: true });
-        toast(CommonToast.ALREADY_LOGIN);
+      if (UserApi.hasSession()) {
+        setSideEffect({ type: 'SHOW_TOAST', options: CommonToast.ALREADY_LOGIN });
+        setSideEffect({ type: 'NAVIGATE_TO_MAIN' });
       } else {
         setLoading(false);
       }
     }, 1000);
 
     return () => clearTimeout(timeout);
-  }, [firebaseAuth.currentUser]);
+  }, []);
 
-  return { state, loading, onEvent };
+  return { state, loading, onEvent, sideEffect };
 }

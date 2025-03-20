@@ -1,3 +1,1 @@
-export * from './fetchAllGames';
-export * from './fetchGameById';
-export * from './useFetchGameList';
+export * as GameApi from './game.api';

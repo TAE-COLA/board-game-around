@@ -1,23 +1,44 @@
-import { AuthProvider, LoungeProvider } from 'app';
-import { DavinciCodePage, LoginPage, LoungePage, MainPage, RegisterPage, YachtDicePage } from 'pages';
+import { useToast } from '@chakra-ui/react';
 import React from 'react';
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
-import { GameName } from 'shared/string';
+import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import { GameName } from 'shared';
+import { AuthProvider, LoungeProvider } from '../context';
+import { pageRegistry } from './PageRegistry';
 
 export const PageRouter: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const toast = useToast();
 
   return (
     <Routes location={location}>
       <Route path={Paths.default} element={<Navigate to={Paths.login} replace />} />
-      <Route path={Paths.login} element={<LoginPage />} />
-      <Route path={Paths.register} element={<RegisterPage />} />
+      <Route
+        path={Paths.login}
+        element={<pageRegistry.LoginPage navigate={navigate} toast={toast} />}
+      />
+      <Route
+        path={Paths.register}
+        element={<pageRegistry.RegisterPage navigate={navigate} toast={toast} />}
+      />
       <Route element={<AuthProvider />}>
-        <Route path={Paths.main} element={<MainPage />} />
+        <Route
+          path={Paths.main}
+          element={<pageRegistry.MainPage navigate={navigate} toast={toast} />}
+        />
         <Route element={<LoungeProvider />}>
-          <Route path={Paths.lounge} element={<LoungePage />} />
-          <Route path={Paths.yachtDice} element={<YachtDicePage />} />
-          <Route path={Paths.davinciCode} element={<DavinciCodePage />} />
+          <Route
+            path={Paths.lounge}
+            element={<pageRegistry.LoungePage navigate={navigate} toast={toast} />}
+          />
+          <Route
+            path={Paths.yachtDice}
+            element={<pageRegistry.YachtDicePage navigate={navigate} toast={toast} />}
+          />
+          <Route
+            path={Paths.davinciCode}
+            element={<pageRegistry.DavinciCodePage navigate={navigate} toast={toast} />}
+          />
         </Route>
       </Route>
       <Route path={Paths.notFound} element={<div>404 Not Found</div>} />
@@ -27,9 +48,9 @@ export const PageRouter: React.FC = () => {
 
 export const Paths = {
   default: '/',
-  main: '/main',
   login: '/login',
   register: '/register',
+  main: '/main',
   lounge: '/lounge',
   yachtDice: GameName.YatchDice.path,
   davinciCode: GameName.DavinciCode.path,

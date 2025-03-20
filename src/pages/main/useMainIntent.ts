@@ -1,53 +1,48 @@
-import { useDisclosure, useToast } from '@chakra-ui/react';
-import { Paths } from 'app';
-import { createLounge, fetchAllGames, joinLounge, useAuthContext } from 'features';
-import { getAuth, signOut } from 'firebase/auth';
+import { useDisclosure } from '@chakra-ui/react';
+import { useAuthContext } from 'app';
+import { GameApi, LoungeApi, UserApi } from 'features';
 import { useEffect, useReducer, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { CommonToast, launch } from 'shared';
-import * as Intent from './MainIntent';
+import * as Intent from './Main.intent';
 
 export const useMainIntent = () => {
   const auth = useAuthContext();
 
-  const navigate = useNavigate();
-  const toast = useToast();
-  const firebaseAuth = getAuth();
+  const [state, dispatch] = useReducer(Intent.reducer, new Intent.State({}));
+  const [loading, setLoading] = useState(true);
+
+  const [sideEffect, setSideEffect] = useState<Intent.SideEffect>();
 
   const gameEntryModal = useDisclosure();
+
   const modal = {
     gameEntryModal: {
-      isOpen: gameEntryModal.isOpen,
-      onOpen: gameEntryModal.onOpen,
+      ...gameEntryModal,
       onClose() {
-        dispatch({ type: 'SELECTED_GAME', selectedGame: null });
+        dispatch({ type: 'UPDATE_SELECTED_GAME', selectedGame: null });
         gameEntryModal.onClose();
       },
     },
   };
 
-  const [state, dispatch] = useReducer(Intent.reducer, Intent.initialState);
-  const [loading, setLoading] = useState(true);
-
-  const onEvent: Intent.event = {
+  const onEvent: Intent.Event = {
     onClickLogoutButton: () => {
       launch(setLoading, async () => {
-        await signOut(firebaseAuth);
-        navigate(Paths.login, { replace: true });
-        toast(CommonToast.LOGOUT_SUCCESS);
+        await UserApi.logout();
+        setSideEffect({ type: 'SHOW_TOAST', options: CommonToast.LOGOUT_SUCCESS });
+        setSideEffect({ type: 'NAVIGATE_TO_LOGIN' });
       });
     },
     onClickGamePlayButton: (game) => {
-      dispatch({ type: 'SELECTED_GAME', selectedGame: game });
+      dispatch({ type: 'UPDATE_SELECTED_GAME', selectedGame: game });
       modal.gameEntryModal.onOpen();
     },
     onClickCreateLoungeButton: () => {
       launch(setLoading, async () => {
         if (state.selectedGame) {
-          await createLounge(state.selectedGame.id, auth.id);
-          navigate(Paths.lounge);
+          await LoungeApi.create(state.selectedGame.id, auth.id);
+          setSideEffect({ type: 'NAVIGATE_TO_LOUNGE' });
         }
-
         modal.gameEntryModal.onClose();
       });
     },
@@ -55,13 +50,12 @@ export const useMainIntent = () => {
       launch(setLoading, async () => {
         try {
           if (state.selectedGame) {
-            await joinLounge(code, state.selectedGame.id, auth.id);
-            navigate(Paths.lounge);
+            await LoungeApi.join(code, state.selectedGame.id, auth.id);
+            setSideEffect({ type: 'NAVIGATE_TO_LOUNGE' });
           }
         } catch {
-          toast(CommonToast.INVALID_GAME_ID);
+          setSideEffect({ type: 'SHOW_TOAST', options: CommonToast.INVALID_GAME_ID });
         }
-
         modal.gameEntryModal.onClose();
       });
     },
@@ -73,10 +67,10 @@ export const useMainIntent = () => {
 
   useEffect(() => {
     launch(setLoading, async () => {
-      const gameList = await fetchAllGames();
-      dispatch({ type: 'GAME_LIST', gameList });
+      const gameList = await GameApi.fetchAll();
+      dispatch({ type: 'UPDATE_GAME_LIST', gameList });
     });
   }, []);
 
-  return { state, loading, modal, onEvent };
+  return { state, loading, modal, onEvent, sideEffect };
 };

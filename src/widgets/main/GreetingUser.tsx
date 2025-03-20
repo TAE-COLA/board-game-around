@@ -1,5 +1,5 @@
 import { Button, Flex, FlexProps, Text } from '@chakra-ui/react';
-import { useAuthContext } from 'features';
+import { useAuthContext } from 'app';
 import React from 'react';
 
 type IProps = FlexProps & {
