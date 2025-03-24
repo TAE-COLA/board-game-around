@@ -13,13 +13,18 @@ import {
 import { Game } from 'models';
 import React from 'react';
 
-type IProps = CardProps & {
+type Props = CardProps & {
   game: Game;
   onClickGamePlayButton: ButtonProps['onClick'];
   headerSize?: HeadingProps['size'];
 };
 
-export const GameCard: React.FC<IProps> = ({ game, onClickGamePlayButton, headerSize = 'md', ...props }) => {
+export const GameCard: React.FC<Props> = ({
+  game,
+  onClickGamePlayButton,
+  headerSize = 'md',
+  ...props
+}) => {
   return (
     <Card {...props}>
       <CardHeader>

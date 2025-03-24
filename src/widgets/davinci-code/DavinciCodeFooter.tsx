@@ -4,13 +4,13 @@ import { DavinciCodeTile as tileEntity, User } from 'models';
 import React from 'react';
 import { DavinciCodeHands } from 'widgets';
 
-type IProps = FlexProps & {
+type Props = FlexProps & {
   turn: User;
   phase: 'INITIAL_DRAW' | 'DRAW' | 'GUESS';
   hand: tileEntity[];
 };
 
-export const DavinciCodeFooter: React.FC<IProps> = ({ hand, turn, phase, ...props }) => {
+export const DavinciCodeFooter: React.FC<Props> = ({ hand, turn, phase, ...props }) => {
   const { id: authId, name: authName } = useAuthContext();
 
   return (

@@ -3,14 +3,14 @@ import { useAuthContext } from 'app';
 import { DavinciCodeTile as TileEntity, User } from 'models';
 import React, { useCallback } from 'react';
 
-type IProps = CardProps & {
+type Props = CardProps & {
   player: User;
   tile: TileEntity;
   size?: { width: string; height: string };
   onClick: () => void;
 };
 
-export const DavinciCodeTile: React.FC<IProps> = ({
+export const DavinciCodeTile: React.FC<Props> = ({
   player,
   tile,
   size = { width: '54px', height: '76px' },

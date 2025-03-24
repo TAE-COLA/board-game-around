@@ -3,11 +3,11 @@ import { useAuthContext, useLoungeContext } from 'app';
 import React from 'react';
 import { PlayerList, RuleBox } from 'widgets';
 
-type IProps = FlexProps & {
+type Props = FlexProps & {
   onClickStartButton: () => void;
 };
 
-export const LoungeBody: React.FC<IProps> = ({ onClickStartButton, ...props }) => {
+export const LoungeBody: React.FC<Props> = ({ onClickStartButton, ...props }) => {
   const auth = useAuthContext();
   const lounge = useLoungeContext();
 

@@ -16,7 +16,7 @@ import {
 import { User, type YachtDiceBoard } from 'models';
 import React from 'react';
 
-type IProps = FlexProps & {
+type Props = FlexProps & {
   player: User;
   board: YachtDiceBoard;
   score: number;
@@ -26,7 +26,7 @@ type IProps = FlexProps & {
   onClickNextBoardButton: () => void;
 };
 
-export const YachtBoard: React.FC<IProps> = ({
+export const YachtBoard: React.FC<Props> = ({
   player,
   board,
   score,
@@ -53,7 +53,15 @@ export const YachtBoard: React.FC<IProps> = ({
   };
 
   return (
-    <Flex direction='column' align='center' gap='8' padding='4' background='gray.100' borderRadius='md' {...props}>
+    <Flex
+      direction='column'
+      align='center'
+      gap='8'
+      padding='4'
+      background='gray.100'
+      borderRadius='md'
+      {...props}
+    >
       <Flex width='100%' align='center'>
         <ChevronLeftIcon
           onClick={() => isFirst || onClickPrevBoardButton()}

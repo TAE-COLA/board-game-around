@@ -3,14 +3,14 @@ import { type YachtDiceBoard } from 'models';
 import React from 'react';
 import { Divider, YachtDiceHandButton } from 'widgets';
 
-type IProps = FlexProps & {
+type Props = FlexProps & {
   board: YachtDiceBoard;
   dice: number[];
   keep: number[];
   onClickSelectHandButton: (key: keyof YachtDiceBoard, value: number) => void;
 };
 
-export const YachtDiceHandRanking: React.FC<IProps> = ({
+export const YachtDiceHandRanking: React.FC<Props> = ({
   board,
   dice,
   keep,

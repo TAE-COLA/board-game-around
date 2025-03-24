@@ -3,7 +3,7 @@ import React from 'react';
 import { useDrop } from 'react-dnd';
 import { Die, Draggable } from 'widgets';
 
-type IProps = FlexProps & {
+type Props = FlexProps & {
   dice: number[];
   kept: number[];
   keep: number[];
@@ -11,7 +11,14 @@ type IProps = FlexProps & {
   onRemoveDiceToKeep: (index: number) => void;
 };
 
-export const KeptDice: React.FC<IProps> = ({ dice, kept, keep, onAddDiceToKeep, onRemoveDiceToKeep, ...props }) => {
+export const KeptDice: React.FC<Props> = ({
+  dice,
+  kept,
+  keep,
+  onAddDiceToKeep,
+  onRemoveDiceToKeep,
+  ...props
+}) => {
   const [, drop] = useDrop(() => ({
     accept: 'DIE',
     drop: (item: { index: number }) => {

@@ -1,2 +1,3 @@
+export * from './GameCard';
 export * from './GameCardGrid';
-export * from './GreetingUser';
+export * from './MainHeader';

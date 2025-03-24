@@ -1,14 +1,16 @@
 import { Game } from 'models';
 import { ToastOptions } from 'shared';
 
-class State {
-  gameList: Game[] = [];
-  selectedGame: Game | null = null;
+type State = {
+  gameList: Game[];
+  selectedGame?: Game;
+};
 
-  constructor(state: Partial<State>) {
-    Object.assign(this, state);
-  }
-}
+const createState = (partial?: Partial<State>): State => ({
+  gameList: [],
+  selectedGame: undefined,
+  ...partial,
+});
 
 type Event = {
   onClickLogoutButton: () => void;
@@ -17,23 +19,35 @@ type Event = {
   onClickJoinLoungeButton: (code: string) => void;
 };
 
-type Reduce =
-  | { type: 'UPDATE_GAME_LIST'; gameList: Game[] }
-  | { type: 'UPDATE_SELECTED_GAME'; selectedGame: Game | null };
+enum Reduces {
+  UPDATE_GAME_LIST = 'UPDATE_GAME_LIST',
+  UPDATE_SELECTED_GAME = 'UPDATE_SELECTED_GAME',
+}
 
-const handleReduce = (state: State, reduce: Reduce): State => {
+type Reduce =
+  | { type: Reduces.UPDATE_GAME_LIST; gameList: Game[] }
+  | { type: Reduces.UPDATE_SELECTED_GAME; selectedGame?: Game };
+
+const reducer = (state: State, reduce: Reduce): State => {
   switch (reduce.type) {
-    case 'UPDATE_GAME_LIST':
-      return new State({ ...state, gameList: reduce.gameList });
-    case 'UPDATE_SELECTED_GAME':
-      return new State({ ...state, selectedGame: reduce.selectedGame });
+    case Reduces.UPDATE_GAME_LIST:
+      return createState({ ...state, gameList: reduce.gameList });
+    case Reduces.UPDATE_SELECTED_GAME:
+      return createState({ ...state, selectedGame: reduce.selectedGame });
+    default:
+      return state;
   }
 };
 
-type SideEffect =
-  | { type: 'NAVIGATE_TO_LOGIN' }
-  | { type: 'NAVIGATE_TO_LOUNGE' }
-  | { type: 'SHOW_TOAST'; options: ToastOptions }
-  | undefined;
+enum SideEffects {
+  NAVIGATE_TO_LOGIN = 'NAVIGATE_TO_LOGIN',
+  NAVIGATE_TO_LOUNGE = 'NAVIGATE_TO_LOUNGE',
+  SHOW_TOAST = 'SHOW_TOAST',
+}
 
-export { Event, Reduce, handleReduce as reducer, SideEffect, State };
+type SideEffect =
+  | { type: SideEffects.NAVIGATE_TO_LOGIN }
+  | { type: SideEffects.NAVIGATE_TO_LOUNGE }
+  | { type: SideEffects.SHOW_TOAST; options: ToastOptions };
+
+export { createState, Event, reducer, Reduces, SideEffect, SideEffects };

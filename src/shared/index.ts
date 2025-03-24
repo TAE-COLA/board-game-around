@@ -9,3 +9,5 @@ export * from './shuffle';
 export * from './string-resources';
 export * from './toasts';
 export * from './updates';
+
+export * from './types';

@@ -3,12 +3,12 @@ import { useLoungeContext } from 'app';
 import React from 'react';
 import { LoungeCodeBox } from 'widgets';
 
-type IProps = FlexProps & {
+type Props = FlexProps & {
   onClickCopyButton: () => void;
   onClickExitButton: () => void;
 };
 
-export const LoungeHeader: React.FC<IProps> = ({
+export const LoungeHeader: React.FC<Props> = ({
   onClickCopyButton,
   onClickExitButton,
   ...props

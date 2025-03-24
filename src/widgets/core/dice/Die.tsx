@@ -1,13 +1,13 @@
 import { Circle, Flex, FlexProps } from '@chakra-ui/react';
 import React from 'react';
 
-type IProps = FlexProps & {
+type Props = FlexProps & {
   value: number;
   fixed?: boolean;
   size?: 'sm' | 'md' | 'lg';
 };
 
-export const Die: React.FC<IProps> = ({ value, fixed = false, size = 'md', ...props }) => {
+export const Die: React.FC<Props> = ({ value, fixed = false, size = 'md', ...props }) => {
   const flexProps = {
     width: size === 'sm' ? '32px' : size === 'md' ? '64px' : '128px',
     height: size === 'sm' ? '32px' : size === 'md' ? '64px' : '128px',

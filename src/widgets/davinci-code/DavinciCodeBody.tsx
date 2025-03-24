@@ -4,7 +4,7 @@ import { DavinciCodeTile as tileEntity, User } from 'models';
 import React from 'react';
 import { DavinciCodeHands } from 'widgets';
 
-type IProps = FlexProps & {
+type Props = FlexProps & {
   players: User[];
   hands: {
     [key: string]: tileEntity[];
@@ -15,7 +15,7 @@ type IProps = FlexProps & {
   onClickTile: (player: User, index: number) => void;
 };
 
-export const DavinciCodeBody: React.FC<IProps> = ({
+export const DavinciCodeBody: React.FC<Props> = ({
   players,
   hands,
   turn,

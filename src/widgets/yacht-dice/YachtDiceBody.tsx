@@ -10,7 +10,7 @@ import {
   YachtDiceRoundBox,
 } from 'widgets';
 
-type IProps = FlexProps & {
+type Props = FlexProps & {
   players: User[];
   round: number;
   boards: {
@@ -32,7 +32,7 @@ type IProps = FlexProps & {
   onClickSelectHandButton: (key: keyof YachtDiceBoard, value: number) => void;
 };
 
-export const YachtDiceBody: React.FC<IProps> = ({
+export const YachtDiceBody: React.FC<Props> = ({
   players,
   round,
   boards,

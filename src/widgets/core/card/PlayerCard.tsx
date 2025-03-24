@@ -3,13 +3,18 @@ import { Card, CardBody, CardProps, Text } from '@chakra-ui/react';
 import { User } from 'models';
 import React from 'react';
 
-type IProps = CardProps & {
+type Props = CardProps & {
   player: User;
   isOwner?: boolean;
   isPlayerTurn?: boolean;
 };
 
-export const PlayerCard: React.FC<IProps> = ({ player, isOwner = false, isPlayerTurn = true, ...props }) => {
+export const PlayerCard: React.FC<Props> = ({
+  player,
+  isOwner = false,
+  isPlayerTurn = true,
+  ...props
+}) => {
   return (
     <Card
       direction={{ base: 'column', sm: 'row' }}

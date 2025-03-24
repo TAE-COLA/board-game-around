@@ -4,7 +4,7 @@ import React from 'react';
 import { FormData } from 'shared';
 import { FormInput } from 'widgets';
 
-type IProps = FlexProps & {
+type Props = FlexProps & {
   email: FormData<'email', string>;
   emailDuplicate: boolean | null;
   password: FormData<'password', string>;
@@ -19,7 +19,7 @@ type IProps = FlexProps & {
   onClickSubmitButton: () => void;
 };
 
-export const RegisterFields: React.FC<IProps> = ({
+export const RegisterFields: React.FC<Props> = ({
   email,
   emailDuplicate,
   password,

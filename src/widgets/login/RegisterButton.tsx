@@ -1,11 +1,11 @@
 import { Button, Flex, FlexProps, Text } from '@chakra-ui/react';
 import React from 'react';
 
-type IProps = FlexProps & {
+type Props = FlexProps & {
   onClickRegisterButton: () => void;
 };
 
-export const RegisterButton: React.FC<IProps> = ({ onClickRegisterButton, ...props }) => {
+export const RegisterButton: React.FC<Props> = ({ onClickRegisterButton, ...props }) => {
   return (
     <Flex direction='row' alignItems='Center' {...props}>
       <Text fontSize='sm' paddingRight='2'>

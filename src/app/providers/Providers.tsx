@@ -1,18 +1,16 @@
-import { ChakraBaseProvider, theme as chakraTheme, extendBaseTheme } from '@chakra-ui/react';
+import { ChakraBaseProvider } from '@chakra-ui/react';
 import React from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { QueryClient, QueryClientProvider } from 'react-query';
+import { customTheme } from './theme';
 
 export const Providers: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const queryClient = new QueryClient();
-  const theme = extendBaseTheme({
-    components: chakraTheme.components,
-  });
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ChakraBaseProvider theme={theme}>
+      <ChakraBaseProvider theme={customTheme}>
         <DndProvider backend={HTML5Backend}>{children}</DndProvider>
       </ChakraBaseProvider>
     </QueryClientProvider>

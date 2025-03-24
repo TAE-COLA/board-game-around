@@ -2,7 +2,7 @@ import { Flex, FlexProps } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import { Die, Draggable } from 'widgets';
 
-type IProps = FlexProps & {
+type Props = FlexProps & {
   dice: number[];
   keep: number[];
   rolling?: boolean;
@@ -11,7 +11,7 @@ type IProps = FlexProps & {
   onAddDiceToKeep: (index: number) => void;
 };
 
-export const RollableDice: React.FC<IProps> = ({
+export const RollableDice: React.FC<Props> = ({
   dice,
   keep,
   rolling = false,

@@ -15,7 +15,7 @@ import { DavinciCodeTile as tileEntity, User } from 'models';
 import React, { useEffect } from 'react';
 import { DavinciCodeTile } from 'widgets';
 
-type IProps = {
+type Props = {
   hand: tileEntity[];
   drawableTiles: number;
   pendingTiles: tileEntity[];
@@ -24,7 +24,7 @@ type IProps = {
   modal: { isOpen: boolean; onOpen: () => void; onClose: () => void };
 };
 
-export const DavinciCodeDrawModal: React.FC<IProps> = ({
+export const DavinciCodeDrawModal: React.FC<Props> = ({
   hand,
   drawableTiles,
   pendingTiles,

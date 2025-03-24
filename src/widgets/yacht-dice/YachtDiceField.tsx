@@ -2,7 +2,7 @@ import { Flex, FlexProps } from '@chakra-ui/react';
 import React from 'react';
 import { KeptDice, RollableDice } from 'widgets';
 
-type IProps = FlexProps & {
+type Props = FlexProps & {
   dice: number[];
   kept: number[];
   keep: number[];
@@ -13,7 +13,7 @@ type IProps = FlexProps & {
   onRemoveDiceToKeep: (index: number) => void;
 };
 
-export const YachtDiceField: React.FC<IProps> = ({
+export const YachtDiceField: React.FC<Props> = ({
   dice,
   kept,
   keep,

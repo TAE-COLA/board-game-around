@@ -2,7 +2,7 @@ import { Flex, FlexProps } from '@chakra-ui/react';
 import React from 'react';
 import { useDrag } from 'react-dnd';
 
-type IProps = FlexProps & {
+type Props = FlexProps & {
   children: React.ReactNode;
   type: string;
   index: number;
@@ -10,7 +10,7 @@ type IProps = FlexProps & {
   onDropOutside?: (index: number) => void;
 };
 
-export const Draggable: React.FC<IProps> = ({
+export const Draggable: React.FC<Props> = ({
   children,
   type,
   index,

@@ -9,7 +9,7 @@ import {
 import React from 'react';
 import { FormData } from 'shared';
 
-type IProps<Label extends string> = {
+type Props<Label extends string> = {
   id: string;
   data: FormData<Label, string>;
   onValueChange: (value: string) => void;
@@ -31,7 +31,7 @@ export const FormInput = <Label extends string>({
   isReadOnly = false,
   isDisabled = false,
   children,
-}: IProps<Label>) => {
+}: Props<Label>) => {
   return (
     <FormControl id={id} isInvalid={data.error !== null}>
       <InputGroup>
