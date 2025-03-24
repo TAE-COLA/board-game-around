@@ -51,7 +51,7 @@ export const RollableDice: React.FC<Props> = ({
   }, [dice]);
 
   return (
-    <Flex gap='2' {...props}>
+    <Flex gap={2} {...props}>
       {values.map((value, index) => (
         <Draggable
           key={index}
