@@ -1,26 +1,33 @@
 import { ToastOptions } from 'shared';
 
-class State {
-  email: string = '';
-  password: string = '';
+export type State = {
+  email: string;
+  password: string;
+};
 
-  constructor(state: Partial<State>) {
-    Object.assign(this, state);
-  }
-}
+export const createState = (partial?: Partial<State>): State => ({
+  email: '',
+  password: '',
+  ...partial,
+});
 
-type Event = {
+export type Event = {
   onEmailChange: (email: string) => void;
   onPasswordChange: (password: string) => void;
   onClickLoginButton: () => void;
   onClickRegisterButton: () => void;
 };
 
-type Reduce =
-  | { type: 'UPDATE_EMAIL'; email: string }
-  | { type: 'UPDATE_PASSWORD'; password: string };
+export enum Reduces {
+  UPDATE_EMAIL = 'UPDATE_EMAIL',
+  UPDATE_PASSWORD = 'UPDATE_PASSWORD',
+}
 
-const handleReduce = (state: State, reduce: Reduce): State => {
+type Reduce =
+  | { type: Reduces.UPDATE_EMAIL; email: string }
+  | { type: Reduces.UPDATE_PASSWORD; password: string };
+
+export const reducer = (state: State, reduce: Reduce): State => {
   switch (reduce.type) {
     case 'UPDATE_EMAIL':
       return { ...state, email: reduce.email };
@@ -31,10 +38,14 @@ const handleReduce = (state: State, reduce: Reduce): State => {
   }
 };
 
-type SideEffect =
-  | { type: 'NAVIGATE_TO_REGISTER' }
-  | { type: 'NAVIGATE_TO_MAIN' }
-  | { type: 'SHOW_TOAST'; options: ToastOptions }
-  | undefined;
+export enum SideEffects {
+  NAVIGATE_TO_REGISTER = 'NAVIGATE_TO_REGISTER',
+  NAVIGATE_TO_MAIN = 'NAVIGATE_TO_MAIN',
+  SHOW_TOAST = 'SHOW_TOAST',
+}
 
-export { Event, Reduce, handleReduce as reducer, SideEffect, State };
+export type SideEffect =
+  | { type: SideEffects.NAVIGATE_TO_REGISTER }
+  | { type: SideEffects.NAVIGATE_TO_MAIN }
+  | { type: SideEffects.SHOW_TOAST; options: ToastOptions }
+  | undefined;
