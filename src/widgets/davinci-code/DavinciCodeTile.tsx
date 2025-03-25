@@ -1,19 +1,19 @@
 import { Card, CardBody, CardProps, Divider, Flex, Spacer, Text } from '@chakra-ui/react';
 import { useAuthContext } from 'app';
-import { DavinciCodeTile as TileEntity, User } from 'models';
+import { DavinciCodeTileModel as TileEntity, User } from 'models';
 import React, { useCallback } from 'react';
 
 type Props = CardProps & {
   player: User;
   tile: TileEntity;
-  size?: { width: string; height: string };
+  size?: { width: number; height: number };
   onClick: () => void;
 };
 
 export const DavinciCodeTile: React.FC<Props> = ({
   player,
   tile,
-  size = { width: '54px', height: '76px' },
+  size = { width: 13, height: 19 },
   onClick,
   ...props
 }) => {

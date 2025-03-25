@@ -1,6 +1,6 @@
 import { Button, Flex, FlexProps } from '@chakra-ui/react';
 import { useAuthContext } from 'app';
-import { DavinciCodeTile as tileEntity, User } from 'models';
+import { DavinciCodeTileModel as tileEntity, User } from 'models';
 import React from 'react';
 import { DavinciCodeHands } from 'widgets';
 

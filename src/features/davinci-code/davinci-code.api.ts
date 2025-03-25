@@ -1,5 +1,5 @@
 import * as db from 'firebase/database';
-import { DAVINCI_CODE, DavinciCode, DavinciCodeTile, FModel, Lounge, LOUNGE } from 'models';
+import { DAVINCI_CODE, DavinciCode, DavinciCodeTileModel, FModel, Lounge, LOUNGE } from 'models';
 import { CommonError, initialUpdates, Nullable, placeholder, shuffle } from 'shared';
 import { getRef } from '../firebase.util';
 import { database } from '../firebase_config';
@@ -28,7 +28,7 @@ export const start = async (loungeId: string): Promise<void> => {
   const initialHands = shuffledPlayerIds.reduce((acc, playerId) => {
     acc[playerId] = [placeholder];
     return acc;
-  }, {} as { [key: string]: Nullable<DavinciCodeTile>[] });
+  }, {} as { [key: string]: Nullable<DavinciCodeTileModel>[] });
   const shuffledTiles = {
     white: shuffle(
       Array.from({ length: 13 }, (_, i) => ({
@@ -163,7 +163,7 @@ export const drawTile = async (loungeId: string, isWhite: boolean): Promise<void
 export const updateHand = async (
   loungeId: string,
   playerId: string,
-  hand: DavinciCodeTile[],
+  hand: DavinciCodeTileModel[],
   clearPendingTiles: boolean
 ): Promise<void> => {
   const davinciCodeSnapshot = await getRef(davinciCodeReference(loungeId), () => {

@@ -1,9 +1,11 @@
 import { Flex } from '@chakra-ui/react';
 import { PageProps, Paths, useAuthContext } from 'app';
 import React, { useEffect } from 'react';
+import { Dimension, Direction } from 'shared';
 import { DavinciCodeBody, DavinciCodeFooter, DavinciCodeHeader, NumberModal, Page } from 'widgets';
+import { SideEffects } from './DavinciCode.intent';
 import { DavinciCodeDrawModal } from './DrawModal.modal';
-import { useDavinciCodeIntent } from './useDavinciCodeIntent';
+import { useDavinciCodeIntent } from './useDavinciCodeIntent.hook';
 
 export const DavinciCodePage: React.FC<PageProps> = ({ navigate, toast }) => {
   const { id: authId } = useAuthContext();
@@ -11,18 +13,18 @@ export const DavinciCodePage: React.FC<PageProps> = ({ navigate, toast }) => {
 
   useEffect(() => {
     switch (sideEffect?.type) {
-      case 'NAVIGATE_TO_MAIN':
+      case SideEffects.NAVIGATE_TO_MAIN:
         navigate(Paths.main);
         break;
-      case 'SHOW_TOAST':
+      case SideEffects.SHOW_TOAST:
         toast(sideEffect.options);
         break;
     }
   }, [sideEffect]);
 
   return (
-    <Page loading={loading} height='100vh'>
-      <Flex direction='column' width='100%' height='100%' gap={8}>
+    <Page loading={loading} height={Dimension.ScreenHeight}>
+      <Flex direction={Direction.Column} width={Dimension.Full} height={Dimension.Full} gap={8}>
         <DavinciCodeHeader onClickExitButton={onEvent.onClickExitButton} />
         <DavinciCodeBody
           players={state.players}

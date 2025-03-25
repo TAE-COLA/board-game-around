@@ -31,7 +31,7 @@ export const GameEntryModal: React.FC<Props> = ({
   const [code, setData] = useState('');
 
   return (
-    <Modal isOpen={modal.isOpen} onClose={modal.onClose} size={Size.XL} isCentered>
+    <Modal isOpen={modal.isOpen} onClose={modal.onClose} size={Size.Xl} isCentered>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>{game?.name} 플레이</ModalHeader>

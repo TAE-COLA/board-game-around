@@ -1,60 +1,80 @@
-import { DavinciCodeTile, User } from 'models';
+import { DavinciCodeTileModel, User } from 'models';
 import { createDummy, ToastOptions } from 'shared';
 
-class State {
-  players: User[] = [];
-  hands: { [key: string]: DavinciCodeTile[] } = {};
-  turn: User = createDummy<User>();
-  phase: 'INITIAL_DRAW' | 'DRAW' | 'GUESS' = 'DRAW';
-  finishedPlayers: User[] = [];
-  pendingTiles: DavinciCodeTile[] = [];
-  drawableTiles: number = 0;
+export type State = {
+  players: User[];
+  hands: { [key: string]: DavinciCodeTileModel[] };
+  turn: User;
+  phase: 'INITIAL_DRAW' | 'DRAW' | 'GUESS';
+  finishedPlayers: User[];
+  pendingTiles: DavinciCodeTileModel[];
+  drawableTiles: number;
+};
 
-  constructor(state: Partial<State>) {
-    Object.assign(this, state);
-  }
-}
+export const createState = (partial?: Partial<State>): State => ({
+  players: [],
+  hands: {},
+  turn: createDummy<User>(),
+  phase: 'DRAW',
+  finishedPlayers: [],
+  pendingTiles: [],
+  drawableTiles: 0,
+  ...partial,
+});
 
-type Event = {
+export type Event = {
   onClickExitButton: () => void;
   onClickDrawButton: (isWhite: boolean) => void;
-  onSubmitHand: (hand: DavinciCodeTile[]) => void;
+  onSubmitHand: (hand: DavinciCodeTileModel[]) => void;
   onClickTile: (player: User, index: number) => void;
 };
 
-type Reduce =
-  | { type: 'UPDATE_PLAYERS'; players: User[] }
-  | { type: 'UPDATE_HANDS'; hands: { [key: string]: DavinciCodeTile[] } }
-  | { type: 'UPDATE_TURN'; turn: User }
-  | { type: 'UPDATE_PHASE'; phase: 'INITIAL_DRAW' | 'DRAW' | 'GUESS' }
-  | { type: 'UPDATE_FINISHED_PLAYERS'; finishedPlayers: User[] }
-  | { type: 'UPDATE_DRAWABLE_TILES'; drawableTiles: number }
-  | { type: 'UPDATE_PENDING_TILES'; pendingTiles: DavinciCodeTile[] };
+export enum Reduces {
+  UPDATE_PLAYERS = 'UPDATE_PLAYERS',
+  UPDATE_HANDS = 'UPDATE_HANDS',
+  UPDATE_TURN = 'UPDATE_TURN',
+  UPDATE_PHASE = 'UPDATE_PHASE',
+  UPDATE_FINISHED_PLAYERS = 'UPDATE_FINISHED_PLAYERS',
+  UPDATE_DRAWABLE_TILES = 'UPDATE_DRAWABLE_TILES',
+  UPDATE_PENDING_TILES = 'UPDATE_PENDING_TILES',
+}
 
-const handleReduce = (state: State, reduce: Reduce): State => {
+type Reduce =
+  | { type: Reduces.UPDATE_PLAYERS; players: User[] }
+  | { type: Reduces.UPDATE_HANDS; hands: { [key: string]: DavinciCodeTileModel[] } }
+  | { type: Reduces.UPDATE_TURN; turn: User }
+  | { type: Reduces.UPDATE_PHASE; phase: 'INITIAL_DRAW' | 'DRAW' | 'GUESS' }
+  | { type: Reduces.UPDATE_FINISHED_PLAYERS; finishedPlayers: User[] }
+  | { type: Reduces.UPDATE_DRAWABLE_TILES; drawableTiles: number }
+  | { type: Reduces.UPDATE_PENDING_TILES; pendingTiles: DavinciCodeTileModel[] };
+
+export const reducer = (state: State, reduce: Reduce): State => {
   switch (reduce.type) {
-    case 'UPDATE_PLAYERS':
+    case Reduces.UPDATE_PLAYERS:
       return { ...state, players: reduce.players };
-    case 'UPDATE_HANDS':
+    case Reduces.UPDATE_HANDS:
       return { ...state, hands: reduce.hands };
-    case 'UPDATE_TURN':
+    case Reduces.UPDATE_TURN:
       return { ...state, turn: reduce.turn };
-    case 'UPDATE_PHASE':
+    case Reduces.UPDATE_PHASE:
       return { ...state, phase: reduce.phase };
-    case 'UPDATE_FINISHED_PLAYERS':
+    case Reduces.UPDATE_FINISHED_PLAYERS:
       return { ...state, finishedPlayers: reduce.finishedPlayers };
-    case 'UPDATE_DRAWABLE_TILES':
+    case Reduces.UPDATE_DRAWABLE_TILES:
       return { ...state, drawableTiles: reduce.drawableTiles };
-    case 'UPDATE_PENDING_TILES':
+    case Reduces.UPDATE_PENDING_TILES:
       return { ...state, pendingTiles: reduce.pendingTiles };
     default:
       return state;
   }
 };
 
-type SideEffect =
-  | { type: 'NAVIGATE_TO_MAIN' }
-  | { type: 'SHOW_TOAST'; options: ToastOptions }
-  | undefined;
+export enum SideEffects {
+  NAVIGATE_TO_MAIN = 'NAVIGATE_TO_MAIN',
+  SHOW_TOAST = 'SHOW_TOAST',
+}
 
-export { Event, Reduce, handleReduce as reducer, SideEffect, State };
+export type SideEffect =
+  | { type: SideEffects.NAVIGATE_TO_MAIN }
+  | { type: SideEffects.SHOW_TOAST; options: ToastOptions }
+  | undefined;

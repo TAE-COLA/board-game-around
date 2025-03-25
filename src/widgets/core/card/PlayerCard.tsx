@@ -20,7 +20,7 @@ export const PlayerCard: React.FC<Props> = ({
     <Card
       direction={{ base: Direction.Column, sm: Direction.Row }}
       align={Align.Center}
-      size={isPlayerTurn ? Size.MD : Size.SM}
+      size={isPlayerTurn ? Size.Md : Size.Sm}
       opacity={isPlayerTurn ? 1 : 0.5}
       marginStart={isPlayerTurn ? 0 : 4}
       {...props}

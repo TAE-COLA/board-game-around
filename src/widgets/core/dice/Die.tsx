@@ -5,21 +5,21 @@ import { Align, BorderWidth, Colors, Direction, Size } from 'shared';
 type Props = FlexProps & {
   value: number;
   fixed?: boolean;
-  size?: Size.SM | Size.MD | Size.LG;
+  size?: Size.Sm | Size.Md | Size.Lg;
 };
 
-export const Die: React.FC<Props> = ({ value, fixed = false, size = Size.MD, ...props }) => {
+export const Die: React.FC<Props> = ({ value, fixed = false, size = Size.Md, ...props }) => {
   const flexProps = {
-    width: size === Size.SM ? 8 : size === Size.MD ? 16 : 32,
-    height: size === Size.SM ? 8 : size === Size.MD ? 16 : 32,
-    padding: size === Size.SM ? '3px' : size === Size.MD ? '7px' : '14px',
+    width: size === Size.Sm ? 8 : size === Size.Md ? 16 : 32,
+    height: size === Size.Sm ? 8 : size === Size.Md ? 16 : 32,
+    padding: size === Size.Sm ? '3px' : size === Size.Md ? '7px' : '14px',
     background: Colors.Secondary100,
     border: BorderWidth.Medium,
     borderColor: fixed ? Colors.Error : '',
-    borderRadius: Size.MD,
+    borderRadius: Size.Md,
     ...props,
   };
-  const circleSize = size === Size.SM ? '6px' : size === Size.MD ? 3 : 4;
+  const circleSize = size === Size.Sm ? '6px' : size === Size.Md ? 3 : 4;
 
   switch (value) {
     case 1:

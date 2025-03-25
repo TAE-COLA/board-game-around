@@ -20,7 +20,7 @@ export const MainHeader: React.FC<Props> = ({ onClickLogoutButton, ...props }) =
       borderRadius={8}
       {...props}
     >
-      <Text fontSize={Size.XXL} fontWeight={FontWeight.Bold}>
+      <Text fontSize={Size.Xxl} fontWeight={FontWeight.Bold}>
         우니의 보드게임천국
       </Text>
       <Flex align={Align.Center} gap={4} {...props}>

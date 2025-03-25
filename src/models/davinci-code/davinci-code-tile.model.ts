@@ -1,4 +1,4 @@
-export class DavinciCodeTile {
+export class DavinciCodeTileModel {
   isWhite: boolean;
   number: string;
   isRevealed: boolean;
@@ -9,7 +9,7 @@ export class DavinciCodeTile {
     this.isRevealed = isRevealed;
   }
 
-  isSmallerThan(other: DavinciCodeTile): boolean | null {
+  isSmallerThan(other: DavinciCodeTileModel): boolean | null {
     if (this.number === '-' || other.number === '-') return true;
     return (
       Number(this.number) < Number(other.number) ||
@@ -17,13 +17,17 @@ export class DavinciCodeTile {
     );
   }
 
-  isBiggerThan(other: DavinciCodeTile): boolean | null {
+  isBiggerThan(other: DavinciCodeTileModel): boolean | null {
     if (this.number === '-' || other.number === '-') return true;
     return (
       Number(this.number) > Number(other.number) ||
       (Number(this.number) === Number(other.number) && this.isWhite)
     );
   }
+
+  isJoker(): boolean {
+    return this.number === '-';
+  }
 }
 
-export const dummyDavinciCodeTile = new DavinciCodeTile(false, '', false);
+export const dummyDavinciCodeTile = new DavinciCodeTileModel(false, '', false);

@@ -1,19 +1,19 @@
-import { DavinciCodeTile } from './davinci-code-tile.model';
+import { DavinciCodeTileModel } from './davinci-code-tile.model';
 
 export interface DavinciCode {
   loungeId: string;
   playerIds: string[];
   hands: {
-    [key: string]: DavinciCodeTile[];
+    [key: string]: DavinciCodeTileModel[];
   };
   turn: string;
   phase: 'INITIAL_DRAW' | 'DRAW' | 'GUESS';
   finishedPlayerIds: string[];
   remainingTiles: {
-    white: DavinciCodeTile[];
-    black: DavinciCodeTile[];
+    white: DavinciCodeTileModel[];
+    black: DavinciCodeTileModel[];
   };
-  pendingTiles: DavinciCodeTile[];
+  pendingTiles: DavinciCodeTileModel[];
   finishedAt: Date;
 }
 
