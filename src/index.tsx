@@ -1,12 +1,12 @@
 import { App, Providers } from 'app';
+import { declareArrayFunctions } from 'global.d';
 import { initPages } from 'pages';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { declareGlobalArray } from './global.d';
 import './index.css';
 import reportWebVitals from './reportWebVitals';
 
-declareGlobalArray();
+declareArrayFunctions();
 
 initPages();
 

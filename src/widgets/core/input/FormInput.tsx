@@ -9,7 +9,7 @@ import {
 import React from 'react';
 import { FormData } from 'shared';
 
-type IProps<Label extends string> = {
+type Props<Label extends string> = {
   id: string;
   data: FormData<Label, string>;
   onValueChange: (value: string) => void;
@@ -31,7 +31,7 @@ export const FormInput = <Label extends string>({
   isReadOnly = false,
   isDisabled = false,
   children,
-}: IProps<Label>) => {
+}: Props<Label>) => {
   return (
     <FormControl id={id} isInvalid={data.error !== null}>
       <InputGroup>
@@ -40,16 +40,16 @@ export const FormInput = <Label extends string>({
           placeholder={placeholder}
           value={data.value}
           onChange={(e) => onValueChange(e.target.value)}
-          paddingRight='100'
+          paddingRight={100}
           isReadOnly={isReadOnly}
           isDisabled={isDisabled}
         />
-        <InputRightElement width='120'>{children}</InputRightElement>
+        <InputRightElement width={120}>{children}</InputRightElement>
       </InputGroup>
       {!data.error ? (
-        <FormHelperText paddingX='2'>{helperText}</FormHelperText>
+        <FormHelperText paddingX={2}>{helperText}</FormHelperText>
       ) : (
-        <FormErrorMessage paddingX='2'>{data.error}</FormErrorMessage>
+        <FormErrorMessage paddingX={2}>{data.error}</FormErrorMessage>
       )}
     </FormControl>
   );

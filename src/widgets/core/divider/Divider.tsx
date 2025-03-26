@@ -1,16 +1,17 @@
 import { Divider as ChakraDivider, Flex, FlexProps, Text } from '@chakra-ui/react';
 import React from 'react';
+import { Align } from 'shared';
 
-type IProps = FlexProps & {
+type Props = FlexProps & {
   text?: string;
 };
 
-export const Divider: React.FC<IProps> = ({ text, ...props }) => {
+export const Divider: React.FC<Props> = ({ text, ...props }) => {
   return (
-    <Flex align='center' gap={text && '4'} {...props}>
-      <ChakraDivider flex='1' />
+    <Flex align={Align.Center} gap={text && 4} {...props}>
+      <ChakraDivider flex={1} />
       {text && <Text>{text}</Text>}
-      <ChakraDivider flex='1' />
+      <ChakraDivider flex={1} />
     </Flex>
   );
 };

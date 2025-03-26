@@ -1,11 +1,11 @@
 import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons';
 import { Card, CardFooter, CardHeader, CardProps, Flex } from '@chakra-ui/react';
 import { useAuthContext } from 'app';
-import { DavinciCodeTile as tileEntity, User } from 'models';
+import { DavinciCodeTileModel as tileEntity, User } from 'models';
 import React from 'react';
 import { DavinciCodeTile } from 'widgets';
 
-type IProps = CardProps & {
+type Props = CardProps & {
   player: User;
   hands: tileEntity[];
   turn: User;
@@ -14,7 +14,7 @@ type IProps = CardProps & {
   onClickTile: (index: number) => void;
 };
 
-export const DavinciCodeHands: React.FC<IProps> = ({
+export const DavinciCodeHands: React.FC<Props> = ({
   player,
   hands,
   turn,

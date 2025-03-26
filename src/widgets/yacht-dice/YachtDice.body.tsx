@@ -1,5 +1,5 @@
 import { Flex, FlexProps } from '@chakra-ui/react';
-import { User, YachtDiceBoard, YachtDiceUIModel } from 'models';
+import { User, YachtDiceBoard } from 'models';
 import React from 'react';
 import {
   PlayerList,
@@ -11,7 +11,11 @@ import {
 } from 'widgets';
 
 type Props = FlexProps & {
-  yachtDice: YachtDiceUIModel;
+  players: User[];
+  round: number;
+  boards: {
+    [key: string]: YachtDiceBoard;
+  };
   currentBoardPlayer: User;
   kept: number[];
   rolling: boolean;
@@ -25,7 +29,9 @@ type Props = FlexProps & {
 };
 
 export const YachtDiceBody: React.FC<Props> = ({
-  yachtDice,
+  players,
+  round,
+  boards,
   currentBoardPlayer,
   kept,
   rolling,

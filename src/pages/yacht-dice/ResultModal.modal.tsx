@@ -13,12 +13,12 @@ import { User } from 'models';
 import React from 'react';
 import { getOrdinal } from 'shared';
 
-type IProps = {
+type Props = {
   rank: { player: User; score: number }[];
   modal: { isOpen: boolean; onOpen: () => void; onClose: () => void };
 };
 
-export const YachtDiceResultModal: React.FC<IProps> = ({ rank, modal }) => {
+export const YachtDiceResultModal: React.FC<Props> = ({ rank, modal }) => {
   return (
     <Modal
       isOpen={modal.isOpen}

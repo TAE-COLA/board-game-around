@@ -2,7 +2,7 @@ import { Card, CardBody, CardProps, Flex, Text } from '@chakra-ui/react';
 import React from 'react';
 import { Die } from 'widgets';
 
-type IProps = CardProps & {
+type Props = CardProps & {
   dice?: number[];
   name: string;
   score: number;
@@ -10,8 +10,17 @@ type IProps = CardProps & {
   onClick: () => void;
 };
 
-export const YachtDiceHandButton: React.FC<IProps> = ({ dice, name, score, isDisabled, onClick, ...props }) => {
-  const [variant, setVariant] = React.useState<'filled' | 'elevated'>(isDisabled ? 'filled' : 'elevated');
+export const YachtDiceHandButton: React.FC<Props> = ({
+  dice,
+  name,
+  score,
+  isDisabled,
+  onClick,
+  ...props
+}) => {
+  const [variant, setVariant] = React.useState<'filled' | 'elevated'>(
+    isDisabled ? 'filled' : 'elevated'
+  );
 
   return (
     <Card

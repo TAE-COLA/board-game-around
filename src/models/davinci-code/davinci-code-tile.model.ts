@@ -1,29 +1,44 @@
-export class DavinciCodeTile {
-  isWhite: boolean;
-  number: string;
-  isRevealed: boolean;
+import { Colors } from 'shared';
 
-  constructor(isWhite: boolean, number: string, isRevealed: boolean) {
-    this.isWhite = isWhite;
-    this.number = number;
-    this.isRevealed = isRevealed;
-  }
-
-  isSmallerThan(other: DavinciCodeTile): boolean | null {
-    if (this.number === '-' || other.number === '-') return true;
-    return (
-      Number(this.number) < Number(other.number) ||
-      (Number(this.number) === Number(other.number) && other.isWhite)
-    );
-  }
-
-  isBiggerThan(other: DavinciCodeTile): boolean | null {
-    if (this.number === '-' || other.number === '-') return true;
-    return (
-      Number(this.number) > Number(other.number) ||
-      (Number(this.number) === Number(other.number) && this.isWhite)
-    );
-  }
+export enum DavinciCodeTileColor {
+  White = Colors.White,
+  Black = Colors.Black,
 }
 
-export const dummyDavinciCodeTile = new DavinciCodeTile(false, '', false);
+export interface DavinciCodeTileModel {
+  color: DavinciCodeTileColor;
+  value?: number | string;
+  isRevealed: boolean;
+}
+
+/**
+ *
+ * @param left 왼쪽에 배치될 타일
+ * @param right 오른쪽에 배치될 타일
+ * @returns 오름차순으로 잘 배치되었다면 true를 반환합니다.
+ */
+export const compareTile = (left?: DavinciCodeTileModel, right?: DavinciCodeTileModel): boolean => {
+  if (left === undefined || right === undefined) return true;
+
+  if (left.value === '-' || right.value === '-') return true;
+  if (left.value === undefined || right.value === undefined) return false;
+
+  return (
+    left.value < right.value ||
+    (left.value === right.value && left.color == DavinciCodeTileColor.Black)
+  );
+};
+
+export const isJoker = (tile: DavinciCodeTileModel): boolean => {
+  return tile.value === '-';
+};
+
+export const isDummy = (tile: DavinciCodeTileModel): boolean => {
+  return tile.value === undefined;
+};
+
+export const dummyDavinciCodeTile = {
+  color: DavinciCodeTileColor.White,
+  value: undefined,
+  isRevealed: false,
+} satisfies DavinciCodeTileModel;

@@ -1,18 +1,22 @@
 import { BoxProps, SimpleGrid } from '@chakra-ui/react';
 import { Game } from 'models';
 import React from 'react';
-import { GameCard } from 'widgets';
+import { GameCard } from './GameCard';
 
-type IProps = BoxProps & {
+type Props = BoxProps & {
   gameList: Game[];
   onClickGamePlayButton: (game: Game) => void;
 };
 
-export const GameCardGrid: React.FC<IProps> = ({ gameList, onClickGamePlayButton, ...props }) => {
+export const GameCardGrid: React.FC<Props> = ({ gameList, onClickGamePlayButton, ...props }) => {
   return (
-    <SimpleGrid minChildWidth='240px' spacing='40px' {...props}>
+    <SimpleGrid minChildWidth={60} spacing={10} {...props}>
       {gameList.map((game) => (
-        <GameCard key={game.id} game={game} onClickGamePlayButton={() => onClickGamePlayButton(game)} />
+        <GameCard
+          key={game.id}
+          game={game}
+          onClickGamePlayButton={() => onClickGamePlayButton(game)}
+        />
       ))}
     </SimpleGrid>
   );

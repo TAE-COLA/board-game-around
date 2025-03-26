@@ -14,14 +14,14 @@ import {
 } from '@chakra-ui/react';
 import React, { useState } from 'react';
 
-type IProps = {
+type Props = {
   digits: (number | string)[];
   maxDigits: number;
   onConfirm: (number: number) => void;
   modal: { isOpen: boolean; onOpen: () => void; onClose: () => void };
 };
 
-export const NumberModal: React.FC<IProps> = ({ digits, maxDigits, onConfirm, modal }) => {
+export const NumberModal: React.FC<Props> = ({ digits, maxDigits, onConfirm, modal }) => {
   const [num, setNum] = useState<string>('');
   const [remainingPresses, setRemainingPresses] = useState<number>(maxDigits);
 

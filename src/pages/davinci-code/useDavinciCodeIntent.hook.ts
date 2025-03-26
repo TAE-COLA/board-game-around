@@ -1,18 +1,26 @@
 import { useDisclosure } from '@chakra-ui/react';
 import { useAuthContext, useLoungeContext } from 'app';
 import { DavinciCodeApi, LoungeApi, UserApi } from 'features';
+import { DavinciCodePhase } from 'models';
 import { useEffect, useReducer, useState } from 'react';
 import { CommonToast, GameName, launch } from 'shared';
-import * as Intent from './DavinciCode.intent';
+import {
+  createState,
+  Event,
+  reducer,
+  Reduces,
+  SideEffect,
+  SideEffects,
+} from './DavinciCode.intent';
 
 export const useDavinciCodeIntent = () => {
   const auth = useAuthContext();
   const lounge = useLoungeContext();
 
-  const [state, dispatch] = useReducer(Intent.reducer, new Intent.State({}));
+  const [state, dispatch] = useReducer(reducer, createState());
   const [loading, setLoading] = useState(true);
 
-  const [sideEffect, setSideEffect] = useState<Intent.SideEffect>();
+  const [sideEffect, setSideEffect] = useState<SideEffect>();
 
   const resultModal = useDisclosure();
   const drawModal = useDisclosure();
@@ -22,27 +30,27 @@ export const useDavinciCodeIntent = () => {
     resultModal: {
       ...resultModal,
       onClose() {
-        setSideEffect({ type: 'NAVIGATE_TO_MAIN' });
+        setSideEffect({ type: SideEffects.NAVIGATE_TO_MAIN });
         resultModal.onClose();
       },
     },
     drawModal: {
       ...drawModal,
       onClose() {
-        dispatch({ type: 'UPDATE_DRAWABLE_TILES', drawableTiles: 0 });
+        dispatch({ type: Reduces.UPDATE_DRAWABLE_TILES, drawableTiles: 0 });
         drawModal.onClose();
       },
     },
     numberModal,
   };
 
-  const onEvent: Intent.Event = {
+  const onEvent: Event = {
     onClickExitButton: () => {
       launch(setLoading, async () => {
         await LoungeApi.exit(lounge.id, auth.id);
         await DavinciCodeApi.exit(lounge.id, auth.id);
-        setSideEffect({ type: 'SHOW_TOAST', options: CommonToast.EXIT_LOUNGE });
-        setSideEffect({ type: 'NAVIGATE_TO_MAIN' });
+        setSideEffect({ type: SideEffects.SHOW_TOAST, options: CommonToast.EXIT_LOUNGE });
+        setSideEffect({ type: SideEffects.NAVIGATE_TO_MAIN });
       });
     },
     onClickDrawButton: (isWhite) => {
@@ -60,8 +68,8 @@ export const useDavinciCodeIntent = () => {
     if (lounge.loading) return;
 
     if (lounge.game.name !== GameName.DavinciCode.korean) {
-      setSideEffect({ type: 'SHOW_TOAST', options: CommonToast.NO_LOUNGE });
-      setSideEffect({ type: 'NAVIGATE_TO_MAIN' });
+      setSideEffect({ type: SideEffects.SHOW_TOAST, options: CommonToast.NO_LOUNGE });
+      setSideEffect({ type: SideEffects.NAVIGATE_TO_MAIN });
       return;
     }
 
@@ -72,19 +80,19 @@ export const useDavinciCodeIntent = () => {
         Promise.all(game.finishedPlayerIds.map(UserApi.fetchById)),
       ]);
 
-      dispatch({ type: 'UPDATE_PLAYERS', players });
-      dispatch({ type: 'UPDATE_HANDS', hands: game.hands });
-      dispatch({ type: 'UPDATE_TURN', turn });
-      dispatch({ type: 'UPDATE_PHASE', phase: game.phase });
-      dispatch({ type: 'UPDATE_FINISHED_PLAYERS', finishedPlayers });
+      dispatch({ type: Reduces.UPDATE_PLAYERS, players });
+      dispatch({ type: Reduces.UPDATE_HANDS, hands: game.hands });
+      dispatch({ type: Reduces.UPDATE_TURN, turn });
+      dispatch({ type: Reduces.UPDATE_PHASE, phase: game.phase });
+      dispatch({ type: Reduces.UPDATE_FINISHED_PLAYERS, finishedPlayers });
 
-      if (game.turn === auth.id && game.phase !== 'GUESS') {
-        dispatch({ type: 'UPDATE_PENDING_TILES', pendingTiles: game.pendingTiles });
+      if (game.turn === auth.id && game.phase !== DavinciCodePhase.GUESS) {
+        dispatch({ type: Reduces.UPDATE_PENDING_TILES, pendingTiles: game.pendingTiles });
 
-        if (game.phase === 'INITIAL_DRAW')
-          dispatch({ type: 'UPDATE_DRAWABLE_TILES', drawableTiles: 4 });
-        else if (game.phase === 'DRAW')
-          dispatch({ type: 'UPDATE_DRAWABLE_TILES', drawableTiles: 1 });
+        if (game.phase === DavinciCodePhase.INITIAL_DRAW)
+          dispatch({ type: Reduces.UPDATE_DRAWABLE_TILES, drawableTiles: 4 });
+        else if (game.phase === DavinciCodePhase.DRAW)
+          dispatch({ type: Reduces.UPDATE_DRAWABLE_TILES, drawableTiles: 1 });
 
         modal.drawModal.onOpen();
       }

@@ -1,6 +1,15 @@
 import * as db from 'firebase/database';
-import { DAVINCI_CODE, DavinciCode, DavinciCodeTile, FModel, Lounge, LOUNGE } from 'models';
-import { CommonError, initialUpdates, placeholder } from 'shared';
+import {
+  DAVINCI_CODE,
+  DavinciCode,
+  DavinciCodePhase,
+  DavinciCodeTileColor,
+  DavinciCodeTileModel,
+  FModel,
+  Lounge,
+  LOUNGE,
+} from 'models';
+import { CommonError, initialUpdates, Nullable, placeholder } from 'shared';
 import { getRef } from '../firebase.util';
 import { database } from '../firebase_config';
 
@@ -25,25 +34,36 @@ export const start = async (loungeId: string): Promise<void> => {
   const lounge = new FModel<Lounge>(loungeSnapshot).sanitize();
 
   const shuffledPlayerIds = lounge.playerIds.shuffle();
-  const initialHands = shuffledPlayerIds.mapToObject((playerId) => [playerId, [placeholder]]);
+  const initialHands = shuffledPlayerIds.reduce((acc, playerId) => {
+    acc[playerId] = [placeholder];
+    return acc;
+  }, {} as { [key: string]: Nullable<DavinciCodeTileModel>[] });
   const shuffledTiles = {
-    white: Array.from({ length: 13 }, (_, i) => ({
-      isRevealed: false,
-      number: i !== 12 ? `${i}` : '-',
-      isWhite: true,
-    })).shuffle(),
-    black: Array.from({ length: 13 }, (_, i) => ({
-      isRevealed: false,
-      number: i !== 12 ? `${i}` : '-',
-      isWhite: false,
-    })).shuffle(),
+    white: Array.from(
+      { length: 13 },
+      (_, i) =>
+        ({
+          color: DavinciCodeTileColor.White,
+          value: i !== 12 ? i : '-',
+          isRevealed: false,
+        } satisfies DavinciCodeTileModel)
+    ).shuffle(),
+    black: Array.from(
+      { length: 13 },
+      (_, i) =>
+        ({
+          color: DavinciCodeTileColor.Black,
+          value: i !== 12 ? i : '-',
+          isRevealed: false,
+        } satisfies DavinciCodeTileModel)
+    ).shuffle(),
   };
 
   const davinciCode = {
     playerIds: shuffledPlayerIds,
     hands: initialHands,
     turn: shuffledPlayerIds[0],
-    phase: 'INITIAL_DRAW',
+    phase: DavinciCodePhase.INITIAL_DRAW,
     finishedPlayerIds: [placeholder],
     remainingTiles: shuffledTiles,
     pendingTiles: [placeholder],
@@ -156,7 +176,7 @@ export const drawTile = async (loungeId: string, isWhite: boolean): Promise<void
 export const updateHand = async (
   loungeId: string,
   playerId: string,
-  hand: DavinciCodeTile[],
+  hand: DavinciCodeTileModel[],
   clearPendingTiles: boolean
 ): Promise<void> => {
   const davinciCodeSnapshot = await getRef(davinciCodeReference(loungeId), () => {
@@ -171,18 +191,20 @@ export const updateHand = async (
   if (clearPendingTiles) {
     updates[`/${DAVINCI_CODE.reference}/${loungeId}/${DAVINCI_CODE.pendingTiles}`] = [placeholder];
 
-    if (davinciCode.phase === 'INITIAL_DRAW') {
+    if (davinciCode.phase === DavinciCodePhase.INITIAL_DRAW) {
       const playerIds = davinciCode.playerIds;
       const nextPlayerId = playerIds[(playerIds.indexOf(playerId) + 1) % playerIds.length];
       const nextPlayersHand = davinciCode.hands[nextPlayerId];
 
       if (nextPlayersHand.length !== 0) {
-        updates[`/${DAVINCI_CODE.reference}/${loungeId}/${DAVINCI_CODE.phase}`] = 'DRAW';
+        updates[`/${DAVINCI_CODE.reference}/${loungeId}/${DAVINCI_CODE.phase}`] =
+          DavinciCodePhase.DRAW;
       }
 
       updates[`/${DAVINCI_CODE.reference}/${loungeId}/${DAVINCI_CODE.turn}`] = nextPlayerId;
     } else {
-      updates[`/${DAVINCI_CODE.reference}/${loungeId}/${DAVINCI_CODE.phase}`] = 'GUESS';
+      updates[`/${DAVINCI_CODE.reference}/${loungeId}/${DAVINCI_CODE.phase}`] =
+        DavinciCodePhase.GUESS;
     }
   }
 

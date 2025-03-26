@@ -1,7 +1,7 @@
 import { Button, Flex, FlexProps, FormControl, FormLabel, Input } from '@chakra-ui/react';
 import React, { KeyboardEvent } from 'react';
 
-type IProps = FlexProps & {
+type Props = FlexProps & {
   loading: boolean;
   email: string;
   password: string;
@@ -10,7 +10,7 @@ type IProps = FlexProps & {
   onClickLoginButton: () => void;
 };
 
-export const LoginFields: React.FC<IProps> = ({
+export const LoginFields: React.FC<Props> = ({
   loading,
   email,
   password,

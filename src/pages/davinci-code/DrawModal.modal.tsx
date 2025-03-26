@@ -11,20 +11,21 @@ import {
   Text,
 } from '@chakra-ui/react';
 import { useAuthContext } from 'app';
-import { DavinciCodeTile as tileEntity, User } from 'models';
+import { compareTile, DavinciCodeTileModel, dummyDavinciCodeTile, User } from 'models';
 import React, { useEffect } from 'react';
+import { Align, BorderRadius, BorderStyle, Colors, Direction, Overflow, Size } from 'shared';
 import { DavinciCodeTile } from 'widgets';
 
-type IProps = {
-  hand: tileEntity[];
+type Props = {
+  hand: DavinciCodeTileModel[];
   drawableTiles: number;
-  pendingTiles: tileEntity[];
+  pendingTiles: DavinciCodeTileModel[];
   onClickDrawButton: (isWhite: boolean) => void;
-  onSubmitHand: (hand: tileEntity[]) => void;
+  onSubmitHand: (hand: DavinciCodeTileModel[]) => void;
   modal: { isOpen: boolean; onOpen: () => void; onClose: () => void };
 };
 
-export const DavinciCodeDrawModal: React.FC<IProps> = ({
+export const DavinciCodeDrawModal: React.FC<Props> = ({
   hand,
   drawableTiles,
   pendingTiles,
@@ -36,49 +37,32 @@ export const DavinciCodeDrawModal: React.FC<IProps> = ({
 
   const [step, setStep] = React.useState<number>(0);
   const [selectedTileIndex, setSelectedTileIndex] = React.useState<number | null>(null);
-  const [myHands, setMyHands] = React.useState<tileEntity[]>(hand);
+  const [myHands, setMyHands] = React.useState<DavinciCodeTileModel[]>(hand);
+  const [placedTileIndexes, setPlacedTileIndexes] = React.useState<number[]>([]);
 
   const handleSelectTile = (index: number) => {
     if (step === 0) return;
 
+    if (placedTileIndexes.includes(index)) return;
+
     if (selectedTileIndex === index) {
       setSelectedTileIndex(null);
 
-      const newHands = myHands.filter((tile) => tile.number !== '');
+      const newHands = myHands.remove(dummyDavinciCodeTile);
       setMyHands(newHands);
     } else {
       setSelectedTileIndex(index);
 
-      let newHands = myHands.filter((tile) => tile.number !== '');
+      let newHands = myHands.remove(dummyDavinciCodeTile);
       const selectedTile = pendingTiles[index];
-
-      const dummyTile = {
-        isRevealed: false,
-        number: '',
-        isWhite: false,
-      } as tileEntity;
-
-      if (selectedTile.number === '-') {
-        newHands = newHands.reduce((acc, tile) => {
-          acc.push(dummyTile, tile);
-          return acc;
-        }, [] as tileEntity[]);
-        newHands.push(dummyTile);
-      } else {
-        for (let i = 0; i <= newHands.length; i++) {
-          if (
-            i === newHands.length ||
-            (newHands[i].number !== '-' &&
-              (parseInt(newHands[i].number) > parseInt(selectedTile.number) ||
-                (parseInt(newHands[i].number) === parseInt(selectedTile.number) &&
-                  newHands[i].isWhite &&
-                  !selectedTile.isWhite)))
-          ) {
-            newHands.splice(i, 0, dummyTile);
-            break;
-          }
-        }
-      }
+      newHands = newHands.insertBy(
+        (prev, next, min, max) => {
+          console.log(prev, next, min, max);
+          return compareTile(prev, selectedTile) && compareTile(selectedTile, next);
+        },
+        dummyDavinciCodeTile,
+        compareTile
+      );
 
       setMyHands(newHands);
     }
@@ -91,10 +75,11 @@ export const DavinciCodeDrawModal: React.FC<IProps> = ({
     const selectedTile = pendingTiles[selectedTileIndex];
 
     newHands[index] = selectedTile;
-    newHands = newHands.filter((tile) => tile.number !== '');
+    newHands = newHands.remove(dummyDavinciCodeTile);
 
-    setMyHands(newHands);
+    setPlacedTileIndexes((prev) => [...prev, selectedTileIndex]);
     setSelectedTileIndex(null);
+    setMyHands(newHands);
   };
 
   const handleSubmitButton = () => {
@@ -110,16 +95,16 @@ export const DavinciCodeDrawModal: React.FC<IProps> = ({
       ? {
           padding: 2,
           border: 2,
-          borderRadius: 'lg',
-          borderStyle: 'dashed',
-          borderColor: 'red.300',
+          borderRadius: BorderRadius.Lg,
+          borderStyle: BorderStyle.Dashed,
+          borderColor: Colors.Error,
         }
       : {
           padding: 2,
           border: 2,
-          borderRadius: 'lg',
-          borderStyle: 'dashed',
-          borderColor: 'gray.300',
+          borderRadius: BorderRadius.Lg,
+          borderStyle: BorderStyle.Dashed,
+          borderColor: Colors.Secondary300,
         };
 
   useEffect(() => {
@@ -132,49 +117,46 @@ export const DavinciCodeDrawModal: React.FC<IProps> = ({
       onClose={modal.onClose}
       isCentered
       closeOnOverlayClick={false}
-      size='xl'
+      size={Size.Xl}
     >
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>{step === 0 ? '타일을 뽑아주세요.' : '타일을 배치해주세요.'}</ModalHeader>
         <ModalBody>
-          <Flex direction='column' gap={4}>
+          <Flex direction={Direction.Column} gap={4}>
             <Flex gap={4}>
               {Array.from({ length: drawableTiles }).map((_, index) => (
                 <Box
                   key={index}
                   onClick={() => handleSelectTile(index)}
+                  opacity={placedTileIndexes.includes(index) ? 0.5 : 1}
                   {...boxProps(selectedTileIndex === index)}
                 >
                   {pendingTiles[index] ? (
                     <DavinciCodeTile
                       player={{ id: authId, name: authName } as User}
                       tile={pendingTiles[index]}
-                      size={{ width: '54px', height: '76px' }}
-                      onClick={() => {}}
                     />
                   ) : (
-                    <Box width='54px' height='72px' />
+                    <Box width={54} height={76} />
                   )}
                 </Box>
               ))}
             </Flex>
             {step === 1 && (
-              <Flex direction='column' gap={4}>
+              <Flex direction={Direction.Column} gap={4}>
                 <Text>내 타일</Text>
-                <Flex align='center' gap={4} overflowX='auto'>
+                <Flex align={Align.Center} gap={4} overflowX={Overflow.Auto}>
                   {myHands.map((tile, index) =>
-                    tile.number === '' ? (
+                    tile.value === undefined ? (
                       <Box key={index} onClick={() => handlePlaceTile(index)} {...boxProps(false)}>
-                        <Box key={index} width='54px' height='72px' />
+                        <Box key={index} width={54} height={76} />
                       </Box>
                     ) : (
                       <DavinciCodeTile
                         key={index}
                         player={{ id: authId, name: authName } as User}
                         tile={tile}
-                        onClick={() => {}}
-                        size={{ width: '54px', height: '76px' }}
                       />
                     )
                   )}
