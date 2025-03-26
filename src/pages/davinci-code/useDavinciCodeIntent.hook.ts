@@ -1,6 +1,7 @@
 import { useDisclosure } from '@chakra-ui/react';
 import { useAuthContext, useLoungeContext } from 'app';
 import { DavinciCodeApi, LoungeApi, UserApi } from 'features';
+import { DavinciCodePhase } from 'models';
 import { useEffect, useReducer, useState } from 'react';
 import { CommonToast, GameName, launch } from 'shared';
 import {
@@ -85,12 +86,12 @@ export const useDavinciCodeIntent = () => {
       dispatch({ type: Reduces.UPDATE_PHASE, phase: game.phase });
       dispatch({ type: Reduces.UPDATE_FINISHED_PLAYERS, finishedPlayers });
 
-      if (game.turn === auth.id && game.phase !== 'GUESS') {
+      if (game.turn === auth.id && game.phase !== DavinciCodePhase.GUESS) {
         dispatch({ type: Reduces.UPDATE_PENDING_TILES, pendingTiles: game.pendingTiles });
 
-        if (game.phase === 'INITIAL_DRAW')
+        if (game.phase === DavinciCodePhase.INITIAL_DRAW)
           dispatch({ type: Reduces.UPDATE_DRAWABLE_TILES, drawableTiles: 4 });
-        else if (game.phase === 'DRAW')
+        else if (game.phase === DavinciCodePhase.DRAW)
           dispatch({ type: Reduces.UPDATE_DRAWABLE_TILES, drawableTiles: 1 });
 
         modal.drawModal.onOpen();

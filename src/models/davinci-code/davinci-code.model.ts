@@ -7,7 +7,7 @@ export interface DavinciCode {
     [key: string]: DavinciCodeTileModel[];
   };
   turn: string;
-  phase: 'INITIAL_DRAW' | 'DRAW' | 'GUESS';
+  phase: DavinciCodePhase;
   finishedPlayerIds: string[];
   remainingTiles: {
     white: DavinciCodeTileModel[];
@@ -15,6 +15,12 @@ export interface DavinciCode {
   };
   pendingTiles: DavinciCodeTileModel[];
   finishedAt: Date;
+}
+
+export enum DavinciCodePhase {
+  INITIAL_DRAW = 'INITIAL_DRAW',
+  DRAW = 'DRAW',
+  GUESS = 'GUESS',
 }
 
 export const DAVINCI_CODE = {

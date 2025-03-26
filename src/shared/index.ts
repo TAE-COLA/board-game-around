@@ -5,7 +5,6 @@ export * from './generate-code';
 export * from './get-ordinal';
 export * from './launch';
 export * from './placeholder';
-export * from './shuffle';
 export * from './string-resources';
 export * from './toasts';
 export * from './updates';

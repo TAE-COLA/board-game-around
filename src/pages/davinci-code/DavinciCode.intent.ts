@@ -1,11 +1,11 @@
-import { DavinciCodeTileModel, User } from 'models';
+import { DavinciCodePhase, DavinciCodeTileModel, User } from 'models';
 import { createDummy, ToastOptions } from 'shared';
 
 export type State = {
   players: User[];
   hands: { [key: string]: DavinciCodeTileModel[] };
   turn: User;
-  phase: 'INITIAL_DRAW' | 'DRAW' | 'GUESS';
+  phase: DavinciCodePhase;
   finishedPlayers: User[];
   pendingTiles: DavinciCodeTileModel[];
   drawableTiles: number;
@@ -15,7 +15,7 @@ export const createState = (partial?: Partial<State>): State => ({
   players: [],
   hands: {},
   turn: createDummy<User>(),
-  phase: 'DRAW',
+  phase: DavinciCodePhase.DRAW,
   finishedPlayers: [],
   pendingTiles: [],
   drawableTiles: 0,
@@ -43,7 +43,7 @@ type Reduce =
   | { type: Reduces.UPDATE_PLAYERS; players: User[] }
   | { type: Reduces.UPDATE_HANDS; hands: { [key: string]: DavinciCodeTileModel[] } }
   | { type: Reduces.UPDATE_TURN; turn: User }
-  | { type: Reduces.UPDATE_PHASE; phase: 'INITIAL_DRAW' | 'DRAW' | 'GUESS' }
+  | { type: Reduces.UPDATE_PHASE; phase: DavinciCodePhase }
   | { type: Reduces.UPDATE_FINISHED_PLAYERS; finishedPlayers: User[] }
   | { type: Reduces.UPDATE_DRAWABLE_TILES; drawableTiles: number }
   | { type: Reduces.UPDATE_PENDING_TILES; pendingTiles: DavinciCodeTileModel[] };

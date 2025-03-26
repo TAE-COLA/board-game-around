@@ -8,7 +8,7 @@ import {
   YachtDice,
   YachtDiceBoard,
 } from 'models';
-import { CommonError, initialUpdates, placeholder, shuffle } from 'shared';
+import { CommonError, initialUpdates, placeholder } from 'shared';
 import { getRef } from '../firebase.util';
 import { database } from '../firebase_config';
 
@@ -25,7 +25,7 @@ export const start = async (loungeId: string): Promise<void> => {
   });
   const lounge = new FModel<Lounge>(loungeSnapshot).sanitize();
 
-  const shuffledPlayerIds = shuffle(lounge.playerIds);
+  const shuffledPlayerIds = lounge.playerIds.shuffle();
   const initialYachtDiceBoard: YachtDiceBoard = YACHT_DICE_BOARD.reduce((acc, key) => {
     acc[key] = { value: 0, marked: false };
     return acc;
