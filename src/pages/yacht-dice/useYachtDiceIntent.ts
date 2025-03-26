@@ -37,22 +37,25 @@ export function useYachtDiceIntent() {
       });
     },
     onClickPrevBoardButton: () => {
-      const currentIndex = state.players.findIndex(
+      const currentIndex = state.yachtDice.players.findIndex(
         (player) => player.id === state.currentBoardPlayer.id
       );
       const prevBoardPlayer =
-        state.players[(currentIndex - 1 + state.players.length) % state.players.length];
+        state.yachtDice.players[
+          (currentIndex - 1 + state.yachtDice.players.length) % state.yachtDice.players.length
+        ];
       dispatch({ type: 'UPDATE_CURRENT_BOARD_PLAYER', currentBoardPlayer: prevBoardPlayer });
     },
     onClickNextBoardButton: () => {
-      const nextIndex = state.players.findIndex(
+      const nextIndex = state.yachtDice.players.findIndex(
         (player) => player.id === state.currentBoardPlayer.id
       );
-      const nextBoardPlayer = state.players[(nextIndex + 1) % state.players.length];
+      const nextBoardPlayer =
+        state.yachtDice.players[(nextIndex + 1) % state.yachtDice.players.length];
       dispatch({ type: 'UPDATE_CURRENT_BOARD_PLAYER', currentBoardPlayer: nextBoardPlayer });
     },
     onClickRollButton: () => {
-      if (auth.id !== state.turn.id)
+      if (auth.id !== state.yachtDice.turn.id)
         setSideEffect({ type: 'SHOW_TOAST', options: CommonToast.NOT_MY_TURN });
       else {
         dispatch({ type: 'SAVE_KEPT' });
@@ -71,13 +74,13 @@ export function useYachtDiceIntent() {
       });
     },
     onAddDiceToKeep: (index: number) => {
-      YachtDiceApi.addKeep(lounge.id, state.dice[index]).catch((error) => {
+      YachtDiceApi.addKeep(lounge.id, index).catch((error) => {
         if (error.code === CommonError.PERMISSION_DENIED)
           setSideEffect({ type: 'SHOW_TOAST', options: CommonToast.NOT_MY_TURN });
       });
     },
     onRemoveDiceToKeep: (index: number) => {
-      YachtDiceApi.removeKeep(lounge.id, state.keep[index]).catch((error) => {
+      YachtDiceApi.removeKeep(lounge.id, index).catch((error) => {
         if (error.code === CommonError.PERMISSION_DENIED)
           setSideEffect({ type: 'SHOW_TOAST', options: CommonToast.NOT_MY_TURN });
       });
@@ -105,20 +108,14 @@ export function useYachtDiceIntent() {
         UserApi.fetchById(game.turn),
       ]);
 
-      dispatch({ type: 'UPDATE_PLAYERS', players });
-      dispatch({ type: 'UPDATE_ROUND', round: game.round });
-      dispatch({ type: 'UPDATE_BOARDS', boards: game.boards });
-      dispatch({ type: 'UPDATE_CURRENT_BOARD_PLAYER', currentBoardPlayer: players[0] });
-      dispatch({ type: 'UPDATE_TURN', turn });
-      dispatch({ type: 'UPDATE_DICE', dice: game.dice });
-      dispatch({ type: 'UPDATE_KEEP', keep: game.keep ?? [] });
-      dispatch({ type: 'UPDATE_ROLLS', rolls: game.rolls });
+      dispatch({ type: 'UPDATE_YACHT_DICE', yachtDice: { ...game, players, turn } });
+      dispatch({ type: 'UPDATE_CURRENT_BOARD_PLAYER', currentBoardPlayer: players.first() });
 
       if (game.rolls === 0) dispatch({ type: 'SAVE_KEPT' });
       else if (game.rolls === 3) dispatch({ type: 'CLEAR_KEPT' });
 
       if (game.turn === auth.id && game.rolls === 3)
-        setSideEffect({ type: 'SHOW_TOAST', options: CommonToast.NOT_MY_TURN });
+        setSideEffect({ type: 'SHOW_TOAST', options: CommonToast.MY_TURN });
 
       if (game.finishedAt) modal.resultModal.onOpen();
 

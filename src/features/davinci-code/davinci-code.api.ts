@@ -1,6 +1,6 @@
 import * as db from 'firebase/database';
 import { DAVINCI_CODE, DavinciCode, DavinciCodeTile, FModel, Lounge, LOUNGE } from 'models';
-import { CommonError, initialUpdates, Nullable, placeholder, shuffle } from 'shared';
+import { CommonError, initialUpdates, placeholder } from 'shared';
 import { getRef } from '../firebase.util';
 import { database } from '../firebase_config';
 
@@ -24,26 +24,19 @@ export const start = async (loungeId: string): Promise<void> => {
   });
   const lounge = new FModel<Lounge>(loungeSnapshot).sanitize();
 
-  const shuffledPlayerIds = shuffle(lounge.playerIds);
-  const initialHands = shuffledPlayerIds.reduce((acc, playerId) => {
-    acc[playerId] = [placeholder];
-    return acc;
-  }, {} as { [key: string]: Nullable<DavinciCodeTile>[] });
+  const shuffledPlayerIds = lounge.playerIds.shuffle();
+  const initialHands = shuffledPlayerIds.mapToObject((playerId) => [playerId, [placeholder]]);
   const shuffledTiles = {
-    white: shuffle(
-      Array.from({ length: 13 }, (_, i) => ({
-        isRevealed: false,
-        number: i !== 12 ? `${i}` : '-',
-        isWhite: true,
-      }))
-    ),
-    black: shuffle(
-      Array.from({ length: 13 }, (_, i) => ({
-        isRevealed: false,
-        number: i !== 12 ? `${i}` : '-',
-        isWhite: false,
-      }))
-    ),
+    white: Array.from({ length: 13 }, (_, i) => ({
+      isRevealed: false,
+      number: i !== 12 ? `${i}` : '-',
+      isWhite: true,
+    })).shuffle(),
+    black: Array.from({ length: 13 }, (_, i) => ({
+      isRevealed: false,
+      number: i !== 12 ? `${i}` : '-',
+      isWhite: false,
+    })).shuffle(),
   };
 
   const davinciCode = {

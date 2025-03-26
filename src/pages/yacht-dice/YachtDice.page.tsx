@@ -24,15 +24,9 @@ export const YachtDicePage: React.FC<PageProps> = ({ navigate, toast }) => {
       <Flex direction='column' width='100%' height='100%' gap={8}>
         <YachtDiceHeader onClickExitButton={onEvent.onClickExitButton} />
         <YachtDiceBody
-          players={state.players}
-          round={state.round}
-          boards={state.boards}
+          yachtDice={state.yachtDice}
           currentBoardPlayer={state.currentBoardPlayer}
-          turn={state.turn}
-          dice={state.dice}
           kept={state.kept}
-          keep={state.keep}
-          rolls={state.rolls}
           rolling={state.rolling}
           onClickPrevBoardButton={onEvent.onClickPrevBoardButton}
           onClickNextBoardButton={onEvent.onClickNextBoardButton}
@@ -45,7 +39,7 @@ export const YachtDicePage: React.FC<PageProps> = ({ navigate, toast }) => {
         />
       </Flex>
       <YachtDiceResultModal
-        rank={state.players.map((player) => ({ player, score: 0 }))}
+        rank={state.yachtDice.players.map((player) => ({ player, score: 0 }))}
         modal={modal.resultModal}
       />
     </Page>
