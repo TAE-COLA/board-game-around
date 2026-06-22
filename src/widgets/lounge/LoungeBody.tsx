@@ -1,6 +1,7 @@
 import { Button, Flex, FlexProps } from '@chakra-ui/react';
 import { useAuthContext, useLoungeContext } from 'app';
 import React from 'react';
+import { GameName } from 'shared';
 import { PlayerList, RuleBox } from 'widgets';
 
 type IProps = FlexProps & {
@@ -10,6 +11,10 @@ type IProps = FlexProps & {
 export const LoungeBody: React.FC<IProps> = ({ onClickStartButton, ...props }) => {
   const auth = useAuthContext();
   const lounge = useLoungeContext();
+  const isOwner = auth.id === lounge.owner.id;
+  const canStartTheMind =
+    lounge.game.name !== GameName.TheMind.korean ||
+    (lounge.players.length >= 2 && lounge.players.length <= 4);
 
   return (
     <Flex width='100%' gap='8' {...props}>
@@ -20,7 +25,7 @@ export const LoungeBody: React.FC<IProps> = ({ onClickStartButton, ...props }) =
           onClick={onClickStartButton}
           size='lg'
           colorScheme='pink'
-          isDisabled={auth.id !== lounge.owner.id}
+          isDisabled={!isOwner || !canStartTheMind}
         >
           시작하기
         </Button>

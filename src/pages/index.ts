@@ -4,6 +4,7 @@ import { LoginPage } from './login';
 import { LoungePage } from './lounge';
 import { MainPage } from './main';
 import { RegisterPage } from './register';
+import { TheMindPage } from './the-mind';
 import { YachtDicePage } from './yacht-dice';
 
 export const initPages = () => {
@@ -12,5 +13,6 @@ export const initPages = () => {
   pageRegistry.LoungePage = LoungePage;
   pageRegistry.MainPage = MainPage;
   pageRegistry.RegisterPage = RegisterPage;
+  pageRegistry.TheMindPage = TheMindPage;
   pageRegistry.YachtDicePage = YachtDicePage;
 };

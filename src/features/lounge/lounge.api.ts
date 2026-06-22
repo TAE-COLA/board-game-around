@@ -3,11 +3,35 @@ import { FModel, LOUNGE, Lounge, USER_LOUNGE, UserLounge } from 'models';
 import { CommonError, generateCode, initialUpdates, placeholder } from 'shared';
 import { getRef } from '../firebase.util';
 import { database } from '../firebase_config';
+import { fetchById as fetchGameById } from '../game/game.api';
 
 const reference = db.ref(database);
 
 const loungeReference = db.child(reference, LOUNGE.reference);
 const userLoungeReference = db.child(reference, USER_LOUNGE.reference);
+
+const findFirstChild = (snapshot: db.DataSnapshot): db.DataSnapshot => {
+  let firstChild: db.DataSnapshot | null = null;
+
+  snapshot.forEach((child) => {
+    firstChild = child;
+    return true;
+  });
+
+  if (!firstChild) throw new Error(CommonError.NO_LOUNGE);
+  return firstChild;
+};
+
+const isSameGame = async (gameId: string, loungeGameId: string) => {
+  if (gameId === loungeGameId) return true;
+
+  const [selectedGame, loungeGame] = await Promise.all([
+    fetchGameById(gameId),
+    fetchGameById(loungeGameId),
+  ]);
+
+  return selectedGame.name === loungeGame.name;
+};
 
 /**
  *
@@ -75,12 +99,21 @@ export const join = async (
   const loungeSnapshot = await getRef(query, () => {
     throw new Error(CommonError.NO_LOUNGE);
   });
-  const lounge = new FModel<Lounge>(loungeSnapshot).sanitize();
+  const lounge = new FModel<Lounge>(findFirstChild(loungeSnapshot)).sanitize();
 
-  if (gameId !== lounge.gameId) throw new Error(CommonError.NOT_THIS_GAME);
+  if (!(await isSameGame(gameId, lounge.gameId))) throw new Error(CommonError.NOT_THIS_GAME);
+  if (lounge.status !== 'WAITING') throw new Error(CommonError.NO_LOUNGE);
+
+  const playerIds = lounge.playerIds.includes(userId)
+    ? lounge.playerIds
+    : [...lounge.playerIds, userId];
+  const selectedGame = await fetchGameById(gameId);
+  if (selectedGame.name === 'The Mind' && playerIds.length > 4) {
+    throw new Error(CommonError.NO_LOUNGE);
+  }
 
   const updates = {
-    [`/${LOUNGE.reference}/${lounge.id}/${LOUNGE.playerIds}`]: [...lounge.playerIds, userId],
+    [`/${LOUNGE.reference}/${lounge.id}/${LOUNGE.playerIds}`]: playerIds,
     [`/${USER_LOUNGE.reference}/${userId}/${USER_LOUNGE.loungeId}`]: lounge.id,
   };
 

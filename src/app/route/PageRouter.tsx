@@ -39,6 +39,10 @@ export const PageRouter: React.FC = () => {
             path={Paths.davinciCode}
             element={<pageRegistry.DavinciCodePage navigate={navigate} toast={toast} />}
           />
+          <Route
+            path={Paths.theMind}
+            element={<pageRegistry.TheMindPage navigate={navigate} toast={toast} />}
+          />
         </Route>
       </Route>
       <Route path={Paths.notFound} element={<div>404 Not Found</div>} />
@@ -54,5 +58,6 @@ export const Paths = {
   lounge: '/lounge',
   yachtDice: GameName.YatchDice.path,
   davinciCode: GameName.DavinciCode.path,
+  theMind: GameName.TheMind.path,
   notFound: '*',
 };

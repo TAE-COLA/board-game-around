@@ -50,7 +50,7 @@ export const useMainIntent = () => {
       launch(setLoading, async () => {
         try {
           if (state.selectedGame) {
-            await LoungeApi.join(code, state.selectedGame.id, auth.id);
+            await LoungeApi.join(code.trim(), state.selectedGame.id, auth.id);
             setSideEffect({ type: 'NAVIGATE_TO_LOUNGE' });
           }
         } catch {

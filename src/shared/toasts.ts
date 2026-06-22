@@ -41,6 +41,17 @@ export class CommonToast {
     2000
   );
 
+  static readonly COPY_LOUNGE_CODE_FAILED = new ToastOptions(
+    '게임방 코드 복사에 실패했습니다.',
+    'error',
+    2000
+  );
+  static readonly FIREBASE_PERMISSION_DENIED = new ToastOptions(
+    'Firebase 데이터베이스 권한이 없습니다. Realtime Database 규칙을 확인해주세요.',
+    'error',
+    3000
+  );
+
   // Game
   static readonly MY_TURN = new ToastOptions('내 차례입니다.', 'info', 2000);
   static readonly NOT_MY_TURN = new ToastOptions('내 차례가 아닙니다.', 'error', 2000);
