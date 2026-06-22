@@ -10,6 +10,7 @@ type SideEffect =
   | { type: 'POP_BACK_STACK' }
   | { type: 'NAVIGATE_TO_YACHT_DICE' }
   | { type: 'NAVIGATE_TO_DAVINCI_CODE' }
+  | { type: 'NAVIGATE_TO_THE_MIND' }
   | { type: 'COPY_CLIPBOARD'; value: string }
   | { type: 'SHOW_TOAST'; options: ToastOptions }
   | undefined;

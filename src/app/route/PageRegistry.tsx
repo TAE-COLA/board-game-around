@@ -15,6 +15,7 @@ export interface PageRegistry {
   LoungePage: React.FC<PageProps>;
   YachtDicePage: React.FC<PageProps>;
   DavinciCodePage: React.FC<PageProps>;
+  TheMindPage: React.FC<PageProps>;
 }
 
 export const createPageRegistry = (): PageRegistry => {

@@ -1,0 +1,28 @@
+{
+  "rules": {
+    ".read": "auth != null",
+    "Lounge": {
+      ".read": "auth != null",
+      ".write": "auth != null",
+      ".indexOn": ["code"]
+    },
+    "User-lounge": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    },
+    "YachtDice": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "DavinciCode": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "TheMind": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    }
+  }
+}

@@ -1,3 +1,4 @@
+export * from './animation';
 export * from './card';
 export * from './dice';
 export * from './divider';
