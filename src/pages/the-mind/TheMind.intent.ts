@@ -11,6 +11,7 @@ class State {
   playedCards: number[] = [];
   discardedCards: number[] = [];
   readyPlayerIds: string[] = [];
+  starVotePlayerIds: string[] = [];
   phase: TheMindPhase = 'READY';
 
   constructor(state: Partial<State>) {
@@ -20,6 +21,11 @@ class State {
 
 type Event = {
   onClickExitButton: () => void;
+  onClickReadyButton: () => void;
+  onClickCard: (card: number) => void;
+  onClickStarButton: () => void;
+  onClickCancelStarVoteButton: () => void;
+  onClickNextLevelButton: () => void;
 };
 
 type Reduce =
@@ -37,10 +43,11 @@ const handleReduce = (state: State, reduce: Reduce): State => {
         maxLevel: reduce.game.maxLevel,
         lives: reduce.game.lives,
         stars: reduce.game.stars,
-        hands: reduce.game.hands,
+        hands: reduce.game.hands ?? {},
         playedCards: reduce.game.playedCards ?? [],
         discardedCards: reduce.game.discardedCards ?? [],
         readyPlayerIds: reduce.game.readyPlayerIds ?? [],
+        starVotePlayerIds: reduce.game.starVotePlayerIds ?? [],
         phase: reduce.game.phase,
       });
   }

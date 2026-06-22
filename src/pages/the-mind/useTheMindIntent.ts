@@ -21,6 +21,21 @@ export const useTheMindIntent = () => {
         setSideEffect({ type: 'NAVIGATE_TO_MAIN' });
       });
     },
+    onClickReadyButton: () => {
+      TheMindApi.ready(lounge.id, auth.id);
+    },
+    onClickCard: (card) => {
+      TheMindApi.playCard(lounge.id, auth.id, card);
+    },
+    onClickStarButton: () => {
+      TheMindApi.voteStar(lounge.id, auth.id);
+    },
+    onClickCancelStarVoteButton: () => {
+      TheMindApi.cancelStarVote(lounge.id);
+    },
+    onClickNextLevelButton: () => {
+      TheMindApi.nextLevel(lounge.id);
+    },
   };
 
   useEffect(() => {
