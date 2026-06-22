@@ -22,14 +22,20 @@ import {
   Text,
 } from '@chakra-ui/react';
 import { PageProps, Paths, useAuthContext } from 'app';
+import { AnimatePresence } from 'framer-motion';
 import React, { useEffect, useState } from 'react';
-import { Header, Page } from 'widgets';
+import { AnimatedEffect, MotionEffect, Header, MotionBox, Page } from 'widgets';
 import { useTheMindIntent } from './useTheMindIntent';
 
 const CARD_TIMER_SECONDS = 30;
 const DANGER_SECONDS = 10;
-const EMOJI_VISIBLE_MS = 5000;
+const EMOJI_VISIBLE_MS = 3000;
 const EMOJIS = ['🙂‍↕️', '🙂‍↔️', '🥱'];
+const EMOJI_EFFECTS: Record<string, MotionEffect> = {
+  '🙂‍↕️': 'nudge-y',
+  '🙂‍↔️': 'nudge-x',
+  '🥱': 'balloon',
+};
 
 const phaseLabel = {
   READY: '준비',
@@ -45,6 +51,18 @@ const getRewardLabel = (level: number) => {
   if ([2, 5, 8].includes(level)) return '클리어 보상: 스타 +1';
   if ([3, 6, 9].includes(level)) return '클리어 보상: 라이프 +1';
   return '클리어 보상 없음';
+};
+
+const dangerShake = {
+  x: [0, -3, 3, -2, 2, 0],
+  transition: { duration: 0.28, repeat: Infinity, repeatDelay: 0.7 },
+};
+
+const popIn = {
+  initial: { opacity: 0, scale: 0.72, y: 10 },
+  animate: { opacity: 1, scale: 1, y: 0 },
+  exit: { opacity: 0, scale: 0.84, y: -8 },
+  transition: { type: 'spring', stiffness: 520, damping: 24 },
 };
 
 export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
@@ -245,12 +263,13 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
           </Text>
         )}
         {state.phase === 'PLAYING' && (
-          <Box
+          <MotionBox
             padding='4'
             background={isTimerDanger ? 'red.50' : 'gray.100'}
             border='1px solid'
             borderColor={isTimerDanger ? 'red.300' : 'gray.200'}
             borderRadius='md'
+            animate={isTimerDanger ? dangerShake : { x: 0 }}
           >
             <Flex justify='space-between' align='center' gap={4} marginBottom={3}>
               <Text fontWeight='bold' color={isTimerDanger ? 'red.600' : 'gray.700'}>
@@ -282,7 +301,7 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
                   : '누군가 카드를 낼 때마다 30초 타이머가 다시 시작됩니다.'
                 : '누군가 첫 카드를 내면 30초 타이머가 시작됩니다.'}
             </Text>
-          </Box>
+          </MotionBox>
         )}
         {state.phase === 'LEVEL_COMPLETE' && (
           <Text color='green.600'>레벨 {state.level}을 완료했습니다.</Text>
@@ -299,67 +318,80 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
               {state.players.map((player) => (
                 <Flex
                   key={player.id}
-                  direction='column'
-                  gap={2}
+                  align='center'
+                  justify='space-between'
+                  gap={3}
                   padding='4'
                   background='gray.100'
                   borderRadius='md'
+                  minHeight='84px'
                 >
-                  <Flex justify='space-between' align='center' gap={2}>
-                    <Flex align='center' gap={2} minWidth={0}>
+                  <Flex direction='column' gap={1} minWidth={0} flex='1'>
+                    <Flex align='center' gap={2} minHeight='38px' minWidth={0}>
                       <Text fontWeight='bold'>{player.name}</Text>
                       {state.emojis?.[player.id] &&
                         serverNow - state.emojis[player.id].shownAt < EMOJI_VISIBLE_MS && (
-                          <Text fontSize='xl' lineHeight='1'>
+                          <AnimatedEffect
+                            key={`${player.id}-${state.emojis[player.id].shownAt}`}
+                            effect={EMOJI_EFFECTS[state.emojis[player.id].value] ?? 'none'}
+                            display='inline-flex'
+                            alignItems='center'
+                            justifyContent='center'
+                            width='42px'
+                            height='38px'
+                            flexShrink={0}
+                            fontSize='3xl'
+                            lineHeight='1'
+                          >
                             {state.emojis[player.id].value}
-                          </Text>
+                          </AnimatedEffect>
                         )}
                     </Flex>
-                    <Flex gap={2} wrap='wrap' justify='flex-end'>
-                      {player.id === auth.id && <Badge colorScheme='pink'>You</Badge>}
-                      {state.readyPlayerIds.includes(player.id) && (
-                        <Badge colorScheme='green'>Ready</Badge>
-                      )}
-                      {state.starVotePlayerIds.includes(player.id) && (
-                        <Badge colorScheme='yellow'>Star</Badge>
-                      )}
-                      {player.id === auth.id && (
-                        <Popover placement='top' isLazy>
-                          <PopoverTrigger>
-                            <Button
-                              size='xs'
-                              minWidth='28px'
-                              height='22px'
-                              paddingX={2}
-                              variant='outline'
-                            >
-                              🙂
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent width='auto' borderRadius='md'>
-                            <PopoverBody padding='2'>
-                              <Flex gap={2}>
-                                {EMOJIS.map((emoji) => (
-                                  <Button
-                                    key={emoji}
-                                    size='sm'
-                                    minWidth='36px'
-                                    paddingX={2}
-                                    variant='ghost'
-                                    fontSize='xl'
-                                    onClick={() => onEvent.onClickEmoji(emoji)}
-                                  >
-                                    {emoji}
-                                  </Button>
-                                ))}
-                              </Flex>
-                            </PopoverBody>
-                          </PopoverContent>
-                        </Popover>
-                      )}
-                    </Flex>
+                    <Text color='gray.600'>{hands[player.id]?.length ?? 0} cards</Text>
                   </Flex>
-                  <Text color='gray.600'>{hands[player.id]?.length ?? 0} cards</Text>
+                  <Flex gap={2} wrap='wrap' justify='flex-end' align='center'>
+                    {player.id === auth.id && <Badge colorScheme='pink'>You</Badge>}
+                    {state.readyPlayerIds.includes(player.id) && (
+                      <Badge colorScheme='green'>Ready</Badge>
+                    )}
+                    {state.starVotePlayerIds.includes(player.id) && (
+                      <Badge colorScheme='yellow'>Star</Badge>
+                    )}
+                    {player.id === auth.id && (
+                      <Popover placement='top' isLazy>
+                        <PopoverTrigger>
+                          <Button
+                            size='xs'
+                            minWidth='28px'
+                            height='22px'
+                            paddingX={2}
+                            variant='outline'
+                          >
+                            🙂
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent width='auto' borderRadius='md'>
+                          <PopoverBody padding='2'>
+                            <Flex gap={2}>
+                              {EMOJIS.map((emoji) => (
+                                <Button
+                                  key={emoji}
+                                  size='sm'
+                                  minWidth='36px'
+                                  paddingX={2}
+                                  variant='ghost'
+                                  fontSize='xl'
+                                  onClick={() => onEvent.onClickEmoji(emoji)}
+                                >
+                                  {emoji}
+                                </Button>
+                              ))}
+                            </Flex>
+                          </PopoverBody>
+                        </PopoverContent>
+                      </Popover>
+                    )}
+                  </Flex>
                 </Flex>
               ))}
             </SimpleGrid>
@@ -403,11 +435,15 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
                   Played
                 </Heading>
                 <Flex gap={2} wrap='wrap'>
-                  {pilePreview(state.playedCards).map((card, index) => (
-                    <Badge key={`${card}-${index}`} colorScheme='pink' fontSize='md'>
-                      {card}
-                    </Badge>
-                  ))}
+                  <AnimatePresence initial={false}>
+                    {pilePreview(state.playedCards).map((card, index) => (
+                      <MotionBox key={`${card}-${index}`} {...popIn}>
+                        <Badge colorScheme='pink' fontSize='md'>
+                          {card}
+                        </Badge>
+                      </MotionBox>
+                    ))}
+                  </AnimatePresence>
                   {state.playedCards.length === 0 && <Text color='gray.600'>Empty</Text>}
                 </Flex>
               </Box>
@@ -417,11 +453,15 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
                   Discarded
                 </Heading>
                 <Flex gap={2} wrap='wrap'>
-                  {pilePreview(state.discardedCards).map((card, index) => (
-                    <Badge key={`${card}-${index}`} colorScheme='gray' fontSize='md'>
-                      {card}
-                    </Badge>
-                  ))}
+                  <AnimatePresence initial={false}>
+                    {pilePreview(state.discardedCards).map((card, index) => (
+                      <MotionBox key={`${card}-${index}`} {...popIn}>
+                        <Badge colorScheme='gray' fontSize='md'>
+                          {card}
+                        </Badge>
+                      </MotionBox>
+                    ))}
+                  </AnimatePresence>
                   {state.discardedCards.length === 0 && <Text color='gray.600'>Empty</Text>}
                 </Flex>
               </Box>
