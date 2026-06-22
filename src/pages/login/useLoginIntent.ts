@@ -19,7 +19,7 @@ export function useLoginIntent() {
     onClickLoginButton: () => {
       launch(setLoading, async () => {
         try {
-          UserApi.login(state.email, state.password);
+          await UserApi.login(state.email, state.password);
           setSideEffect({ type: 'SHOW_TOAST', options: CommonToast.LOGIN_SUCCESS });
           setSideEffect({ type: 'NAVIGATE_TO_MAIN' });
         } catch {

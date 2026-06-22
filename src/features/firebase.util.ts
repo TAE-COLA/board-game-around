@@ -25,7 +25,7 @@ export const getDoc = async (
   onError?: () => void
 ): Promise<fs.DocumentSnapshot> => {
   const snapshot = await fs.getDoc(document);
-  if (!snapshot.exists) {
+  if (!snapshot.exists()) {
     if (onError) onError();
     else throw new Error(CommonError.NO_DATA);
   }

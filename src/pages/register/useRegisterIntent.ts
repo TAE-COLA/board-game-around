@@ -11,58 +11,87 @@ export function useRegisterIntent() {
 
   const onEvent: Intent.Event = {
     onEmailChange: (email) => {
+      const emailField = {
+        label: 'email' as const,
+        value: email,
+        error: checkValidity(email, 'email'),
+      };
+      const nextState = new Intent.State({ ...state, email: emailField, emailDuplicate: null });
+
       dispatch({
         type: 'UPDATE_EMAIL',
-        email: { label: 'email', value: email, error: checkValidity(email, 'email') },
+        email: emailField,
       });
-      dispatch({ type: 'UPDATE_VALID', valid: checkValid(state) });
+      dispatch({ type: 'UPDATE_EMAIL_DUPLICATE', emailDuplicate: null });
+      dispatch({ type: 'UPDATE_VALID', valid: checkValid(nextState) });
     },
     onClickCheckForDuplicatesButton: () => {
       UserApi.checkForEmailDuplicates(state.email.value).then((emailDuplicate) => {
+        const emailField = {
+          label: 'email' as const,
+          value: state.email.value,
+          error: emailDuplicate ? '중복된 이메일입니다.' : null,
+        };
+        const nextState = new Intent.State({ ...state, email: emailField, emailDuplicate });
+
         dispatch({
           type: 'UPDATE_EMAIL',
-          email: {
-            label: 'email',
-            value: state.email.value,
-            error: emailDuplicate ? '중복된 이메일입니다.' : null,
-          },
+          email: emailField,
         });
         dispatch({ type: 'UPDATE_EMAIL_DUPLICATE', emailDuplicate });
-        dispatch({ type: 'UPDATE_VALID', valid: checkValid(state) });
+        dispatch({ type: 'UPDATE_VALID', valid: checkValid(nextState) });
       });
     },
     onPasswordChange: (password) => {
+      const passwordField = {
+        label: 'password' as const,
+        value: password,
+        error: checkValidity(password, 'password'),
+      };
+      const passwordConfirmField = {
+        ...state.passwordConfirm,
+        error: checkValidity(state.passwordConfirm.value, 'passwordConfirm', password),
+      };
+      const nextState = new Intent.State({
+        ...state,
+        password: passwordField,
+        passwordConfirm: passwordConfirmField,
+      });
+
       dispatch({
         type: 'UPDATE_PASSWORD',
-        password: {
-          label: 'password',
-          value: password,
-          error: checkValidity(password, 'password'),
-        },
+        password: passwordField,
       });
-      dispatch({ type: 'UPDATE_VALID', valid: checkValid(state) });
+      dispatch({ type: 'UPDATE_PASSWORD_CONFIRM', passwordConfirm: passwordConfirmField });
+      dispatch({ type: 'UPDATE_VALID', valid: checkValid(nextState) });
     },
     onPasswordConfirmChange: (passwordConfirm) => {
+      const passwordConfirmField = {
+        label: 'passwordConfrim' as const,
+        value: passwordConfirm,
+        error: checkValidity(passwordConfirm, 'passwordConfirm', state.password.value),
+      };
+      const nextState = new Intent.State({ ...state, passwordConfirm: passwordConfirmField });
+
       dispatch({
         type: 'UPDATE_PASSWORD_CONFIRM',
-        passwordConfirm: {
-          label: 'passwordConfrim',
-          value: passwordConfirm,
-          error: checkValidity(passwordConfirm, 'passwordConfirm', state.password.value),
-        },
+        passwordConfirm: passwordConfirmField,
       });
-      dispatch({ type: 'UPDATE_VALID', valid: checkValid(state) });
+      dispatch({ type: 'UPDATE_VALID', valid: checkValid(nextState) });
     },
     onNicknameChange: (nickname) => {
+      const nicknameField = {
+        label: 'nickname' as const,
+        value: nickname,
+        error: checkValidity(nickname, 'nickname'),
+      };
+      const nextState = new Intent.State({ ...state, nickname: nicknameField });
+
       dispatch({
         type: 'UPDATE_NICKNAME',
-        nickname: {
-          label: 'nickname',
-          value: nickname,
-          error: checkValidity(nickname, 'nickname'),
-        },
+        nickname: nicknameField,
       });
-      dispatch({ type: 'UPDATE_VALID', valid: checkValid(state) });
+      dispatch({ type: 'UPDATE_VALID', valid: checkValid(nextState) });
     },
     onClickSubmitButton: () => {
       launch(setLoading, async () => {
@@ -124,6 +153,6 @@ function checkValid(state: Intent.State): boolean {
   if (state.passwordConfirm.error !== null || state.passwordConfirm.value.length === 0)
     return false;
   if (state.nickname.error !== null || state.nickname.value.length === 0) return false;
-  if (state.emailDuplicate === true) return false;
+  if (state.emailDuplicate !== false) return false;
   return true;
 }

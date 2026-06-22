@@ -16,9 +16,16 @@ export const AuthProvider: React.FC = () => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(firebaseAuth, async (currentUser) => {
-      if (currentUser) {
+      if (!currentUser) {
+        setAuthState({ ...createDummy<AuthContextType>(), loading: false });
+        return;
+      }
+
+      try {
         const user = await UserApi.fetchById(currentUser.uid);
-        if (user) setAuthState({ loading: false, ...user });
+        setAuthState({ loading: false, ...user });
+      } catch {
+        setAuthState({ ...createDummy<AuthContextType>(), loading: false });
       }
     });
 
@@ -30,7 +37,7 @@ export const AuthProvider: React.FC = () => {
       navigate(Paths.login, { replace: true });
       toast(CommonToast.REQUIRE_LOGIN);
     }
-  }, [authState]);
+  }, [authState, firebaseAuth.currentUser, navigate, toast]);
 
   return (
     <AuthContext.Provider value={authState}>

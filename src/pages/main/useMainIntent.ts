@@ -62,15 +62,16 @@ export const useMainIntent = () => {
   };
 
   useEffect(() => {
-    setLoading((prevLoading) => prevLoading || auth.loading);
-  }, [auth.loading]);
+    if (auth.loading) {
+      setLoading(true);
+      return;
+    }
 
-  useEffect(() => {
     launch(setLoading, async () => {
       const gameList = await GameApi.fetchAll();
       dispatch({ type: 'UPDATE_GAME_LIST', gameList });
     });
-  }, []);
+  }, [auth.loading]);
 
   return { state, loading, modal, onEvent, sideEffect };
 };
