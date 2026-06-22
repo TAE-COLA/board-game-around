@@ -36,6 +36,12 @@ export const useTheMindIntent = () => {
     onClickNextLevelButton: () => {
       TheMindApi.nextLevel(lounge.id);
     },
+    onClickRestartButton: () => {
+      TheMindApi.restart(lounge.id);
+    },
+    onTimerExpired: (serverNow) => {
+      TheMindApi.timeout(lounge.id, serverNow);
+    },
   };
 
   useEffect(() => {
@@ -57,6 +63,14 @@ export const useTheMindIntent = () => {
 
     return () => unsubscribe();
   }, [lounge.id, lounge.loading]);
+
+  useEffect(() => {
+    const unsubscribe = TheMindApi.onServerTimeOffsetChanged((serverTimeOffset) => {
+      dispatch({ type: 'UPDATE_SERVER_TIME_OFFSET', serverTimeOffset });
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   return { state, loading, onEvent, sideEffect };
 };

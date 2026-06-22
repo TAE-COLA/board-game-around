@@ -12,6 +12,9 @@ class State {
   discardedCards: number[] = [];
   readyPlayerIds: string[] = [];
   starVotePlayerIds: string[] = [];
+  lastPlayedAt: number | null = null;
+  lastResult: TheMind['lastResult'] = null;
+  serverTimeOffset = 0;
   phase: TheMindPhase = 'READY';
 
   constructor(state: Partial<State>) {
@@ -26,11 +29,14 @@ type Event = {
   onClickStarButton: () => void;
   onClickCancelStarVoteButton: () => void;
   onClickNextLevelButton: () => void;
+  onClickRestartButton: () => void;
+  onTimerExpired: (serverNow: number) => void;
 };
 
 type Reduce =
   | { type: 'UPDATE_PLAYERS'; players: User[] }
-  | { type: 'UPDATE_GAME'; game: TheMind };
+  | { type: 'UPDATE_GAME'; game: TheMind }
+  | { type: 'UPDATE_SERVER_TIME_OFFSET'; serverTimeOffset: number };
 
 const handleReduce = (state: State, reduce: Reduce): State => {
   switch (reduce.type) {
@@ -48,8 +54,13 @@ const handleReduce = (state: State, reduce: Reduce): State => {
         discardedCards: reduce.game.discardedCards ?? [],
         readyPlayerIds: reduce.game.readyPlayerIds ?? [],
         starVotePlayerIds: reduce.game.starVotePlayerIds ?? [],
+        lastPlayedAt:
+          typeof reduce.game.lastPlayedAt === 'number' ? reduce.game.lastPlayedAt : null,
+        lastResult: reduce.game.lastResult ?? null,
         phase: reduce.game.phase,
       });
+    case 'UPDATE_SERVER_TIME_OFFSET':
+      return new State({ ...state, serverTimeOffset: reduce.serverTimeOffset });
   }
 };
 

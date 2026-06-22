@@ -19,6 +19,12 @@ export interface TheMind {
   discardedCards: number[];
   readyPlayerIds: string[];
   starVotePlayerIds: string[];
+  lastPlayedAt?: number | null;
+  lastResult?: {
+    type: 'SUCCESS' | 'FAILURE';
+    level: number;
+    lives: number;
+  } | null;
   phase: TheMindPhase;
   finishedAt?: Date;
 }
@@ -36,6 +42,8 @@ export const THE_MIND = {
   discardedCards: 'discardedCards',
   readyPlayerIds: 'readyPlayerIds',
   starVotePlayerIds: 'starVotePlayerIds',
+  lastPlayedAt: 'lastPlayedAt',
+  lastResult: 'lastResult',
   phase: 'phase',
   finishedAt: 'finishedAt',
 } as const;

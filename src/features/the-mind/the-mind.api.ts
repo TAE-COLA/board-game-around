@@ -5,6 +5,7 @@ import { getRef } from '../firebase.util';
 import { database } from '../firebase_config';
 
 const reference = db.ref(database);
+const serverTimeOffsetReference = db.ref(database, '.info/serverTimeOffset');
 
 const loungeReference = (loungeId: string) =>
   db.child(db.child(reference, LOUNGE.reference), loungeId);
@@ -22,6 +23,8 @@ const getLevelReward = (level: number) => {
   if ([3, 6, 9].includes(level)) return { stars: 0, lives: 1 };
   return { stars: 0, lives: 0 };
 };
+
+const CARD_TIMER_MS = 30_000;
 
 const dealHands = (playerIds: string[], level: number) => {
   const deck = shuffle(Array.from({ length: 100 }, (_, index) => index + 1));
@@ -43,7 +46,7 @@ const normalizeList = <T>(value?: T[]) => (value ?? []).filter((item) => !isPlac
 
 const normalizeHands = (game: TheMind): TheMind['hands'] =>
   game.playerIds.reduce((acc, playerId) => {
-    acc[playerId] = normalizeList(game.hands?.[playerId]);
+    acc[playerId] = normalizeList(game.hands?.[playerId]).sort((a, b) => a - b);
     return acc;
   }, {} as TheMind['hands']);
 
@@ -53,21 +56,13 @@ const serializeHands = (hands: TheMind['hands']): TheMind['hands'] =>
     return acc;
   }, {} as TheMind['hands']);
 
-const removeCardsLowerThan = (hands: TheMind['hands'], playedCard: number) => {
-  const nextHands: TheMind['hands'] = {};
-  const discardedCards: number[] = [];
-
-  Object.entries(hands).forEach(([playerId, cards]) => {
-    const lowerCards = cards.filter((card) => card < playedCard);
-    discardedCards.push(...lowerCards);
-    nextHands[playerId] = cards.filter((card) => card >= playedCard);
-  });
-
-  return { hands: nextHands, discardedCards: discardedCards.sort((a, b) => a - b) };
-};
-
 const areHandsEmpty = (hands: TheMind['hands']) =>
   Object.values(hands).every((cards) => normalizeList(cards).length === 0);
+
+const hasLowerCardInOtherHands = (hands: TheMind['hands'], playerId: string, card: number) =>
+  Object.entries(hands).some(
+    ([handOwnerId, cards]) => handOwnerId !== playerId && cards.some((handCard) => handCard < card)
+  );
 
 const resolveLevelComplete = (game: TheMind): TheMind => {
   const reward = getLevelReward(game.level);
@@ -81,6 +76,8 @@ const resolveLevelComplete = (game: TheMind): TheMind => {
     stars,
     readyPlayerIds: emptyList(),
     starVotePlayerIds: emptyList(),
+    lastPlayedAt: null,
+    lastResult: { type: 'SUCCESS', level: game.level, lives },
     phase: isFinalLevel ? 'GAME_WON' : 'LEVEL_COMPLETE',
   };
 
@@ -99,8 +96,28 @@ const startLevel = (game: TheMind, level: number): TheMind => ({
   discardedCards: emptyList(),
   readyPlayerIds: emptyList(),
   starVotePlayerIds: emptyList(),
+  lastPlayedAt: null,
+  lastResult: null,
   phase: 'READY',
 });
+
+const failLevel = (game: TheMind): TheMind => {
+  if (game.lives <= 0) {
+    return {
+      ...game,
+      lives: 0,
+      phase: 'GAME_LOST',
+      lastPlayedAt: null,
+      lastResult: { type: 'FAILURE', level: game.level, lives: 0 },
+      finishedAt: db.serverTimestamp() as unknown as Date,
+    };
+  }
+
+  return {
+    ...startLevel({ ...game, lives: game.lives - 1 }, game.level),
+    lastResult: { type: 'FAILURE', level: game.level, lives: game.lives - 1 },
+  };
+};
 
 export const start = async (loungeId: string): Promise<void> => {
   const loungeSnapshot = await getRef(loungeReference(loungeId), () => {
@@ -127,6 +144,8 @@ export const start = async (loungeId: string): Promise<void> => {
     discardedCards: emptyList(),
     readyPlayerIds: emptyList(),
     starVotePlayerIds: emptyList(),
+    lastPlayedAt: null,
+    lastResult: null,
     phase: 'READY',
   };
 
@@ -147,6 +166,14 @@ export const onStateChanged = (
     const theMind = new FModel<TheMind>(snapshot).sanitize();
 
     onChanged(theMind);
+  });
+};
+
+export const onServerTimeOffsetChanged = (
+  onChanged: (serverTimeOffset: number) => void
+): db.Unsubscribe => {
+  return db.onValue(serverTimeOffsetReference, (snapshot) => {
+    onChanged(typeof snapshot.val() === 'number' ? snapshot.val() : 0);
   });
 };
 
@@ -186,6 +213,8 @@ export const ready = async (loungeId: string, userId: string): Promise<void> => 
       ...game,
       readyPlayerIds: allReady ? emptyList() : readyPlayerIds,
       starVotePlayerIds: emptyList(),
+      lastPlayedAt: allReady ? null : game.lastPlayedAt ?? null,
+      lastResult: allReady ? null : game.lastResult ?? null,
       phase: allReady ? 'PLAYING' : 'READY',
     };
   });
@@ -201,38 +230,40 @@ export const playCard = async (
     const game = current as TheMind;
     if (game.phase !== 'PLAYING' || !game.playerIds.includes(userId)) return current;
     const currentHands = normalizeHands(game);
-    if (!currentHands[userId].includes(card)) return current;
+    const [lowestCard] = currentHands[userId];
+    if (lowestCard !== card) return current;
+
+    if (hasLowerCardInOtherHands(currentHands, userId, card)) {
+      return failLevel(game);
+    }
 
     const handAfterPlay = currentHands[userId].filter((value) => value !== card);
     const handsAfterPlay = { ...currentHands, [userId]: handAfterPlay };
-    const mistake = removeCardsLowerThan(handsAfterPlay, card);
-    const hasMistake = mistake.discardedCards.length > 0;
-    const lives = hasMistake ? game.lives - 1 : game.lives;
 
     let nextGame: TheMind = {
       ...game,
-      lives,
-      hands: serializeHands(mistake.hands),
+      hands: serializeHands(handsAfterPlay),
       playedCards: [...normalizeList(game.playedCards), card],
-      discardedCards: [
-        ...normalizeList(game.discardedCards),
-        ...mistake.discardedCards,
-      ].sort((a, b) => a - b),
       starVotePlayerIds: emptyList(),
+      lastPlayedAt: db.serverTimestamp() as unknown as number,
     };
 
-    if (lives <= 0) {
-      nextGame = {
-        ...nextGame,
-        lives: 0,
-        phase: 'GAME_LOST',
-        finishedAt: db.serverTimestamp() as unknown as Date,
-      };
-    } else if (areHandsEmpty(mistake.hands)) {
+    if (areHandsEmpty(handsAfterPlay)) {
       nextGame = resolveLevelComplete(nextGame);
     }
 
     return nextGame;
+  });
+};
+
+export const timeout = async (loungeId: string, serverNow: number): Promise<void> => {
+  await db.runTransaction(theMindReference(loungeId), (current) => {
+    if (!current) return current;
+    const game = current as TheMind;
+    if (game.phase !== 'PLAYING' || typeof game.lastPlayedAt !== 'number') return current;
+    if (serverNow - game.lastPlayedAt < CARD_TIMER_MS) return current;
+
+    return failLevel(game);
   });
 };
 
@@ -298,5 +329,30 @@ export const nextLevel = async (loungeId: string): Promise<void> => {
     if (game.phase !== 'LEVEL_COMPLETE') return current;
 
     return startLevel(game, game.level + 1);
+  });
+};
+
+export const restart = async (loungeId: string): Promise<void> => {
+  await db.runTransaction(theMindReference(loungeId), (current) => {
+    if (!current) return current;
+    const game = current as TheMind;
+    if (game.phase !== 'GAME_LOST') return current;
+
+    return {
+      loungeId: game.loungeId,
+      playerIds: game.playerIds,
+      level: 1,
+      maxLevel: getMaxLevel(game.playerIds.length),
+      lives: game.playerIds.length,
+      stars: 1,
+      hands: dealHands(game.playerIds, 1),
+      playedCards: emptyList(),
+      discardedCards: emptyList(),
+      readyPlayerIds: emptyList(),
+      starVotePlayerIds: emptyList(),
+      lastPlayedAt: null,
+      lastResult: null,
+      phase: 'READY',
+    };
   });
 };

@@ -29,8 +29,9 @@ it is currently the lowest unplayed card held by the team.
 ## Components and state
 
 - Number cards: 1 through 100.
-- Life tokens/cards: team resource. If lives reach 0, the team immediately
-  loses.
+- Life tokens/cards: team retry resource. When a level fails while at least 1
+  life remains, lose 1 life and restart that level. If the level fails while
+  lives are already 0, the game is lost.
 - Throwing star tokens/cards: team resource used to discard each player's lowest
   card.
 - Level cards: determine the current level and milestone rewards.
@@ -88,7 +89,8 @@ local user's readability, but other players' cards must remain hidden.
 ## Playing a level
 
 - There is no turn sequence.
-- Any player can play a card from hand to the central pile at any time.
+- Any player can play their own lowest card at any time.
+- A player cannot choose a higher card while holding a lower card.
 - Cards must be played in strictly ascending order across the entire team.
 - Players may not reveal, hint at, or encode information about their cards.
 - The team is expected to rely on timing and shared intuition.
@@ -97,24 +99,21 @@ local user's readability, but other players' cards must remain hidden.
 ## Mistake resolution
 
 A mistake occurs when a player plays a card while one or more lower-numbered
-cards are still in any player's hand.
+cards are still in another player's hand.
 
 When this happens:
 
-1. Pause play immediately.
-2. Every player who has any card lower than the just-played card discards all
-   such lower cards face up.
-3. The team loses exactly 1 life for that mistake event.
-4. If lives are now 0, the game is lost immediately.
-5. If at least 1 life remains, continue the level with the remaining cards.
+1. The level fails immediately.
+2. If the team has at least 1 life, lose exactly 1 life.
+3. Shuffle and redeal the same level.
+4. Return to ready state for that level.
+5. If the team has 0 lives when the mistake happens, the game is lost.
 
 Important implementation detail:
 
-- One bad play can cause multiple lower cards to be discarded, but it costs only
-  1 life.
-- The just-played card remains in the played pile.
-- Discarded lower cards are removed from player hands and do not need to be
-  played later.
+- A failed level does not continue from the current hands.
+- Played and discarded piles reset when the failed level restarts.
+- Lives may be 0; the next level failure at 0 lives ends the game.
 
 ## Throwing stars
 
@@ -162,7 +161,7 @@ Then:
 
 The team loses when:
 
-- team lives reach 0 after a mistake.
+- a level fails while team lives are already 0.
 
 The team wins when:
 
@@ -216,7 +215,7 @@ Minimum viable The Mind implementation:
 4. Hidden hands, local player hand visibility.
 5. Ready phase before each level.
 6. Real-time card play without turns.
-7. Mistake detection and one-life penalty per bad play.
+7. Mistake detection, same-level restart, and one-life penalty per failed level.
 8. Throwing star proposal, unanimous vote, and discard resolution.
 9. Level rewards.
 10. Win/loss handling.
