@@ -25,6 +25,7 @@ const getLevelReward = (level: number) => {
 };
 
 const CARD_TIMER_MS = 30_000;
+const EMOJIS = ['🙂‍↕️', '🙂‍↔️', '🥱'];
 
 const dealHands = (playerIds: string[], level: number) => {
   const deck = shuffle(Array.from({ length: 100 }, (_, index) => index + 1));
@@ -318,6 +319,23 @@ export const cancelStarVote = async (loungeId: string): Promise<void> => {
   const updates = initialUpdates();
 
   updates[`/${THE_MIND.reference}/${loungeId}/${THE_MIND.starVotePlayerIds}`] = emptyList();
+
+  await db.update(reference, updates);
+};
+
+export const sendEmoji = async (
+  loungeId: string,
+  userId: string,
+  emoji: string
+): Promise<void> => {
+  if (!EMOJIS.includes(emoji)) return;
+
+  const updates = initialUpdates();
+
+  updates[`/${THE_MIND.reference}/${loungeId}/${THE_MIND.emojis}/${userId}`] = {
+    value: emoji,
+    shownAt: db.serverTimestamp(),
+  };
 
   await db.update(reference, updates);
 };

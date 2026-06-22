@@ -14,6 +14,7 @@ class State {
   starVotePlayerIds: string[] = [];
   lastPlayedAt: number | null = null;
   lastResult: TheMind['lastResult'] = null;
+  emojis: TheMind['emojis'] = {};
   serverTimeOffset = 0;
   phase: TheMindPhase = 'READY';
 
@@ -31,6 +32,7 @@ type Event = {
   onClickNextLevelButton: () => void;
   onClickRestartButton: () => void;
   onTimerExpired: (serverNow: number) => void;
+  onClickEmoji: (emoji: string) => void;
 };
 
 type Reduce =
@@ -57,6 +59,7 @@ const handleReduce = (state: State, reduce: Reduce): State => {
         lastPlayedAt:
           typeof reduce.game.lastPlayedAt === 'number' ? reduce.game.lastPlayedAt : null,
         lastResult: reduce.game.lastResult ?? null,
+        emojis: reduce.game.emojis ?? {},
         phase: reduce.game.phase,
       });
     case 'UPDATE_SERVER_TIME_OFFSET':

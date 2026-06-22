@@ -25,6 +25,12 @@ export interface TheMind {
     level: number;
     lives: number;
   } | null;
+  emojis?: {
+    [key: string]: {
+      value: string;
+      shownAt: number;
+    };
+  };
   phase: TheMindPhase;
   finishedAt?: Date;
 }
@@ -44,6 +50,7 @@ export const THE_MIND = {
   starVotePlayerIds: 'starVotePlayerIds',
   lastPlayedAt: 'lastPlayedAt',
   lastResult: 'lastResult',
+  emojis: 'emojis',
   phase: 'phase',
   finishedAt: 'finishedAt',
 } as const;

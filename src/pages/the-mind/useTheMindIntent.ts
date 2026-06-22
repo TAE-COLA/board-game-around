@@ -42,6 +42,9 @@ export const useTheMindIntent = () => {
     onTimerExpired: (serverNow) => {
       TheMindApi.timeout(lounge.id, serverNow);
     },
+    onClickEmoji: (emoji) => {
+      TheMindApi.sendEmoji(lounge.id, auth.id, emoji);
+    },
   };
 
   useEffect(() => {

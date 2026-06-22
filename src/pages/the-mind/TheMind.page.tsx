@@ -10,6 +10,10 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Popover,
+  PopoverBody,
+  PopoverContent,
+  PopoverTrigger,
   Progress,
   SimpleGrid,
   Stat,
@@ -24,6 +28,8 @@ import { useTheMindIntent } from './useTheMindIntent';
 
 const CARD_TIMER_SECONDS = 30;
 const DANGER_SECONDS = 10;
+const EMOJI_VISIBLE_MS = 5000;
+const EMOJIS = ['🙂‍↕️', '🙂‍↔️', '🥱'];
 
 const phaseLabel = {
   READY: '준비',
@@ -65,6 +71,9 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
   const timerProgress = (remainingSeconds / CARD_TIMER_SECONDS) * 100;
   const isTimerRunning = state.phase === 'PLAYING' && !!state.lastPlayedAt;
   const isTimerDanger = isTimerRunning && remainingSeconds <= DANGER_SECONDS;
+  const hasVisibleEmoji = Object.values(state.emojis ?? {}).some(
+    (emoji) => typeof emoji.shownAt === 'number' && serverNow - emoji.shownAt < EMOJI_VISIBLE_MS
+  );
   const resultKey = state.lastResult
     ? `${state.lastResult.type}-${state.lastResult.level}-${state.lastResult.lives}-${state.phase}`
     : null;
@@ -87,17 +96,17 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
   }, [sideEffect]);
 
   useEffect(() => {
-    if (!isTimerRunning) {
+    if (!isTimerRunning && !hasVisibleEmoji) {
       setNow(Date.now());
       return;
     }
 
     const intervalId = window.setInterval(() => {
       setNow(Date.now());
-    }, 1000);
+    }, 500);
 
     return () => window.clearInterval(intervalId);
-  }, [isTimerRunning, state.lastPlayedAt]);
+  }, [hasVisibleEmoji, isTimerRunning, state.lastPlayedAt]);
 
   useEffect(() => {
     if (resultKey && resultKey !== closedResultKey) return;
@@ -297,7 +306,15 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
                   borderRadius='md'
                 >
                   <Flex justify='space-between' align='center' gap={2}>
-                    <Text fontWeight='bold'>{player.name}</Text>
+                    <Flex align='center' gap={2} minWidth={0}>
+                      <Text fontWeight='bold'>{player.name}</Text>
+                      {state.emojis?.[player.id] &&
+                        serverNow - state.emojis[player.id].shownAt < EMOJI_VISIBLE_MS && (
+                          <Text fontSize='xl' lineHeight='1'>
+                            {state.emojis[player.id].value}
+                          </Text>
+                        )}
+                    </Flex>
                     <Flex gap={2} wrap='wrap' justify='flex-end'>
                       {player.id === auth.id && <Badge colorScheme='pink'>You</Badge>}
                       {state.readyPlayerIds.includes(player.id) && (
@@ -305,6 +322,40 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
                       )}
                       {state.starVotePlayerIds.includes(player.id) && (
                         <Badge colorScheme='yellow'>Star</Badge>
+                      )}
+                      {player.id === auth.id && (
+                        <Popover placement='top' isLazy>
+                          <PopoverTrigger>
+                            <Button
+                              size='xs'
+                              minWidth='28px'
+                              height='22px'
+                              paddingX={2}
+                              variant='outline'
+                            >
+                              🙂
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent width='auto' borderRadius='md'>
+                            <PopoverBody padding='2'>
+                              <Flex gap={2}>
+                                {EMOJIS.map((emoji) => (
+                                  <Button
+                                    key={emoji}
+                                    size='sm'
+                                    minWidth='36px'
+                                    paddingX={2}
+                                    variant='ghost'
+                                    fontSize='xl'
+                                    onClick={() => onEvent.onClickEmoji(emoji)}
+                                  >
+                                    {emoji}
+                                  </Button>
+                                ))}
+                              </Flex>
+                            </PopoverBody>
+                          </PopoverContent>
+                        </Popover>
                       )}
                     </Flex>
                   </Flex>
