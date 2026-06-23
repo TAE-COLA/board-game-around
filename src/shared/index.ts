@@ -9,4 +9,6 @@ export * from './shuffle';
 export * from './string-resources';
 export * from './toasts';
 export * from './ui';
+export * from './use-async-action';
+export * from './use-side-effect-queue';
 export * from './updates';

@@ -16,6 +16,8 @@ import React, { useState } from 'react';
 
 type IProps = {
   loading: boolean;
+  createLoading?: boolean;
+  joinLoading?: boolean;
   modal: { isOpen: boolean; onOpen: () => void; onClose: () => void };
   game: Game;
   onClickCreateLoungeButton: () => void;
@@ -24,6 +26,8 @@ type IProps = {
 
 export const GameEntryModal: React.FC<IProps> = ({
   loading,
+  createLoading = false,
+  joinLoading = false,
   modal,
   game,
   onClickCreateLoungeButton,
@@ -32,11 +36,17 @@ export const GameEntryModal: React.FC<IProps> = ({
   const [code, setData] = useState('');
 
   return (
-    <Modal isOpen={modal.isOpen} onClose={modal.onClose} size={{ base: 'sm', md: 'xl' }} isCentered>
+    <Modal
+      isOpen={modal.isOpen}
+      onClose={modal.onClose}
+      size={{ base: 'sm', md: 'xl' }}
+      closeOnOverlayClick={!createLoading && !joinLoading}
+      isCentered
+    >
       <ModalOverlay />
       <ModalContent marginX={{ base: 4, md: 0 }}>
         <ModalHeader>{game.name} 플레이</ModalHeader>
-        <ModalCloseButton />
+        <ModalCloseButton isDisabled={createLoading || joinLoading} />
         <ModalBody>
           <Flex
             direction={{ base: 'column', md: 'row' }}
@@ -47,7 +57,12 @@ export const GameEntryModal: React.FC<IProps> = ({
           >
             <Flex direction='column' gap='4' flex='1'>
               <Text>새로운 게임방을 생성하세요</Text>
-              <Button onClick={onClickCreateLoungeButton} isDisabled={loading} colorScheme='blue'>
+              <Button
+                onClick={onClickCreateLoungeButton}
+                isDisabled={loading || createLoading || joinLoading}
+                isLoading={createLoading}
+                colorScheme='blue'
+              >
                 게임방 생성
               </Button>
             </Flex>
@@ -57,9 +72,14 @@ export const GameEntryModal: React.FC<IProps> = ({
                 placeholder='게임방 코드'
                 value={code}
                 onChange={(e) => setData(e.target.value)}
-                isDisabled={loading}
+                isDisabled={loading || createLoading || joinLoading}
               />
-              <Button onClick={() => onClickJoinLoungeButton(code)} isDisabled={loading} colorScheme='blue'>
+              <Button
+                onClick={() => onClickJoinLoungeButton(code)}
+                isDisabled={loading || createLoading || joinLoading || !code.trim()}
+                isLoading={joinLoading}
+                colorScheme='blue'
+              >
                 게임방 참여
               </Button>
             </Flex>

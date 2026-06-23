@@ -6,10 +6,15 @@ import { PlayerList } from './PlayerList';
 import { RuleBox } from './RuleBox';
 
 type IProps = FlexProps & {
+  startLoading?: boolean;
   onClickStartButton: () => void;
 };
 
-export const LoungeBody: React.FC<IProps> = ({ onClickStartButton, ...props }) => {
+export const LoungeBody: React.FC<IProps> = ({
+  startLoading = false,
+  onClickStartButton,
+  ...props
+}) => {
   const auth = useAuthContext();
   const lounge = useLoungeContext();
   const isOwner = auth.id === lounge.owner.id;
@@ -32,7 +37,8 @@ export const LoungeBody: React.FC<IProps> = ({ onClickStartButton, ...props }) =
           onClick={onClickStartButton}
           size={{ base: 'md', md: 'lg' }}
           colorScheme='pink'
-          isDisabled={!isOwner || !canStartTheMind}
+          isDisabled={!isOwner || !canStartTheMind || startLoading}
+          isLoading={startLoading}
         >
           시작하기
         </Button>

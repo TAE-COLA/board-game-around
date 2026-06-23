@@ -3,10 +3,15 @@ import { useAuthContext } from 'app';
 import React from 'react';
 
 type IProps = FlexProps & {
+  logoutLoading?: boolean;
   onClickLogoutButton: () => void;
 };
 
-export const GreetingUser: React.FC<IProps> = ({ onClickLogoutButton, ...props }) => {
+export const GreetingUser: React.FC<IProps> = ({
+  logoutLoading = false,
+  onClickLogoutButton,
+  ...props
+}) => {
   const auth = useAuthContext();
 
   return (
@@ -19,7 +24,12 @@ export const GreetingUser: React.FC<IProps> = ({ onClickLogoutButton, ...props }
       {...props}
     >
       <Text noOfLines={1}>반갑습니다, {auth.name}님!</Text>
-      <Button onClick={onClickLogoutButton} size={{ base: 'sm', md: 'md' }}>
+      <Button
+        onClick={onClickLogoutButton}
+        isDisabled={logoutLoading}
+        isLoading={logoutLoading}
+        size={{ base: 'sm', md: 'md' }}
+      >
         로그아웃
       </Button>
     </Flex>

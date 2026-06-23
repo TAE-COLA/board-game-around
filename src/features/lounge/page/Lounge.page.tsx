@@ -25,32 +25,37 @@ const copyText = async (value: string) => {
 };
 
 export const LoungePage: React.FC<PageProps> = ({ navigate, toast }) => {
-  const { loading, onEvent, sideEffect } = useLoungeIntent();
+  const { loading, actionPending, clearSideEffects, onEvent, sideEffects } = useLoungeIntent();
 
   useEffect(() => {
-    switch (sideEffect?.type) {
-      case 'POP_BACK_STACK':
-        navigate(-1);
-        break;
-      case 'NAVIGATE_TO_YACHT_DICE':
-        navigate(Paths.yachtDice, { replace: true });
-        break;
-      case 'NAVIGATE_TO_DAVINCI_CODE':
-        navigate(Paths.davinciCode, { replace: true });
-        break;
-      case 'NAVIGATE_TO_THE_MIND':
-        navigate(Paths.theMind, { replace: true });
-        break;
-      case 'COPY_CLIPBOARD':
-        copyText(sideEffect.value).then((copied) => {
-          toast(copied ? CommonToast.COPY_LOUNGE_CODE : CommonToast.COPY_LOUNGE_CODE_FAILED);
-        });
-        break;
-      case 'SHOW_TOAST':
-        toast(sideEffect.options);
-        break;
-    }
-  }, [sideEffect]);
+    if (sideEffects.length === 0) return;
+
+    sideEffects.forEach((sideEffect) => {
+      switch (sideEffect.type) {
+        case 'POP_BACK_STACK':
+          navigate(-1);
+          break;
+        case 'NAVIGATE_TO_YACHT_DICE':
+          navigate(Paths.yachtDice, { replace: true });
+          break;
+        case 'NAVIGATE_TO_DAVINCI_CODE':
+          navigate(Paths.davinciCode, { replace: true });
+          break;
+        case 'NAVIGATE_TO_THE_MIND':
+          navigate(Paths.theMind, { replace: true });
+          break;
+        case 'COPY_CLIPBOARD':
+          copyText(sideEffect.value).then((copied) => {
+            toast(copied ? CommonToast.COPY_LOUNGE_CODE : CommonToast.COPY_LOUNGE_CODE_FAILED);
+          });
+          break;
+        case 'SHOW_TOAST':
+          toast(sideEffect.options);
+          break;
+      }
+    });
+    clearSideEffects();
+  }, [clearSideEffects, navigate, sideEffects, toast]);
 
   return (
     <Page
@@ -68,10 +73,15 @@ export const LoungePage: React.FC<PageProps> = ({ navigate, toast }) => {
         paddingBottom={4}
       >
         <LoungeHeader
+          exitLoading={!!actionPending.exit}
           onClickCopyButton={onEvent.onClickCopyButton}
           onClickExitButton={onEvent.onClickExitButton}
         />
-        <LoungeBody onClickStartButton={onEvent.onClickStartButton} flex={1} />
+        <LoungeBody
+          startLoading={!!actionPending.start}
+          onClickStartButton={onEvent.onClickStartButton}
+          flex={1}
+        />
       </Flex>
     </Page>
   );

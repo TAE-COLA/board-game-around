@@ -8,18 +8,24 @@ import { useDavinciCodeIntent } from './useDavinciCodeIntent';
 
 export const DavinciCodePage: React.FC<PageProps> = ({ navigate, toast }) => {
   const { id: authId } = useAuthContext();
-  const { state, loading, modal, onEvent, sideEffect } = useDavinciCodeIntent();
+  const { state, loading, clearSideEffects, modal, onEvent, sideEffects } =
+    useDavinciCodeIntent();
 
   useEffect(() => {
-    switch (sideEffect?.type) {
-      case 'NAVIGATE_TO_MAIN':
-        navigate(Paths.main);
-        break;
-      case 'SHOW_TOAST':
-        toast(sideEffect.options);
-        break;
-    }
-  }, [sideEffect]);
+    if (sideEffects.length === 0) return;
+
+    sideEffects.forEach((sideEffect) => {
+      switch (sideEffect.type) {
+        case 'NAVIGATE_TO_MAIN':
+          navigate(Paths.main);
+          break;
+        case 'SHOW_TOAST':
+          toast(sideEffect.options);
+          break;
+      }
+    });
+    clearSideEffects();
+  }, [clearSideEffects, navigate, sideEffects, toast]);
 
   return (
     <Page loading={loading} minHeight='100dvh'>

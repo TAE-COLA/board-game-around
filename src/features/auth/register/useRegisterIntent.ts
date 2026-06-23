@@ -1,13 +1,20 @@
 import { UserApi } from 'features';
 import { useEffect, useReducer, useState } from 'react';
-import { CommonToast, launch } from 'shared';
+import { CommonToast, useAsyncAction, useSideEffectQueue } from 'shared';
 import * as Intent from './Register.intent';
+
+type RegisterAction = 'checkEmail' | 'submit';
 
 export function useRegisterIntent() {
   const [state, dispatch] = useReducer(Intent.reducer, new Intent.State({}));
   const [loading, setLoading] = useState(true);
+  const actions = useAsyncAction<RegisterAction>();
 
-  const [sideEffect, setSideEffect] = useState<Intent.SideEffect>();
+  const {
+    clearSideEffects,
+    pushSideEffect: setSideEffect,
+    sideEffects,
+  } = useSideEffectQueue<NonNullable<Intent.SideEffect>>();
 
   const onEvent: Intent.Event = {
     onEmailChange: (email) => {
@@ -26,7 +33,8 @@ export function useRegisterIntent() {
       dispatch({ type: 'UPDATE_VALID', valid: checkValid(nextState) });
     },
     onClickCheckForDuplicatesButton: () => {
-      UserApi.checkForEmailDuplicates(state.email.value).then((emailDuplicate) => {
+      actions.run('checkEmail', async () => {
+        const emailDuplicate = await UserApi.checkForEmailDuplicates(state.email.value);
         const emailField = {
           label: 'email' as const,
           value: state.email.value,
@@ -94,7 +102,7 @@ export function useRegisterIntent() {
       dispatch({ type: 'UPDATE_VALID', valid: checkValid(nextState) });
     },
     onClickSubmitButton: () => {
-      launch(setLoading, async () => {
+      actions.run('submit', async () => {
         await UserApi.signUpWithEmailAndPassword(
           state.email.value,
           state.password.value,
@@ -119,7 +127,7 @@ export function useRegisterIntent() {
     return () => clearTimeout(timeout);
   }, []);
 
-  return { state, loading, onEvent, sideEffect };
+  return { state, loading, actionPending: actions.pending, clearSideEffects, onEvent, sideEffects };
 }
 
 function checkValidity(

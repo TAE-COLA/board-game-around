@@ -13,11 +13,24 @@ const loungeReference = (loungeId: string) =>
 const yachtDiceReference = (loungeId: string) =>
   db.child(db.child(reference, YACHT_DICE.reference), loungeId);
 
-export const start = async (loungeId: string): Promise<void> => {
+export const start = async (loungeId: string, userId: string): Promise<void> => {
   const loungeSnapshot = await getRef(loungeReference(loungeId), () => {
     throw new Error(CommonError.NO_LOUNGE);
   });
   const lounge = new FModel<Lounge>(loungeSnapshot).sanitize();
+  if (lounge.ownerId !== userId || lounge.status !== 'WAITING') {
+    throw new Error(CommonError.PERMISSION_DENIED);
+  }
+
+  const statusResult = await db.runTransaction(loungeReference(loungeId), (current) => {
+    if (!current || current[LOUNGE.ownerId] !== userId || current[LOUNGE.status] !== 'WAITING') {
+      return current;
+    }
+    return { ...current, [LOUNGE.status]: 'PLAYING' };
+  });
+  if (!statusResult.committed || statusResult.snapshot.val()?.[LOUNGE.status] !== 'PLAYING') {
+    throw new Error(CommonError.PERMISSION_DENIED);
+  }
 
   const shuffledPlayerIds = shuffle(lounge.playerIds);
   const initialYachtDiceBoard: YachtDiceBoard = YACHT_DICE_BOARD.reduce((acc, key) => {
@@ -43,7 +56,6 @@ export const start = async (loungeId: string): Promise<void> => {
 
   const updates = initialUpdates();
 
-  updates[`/${LOUNGE.reference}/${loungeId}/${LOUNGE.status}`] = 'PLAYING';
   updates[`/${YACHT_DICE.reference}/${loungeId}`] = yachtDice;
 
   await db.update(reference, updates);
@@ -88,117 +100,137 @@ export const exit = async (loungeId: string, userId: string): Promise<void> => {
 
 export const updateBoards = async (
   loungeId: string,
+  userId: string,
   key: keyof YachtDiceBoard,
   value: number
 ): Promise<void> => {
-  const yachtDiceSnapshot = await getRef(yachtDiceReference(loungeId), () => {
-    throw new Error(CommonError.NO_GAME_LOUNGE);
-  });
-  const yachtDice = new FModel<YachtDice>(yachtDiceSnapshot).sanitize();
-
-  const playerIndex = yachtDice.playerIds.indexOf(yachtDice.turn);
-  const nextPlayerId = yachtDice.playerIds[(playerIndex + 1) % yachtDice.playerIds.length];
-
-  const updates = initialUpdates();
-
-  updates[`/${YACHT_DICE.reference}/${loungeId}/${YACHT_DICE.turn}`] = nextPlayerId;
-  updates[`/${YACHT_DICE.reference}/${loungeId}/${YACHT_DICE.rolls}`] = 3;
-  updates[`/${YACHT_DICE.reference}/${loungeId}/${YACHT_DICE.keep}`] = [];
-
-  updates[`/${YACHT_DICE.reference}/${loungeId}/${YACHT_DICE.boards}/${yachtDice.turn}/${key}`] = {
-    value,
-    marked: true,
-  };
-
-  const afterBoard = {
-    ...yachtDice.boards[yachtDice.turn],
-    [key]: { value, marked: true },
-  } as YachtDiceBoard;
-  const sum = YACHT_DICE_BOARD.reduce((acc, key) => acc + afterBoard[key].value, 0);
-
-  if (sum >= 63 && !afterBoard.bonus.marked) {
-    updates[
-      `/${YACHT_DICE.reference}/${loungeId}/${YACHT_DICE.boards}/${yachtDice.turn}/${YACHT_DICE_BOARD[6]}`
-    ] = {
-      value: 35,
-      marked: true,
-    };
-  }
-
-  if (playerIndex === yachtDice.playerIds.length - 1) {
-    updates[`/${YACHT_DICE.reference}/${loungeId}/${YACHT_DICE.round}`] = yachtDice.round + 1;
-    if (yachtDice.round === 12) {
-      updates[`/${YACHT_DICE.reference}/${loungeId}/${YACHT_DICE.finishedAt}`] =
-        db.serverTimestamp();
+  let rejected = false;
+  const result = await db.runTransaction(yachtDiceReference(loungeId), (current) => {
+    if (!current) {
+      rejected = true;
+      return;
     }
-  }
+    const yachtDice = current as YachtDice;
+    if (yachtDice.turn !== userId || yachtDice.finishedAt) {
+      rejected = true;
+      return;
+    }
+    if (yachtDice.boards[yachtDice.turn]?.[key]?.marked) {
+      rejected = true;
+      return;
+    }
 
-  await db.update(reference, updates);
-};
+    const playerIndex = yachtDice.playerIds.indexOf(yachtDice.turn);
+    const nextPlayerId = yachtDice.playerIds[(playerIndex + 1) % yachtDice.playerIds.length];
 
-export const updateDice = async (loungeId: string, dice: number[]): Promise<void> => {
-  const updates = initialUpdates();
+    const afterBoard = {
+      ...yachtDice.boards[yachtDice.turn],
+      [key]: { value, marked: true },
+    } as YachtDiceBoard;
+    const sum = YACHT_DICE_BOARD.reduce((acc, key) => acc + afterBoard[key].value, 0);
 
-  updates[`/${YACHT_DICE.reference}/${loungeId}/${YACHT_DICE.dice}`] = dice;
+    if (sum >= 63 && !afterBoard.bonus.marked) {
+      afterBoard[YACHT_DICE_BOARD[6]] = {
+        value: 35,
+        marked: true,
+      };
+    }
 
-  await db.update(reference, updates);
-};
+    const nextGame = {
+      ...yachtDice,
+      turn: nextPlayerId,
+      rolls: 3,
+      keep: [],
+      boards: {
+        ...yachtDice.boards,
+        [yachtDice.turn]: afterBoard,
+      },
+    };
 
-export const addKeep = async (loungeId: string, die: number): Promise<void> => {
-  const yachtDiceSnapshot = await getRef(yachtDiceReference(loungeId), () => {
-    throw new Error(CommonError.NO_GAME_LOUNGE);
+    if (playerIndex === yachtDice.playerIds.length - 1) {
+      nextGame.round = yachtDice.round + 1;
+      if (yachtDice.round === 12) {
+        nextGame.finishedAt = db.serverTimestamp() as unknown as Date;
+      }
+    }
+
+    return nextGame;
   });
-  const yachtDice = new FModel<YachtDice>(yachtDiceSnapshot).sanitize();
 
-  const newKeep = [...yachtDice.keep, die];
-
-  const updates = initialUpdates();
-
-  updates[`/${YACHT_DICE.reference}/${loungeId}/${YACHT_DICE.keep}`] = newKeep;
-
-  await db.update(reference, updates);
+  if (!result.committed || rejected) throw new Error(CommonError.PERMISSION_DENIED);
 };
 
-export const removeKeep = async (loungeId: string, die: number): Promise<void> => {
-  const yachtDiceSnapshot = await getRef(yachtDiceReference(loungeId), () => {
-    throw new Error(CommonError.NO_GAME_LOUNGE);
+export const roll = async (loungeId: string, userId: string, dice: number[]): Promise<void> => {
+  let rejected = false;
+  const result = await db.runTransaction(yachtDiceReference(loungeId), (current) => {
+    if (!current) {
+      rejected = true;
+      return;
+    }
+    const yachtDice = current as YachtDice;
+    if (yachtDice.turn !== userId || yachtDice.rolls <= 0 || yachtDice.finishedAt) {
+      rejected = true;
+      return;
+    }
+
+    return {
+      ...yachtDice,
+      dice,
+      rolls: yachtDice.rolls - 1,
+      keep: yachtDice.rolls === 1 ? [0, 1, 2, 3, 4] : yachtDice.keep,
+    };
   });
-  const yachtDice = new FModel<YachtDice>(yachtDiceSnapshot).sanitize();
 
-  const newKeep = yachtDice.keep.filter((keep) => keep !== die);
-
-  const updates = initialUpdates();
-
-  updates[`/${YACHT_DICE.reference}/${loungeId}/${YACHT_DICE.keep}`] = newKeep;
-
-  await db.update(reference, updates);
+  if (!result.committed || rejected) throw new Error(CommonError.PERMISSION_DENIED);
 };
 
-export const decreaseRolls = async (loungeId: string): Promise<void> => {
-  const yachtDiceSnapshot = await getRef(yachtDiceReference(loungeId), () => {
-    throw new Error(CommonError.NO_GAME_LOUNGE);
+export const addKeep = async (loungeId: string, userId: string, dieIndex: number): Promise<void> => {
+  let rejected = false;
+  const result = await db.runTransaction(yachtDiceReference(loungeId), (current) => {
+    if (!current) {
+      rejected = true;
+      return;
+    }
+    const yachtDice = current as YachtDice;
+    if (yachtDice.turn !== userId || yachtDice.rolls === 3 || yachtDice.finishedAt) {
+      rejected = true;
+      return;
+    }
+    if (dieIndex < 0 || dieIndex >= yachtDice.dice.length) {
+      rejected = true;
+      return;
+    }
+
+    const newKeep = Array.from(new Set([...(yachtDice.keep ?? []), dieIndex])).sort();
+
+    return { ...yachtDice, keep: newKeep };
   });
-  const yachtDice = new FModel<YachtDice>(yachtDiceSnapshot).sanitize();
 
-  if (yachtDice.rolls === 0) {
-    throw new Error(CommonError.YACHT_DICE_NO_MORE_ROLLS);
-  }
-
-  const updates = initialUpdates();
-
-  if (yachtDice.rolls === 1) {
-    updates[`/${YACHT_DICE.reference}/${loungeId}/${YACHT_DICE.keep}`] = [0, 1, 2, 3, 4];
-  }
-
-  updates[`/${YACHT_DICE.reference}/${loungeId}/${YACHT_DICE.rolls}`] = yachtDice.rolls - 1;
-
-  await db.update(reference, updates);
+  if (!result.committed || rejected) throw new Error(CommonError.PERMISSION_DENIED);
 };
 
-export const updateTurn = async (loungeId: string, nextPlayerId: string): Promise<void> => {
-  const updates = initialUpdates();
+export const removeKeep = async (
+  loungeId: string,
+  userId: string,
+  dieIndex: number
+): Promise<void> => {
+  let rejected = false;
+  const result = await db.runTransaction(yachtDiceReference(loungeId), (current) => {
+    if (!current) {
+      rejected = true;
+      return;
+    }
+    const yachtDice = current as YachtDice;
+    if (yachtDice.turn !== userId || yachtDice.finishedAt) {
+      rejected = true;
+      return;
+    }
 
-  updates[`/${YACHT_DICE.reference}/${loungeId}/${YACHT_DICE.turn}`] = nextPlayerId;
+    const newKeep = yachtDice.keep.filter((keep) => keep !== dieIndex);
 
-  await db.update(reference, updates);
+    return { ...yachtDice, keep: newKeep };
+  });
+
+  if (!result.committed || rejected) throw new Error(CommonError.PERMISSION_DENIED);
 };
+

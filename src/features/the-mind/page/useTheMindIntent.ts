@@ -1,8 +1,19 @@
 import { useAuthContext, useLoungeContext } from 'app';
 import { LoungeApi, TheMindApi, UserApi } from 'features';
 import { useEffect, useReducer, useState } from 'react';
-import { CommonToast, GameName, launch } from 'shared';
+import { CommonToast, GameName, useAsyncAction, useSideEffectQueue } from 'shared';
 import * as Intent from './TheMind.intent';
+
+type TheMindAction =
+  | 'exit'
+  | 'ready'
+  | 'playCard'
+  | 'star'
+  | 'cancelStar'
+  | 'nextLevel'
+  | 'restart'
+  | 'timeout'
+  | 'emoji';
 
 export const useTheMindIntent = () => {
   const auth = useAuthContext();
@@ -10,40 +21,66 @@ export const useTheMindIntent = () => {
 
   const [state, dispatch] = useReducer(Intent.reducer, new Intent.State({}));
   const [loading, setLoading] = useState(true);
-  const [sideEffect, setSideEffect] = useState<Intent.SideEffect>();
+  const actions = useAsyncAction<TheMindAction>();
+  const {
+    clearSideEffects,
+    pushSideEffect: setSideEffect,
+    sideEffects,
+  } = useSideEffectQueue<NonNullable<Intent.SideEffect>>();
 
   const onEvent: Intent.Event = {
     onClickExitButton: () => {
-      launch(setLoading, async () => {
-        await LoungeApi.exit(lounge.id, auth.id);
-        await TheMindApi.exit(lounge.id, auth.id);
-        setSideEffect({ type: 'SHOW_TOAST', options: CommonToast.EXIT_LOUNGE });
-        setSideEffect({ type: 'NAVIGATE_TO_MAIN' });
+      actions.run('exit', async () => {
+        setLoading(true);
+        try {
+          await LoungeApi.exit(lounge.id, auth.id);
+          await TheMindApi.exit(lounge.id, auth.id);
+          setSideEffect({ type: 'SHOW_TOAST', options: CommonToast.EXIT_LOUNGE });
+          setSideEffect({ type: 'NAVIGATE_TO_MAIN' });
+        } finally {
+          setLoading(false);
+        }
       });
     },
     onClickReadyButton: () => {
-      TheMindApi.ready(lounge.id, auth.id);
+      actions.run('ready', async () => {
+        await TheMindApi.ready(lounge.id, auth.id);
+      });
     },
     onClickCard: (card) => {
-      TheMindApi.playCard(lounge.id, auth.id, card);
+      actions.run('playCard', async () => {
+        await TheMindApi.playCard(lounge.id, auth.id, card);
+      });
     },
     onClickStarButton: () => {
-      TheMindApi.voteStar(lounge.id, auth.id);
+      actions.run('star', async () => {
+        await TheMindApi.voteStar(lounge.id, auth.id);
+      });
     },
     onClickCancelStarVoteButton: () => {
-      TheMindApi.cancelStarVote(lounge.id);
+      actions.run('cancelStar', async () => {
+        await TheMindApi.cancelStarVote(lounge.id);
+      });
     },
     onClickNextLevelButton: () => {
-      TheMindApi.nextLevel(lounge.id);
+      actions.run('nextLevel', async () => {
+        await TheMindApi.nextLevel(lounge.id);
+      });
     },
     onClickRestartButton: () => {
-      TheMindApi.restart(lounge.id);
+      actions.run('restart', async () => {
+        await TheMindApi.restart(lounge.id);
+      });
     },
     onTimerExpired: (serverNow) => {
-      TheMindApi.timeout(lounge.id, serverNow);
+      actions.run('timeout', async () => {
+        await TheMindApi.timeout(lounge.id, serverNow);
+      });
     },
     onClickEmoji: (emoji) => {
-      TheMindApi.sendEmoji(lounge.id, auth.id, emoji);
+      actions.run('emoji', async () => {
+        await TheMindApi.sendEmoji(lounge.id, auth.id, emoji);
+      });
     },
   };
 
@@ -75,5 +112,5 @@ export const useTheMindIntent = () => {
     return () => unsubscribe();
   }, []);
 
-  return { state, loading, onEvent, sideEffect };
+  return { state, loading, clearSideEffects, onEvent, sideEffects };
 };

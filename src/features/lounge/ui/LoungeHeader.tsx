@@ -4,11 +4,13 @@ import React from 'react';
 import { LoungeCodeBox } from './LoungeCodeBox';
 
 type IProps = FlexProps & {
+  exitLoading?: boolean;
   onClickCopyButton: () => void;
   onClickExitButton: () => void;
 };
 
 export const LoungeHeader: React.FC<IProps> = ({
+  exitLoading = false,
   onClickCopyButton,
   onClickExitButton,
   ...props
@@ -20,6 +22,8 @@ export const LoungeHeader: React.FC<IProps> = ({
       <LoungeCodeBox code={lounge.code} onClickCopyButton={onClickCopyButton} flex='1' minWidth={0} />
       <Button
         onClick={onClickExitButton}
+        isDisabled={exitLoading}
+        isLoading={exitLoading}
         height={{ base: 10, md: 12 }}
         paddingX={{ base: 4, md: 6 }}
         width={{ base: '100%', sm: 'auto' }}

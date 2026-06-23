@@ -21,31 +21,62 @@ export const LoungeProvider: React.FC = () => {
   useEffect(() => {
     if (auth.loading) return;
 
-    LoungeApi.fetchByUserId(auth.id).then((loungeId) => {
-      setLoungeState((prevState) => ({ ...prevState, id: loungeId }));
-    });
-  }, [auth.loading, auth.id]);
+    let cancelled = false;
+
+    setLoungeState((prevState) => ({ ...prevState, loading: true }));
+
+    LoungeApi.fetchByUserId(auth.id)
+      .then((loungeId) => {
+        if (cancelled) return;
+        setLoungeState((prevState) => ({ ...prevState, id: loungeId }));
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setLoungeState({ ...createDummy<LoungeContextType>(), loading: false });
+        navigate(Paths.main, { replace: true });
+        toast(CommonToast.NO_LOUNGE);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [auth.loading, auth.id, navigate, toast]);
 
   useEffect(() => {
     if (auth.loading || !loungeState.id) return;
 
+    let cancelled = false;
+
     const unsubscribe = LoungeApi.onStateChanged(loungeState.id, async (lounge) => {
       if (lounge) {
-        const [game, owner, players] = await Promise.all([
-          GameApi.fetchById(lounge.gameId),
-          UserApi.fetchById(lounge.ownerId),
-          Promise.all(lounge.playerIds.map(UserApi.fetchById)),
-        ]);
+        try {
+          const [game, owner, players] = await Promise.all([
+            GameApi.fetchById(lounge.gameId),
+            UserApi.fetchById(lounge.ownerId),
+            Promise.all(lounge.playerIds.map(UserApi.fetchById)),
+          ]);
 
-        setLoungeState({ loading: false, game, owner, players, ...lounge });
+          if (cancelled) return;
+
+          setLoungeState({ loading: false, game, owner, players, ...lounge });
+        } catch {
+          if (cancelled) return;
+          setLoungeState({ ...createDummy<LoungeContextType>(), loading: false });
+          navigate(Paths.main, { replace: true });
+          toast(CommonToast.NO_LOUNGE);
+        }
       } else {
+        if (cancelled) return;
         navigate(Paths.main, { replace: true });
         toast(CommonToast.NO_LOUNGE);
       }
     });
 
-    return () => unsubscribe();
-  }, [auth.loading, loungeState.id]);
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }, [auth.loading, loungeState.id, navigate, toast]);
 
   return (
     <LoungeContext.Provider value={loungeState}>

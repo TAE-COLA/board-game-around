@@ -3,8 +3,19 @@ import { useAuthContext, useLoungeContext } from 'app';
 import { LoungeApi, UserApi, YachtDiceApi } from 'features';
 import { YachtDiceBoard } from '../model';
 import { useEffect, useReducer, useState } from 'react';
-import { CommonError, CommonToast, GameName, launch } from 'shared';
+import {
+  CommonError,
+  CommonToast,
+  GameName,
+  useAsyncAction,
+  useSideEffectQueue,
+} from 'shared';
 import * as Intent from './YachtDice.intent';
+
+type YachtDiceAction = 'exit' | 'roll' | 'keep' | 'selectHand';
+
+const isPermissionDenied = (error: unknown) =>
+  error instanceof Error && error.message === CommonError.PERMISSION_DENIED;
 
 export function useYachtDiceIntent() {
   const auth = useAuthContext();
@@ -24,16 +35,26 @@ export function useYachtDiceIntent() {
 
   const [state, dispatch] = useReducer(Intent.reducer, new Intent.State({}));
   const [loading, setLoading] = useState(true);
+  const actions = useAsyncAction<YachtDiceAction>();
 
-  const [sideEffect, setSideEffect] = useState<Intent.SideEffect>();
+  const {
+    clearSideEffects,
+    pushSideEffect: setSideEffect,
+    sideEffects,
+  } = useSideEffectQueue<NonNullable<Intent.SideEffect>>();
 
   const onEvent: Intent.Event = {
     onClickExitButton: () => {
-      launch(setLoading, async () => {
-        await LoungeApi.exit(lounge.id, auth.id);
-        await YachtDiceApi.exit(lounge.id, auth.id);
-        setSideEffect({ type: 'SHOW_TOAST', options: CommonToast.EXIT_LOUNGE });
-        setSideEffect({ type: 'POP_BACK_STACK' });
+      actions.run('exit', async () => {
+        setLoading(true);
+        try {
+          await LoungeApi.exit(lounge.id, auth.id);
+          await YachtDiceApi.exit(lounge.id, auth.id);
+          setSideEffect({ type: 'SHOW_TOAST', options: CommonToast.EXIT_LOUNGE });
+          setSideEffect({ type: 'POP_BACK_STACK' });
+        } finally {
+          setLoading(false);
+        }
       });
     },
     onClickPrevBoardButton: () => {
@@ -61,30 +82,34 @@ export function useYachtDiceIntent() {
     },
     onRollFinish: (values: number[]) => {
       dispatch({ type: 'UPDATE_ROLLING', rolling: false });
-      YachtDiceApi.decreaseRolls(lounge.id).catch((error) => {
-        if (error.code === CommonError.PERMISSION_DENIED)
-          setSideEffect({ type: 'SHOW_TOAST', options: CommonToast.NOT_MY_TURN });
-      });
-      YachtDiceApi.updateDice(lounge.id, values).catch((error) => {
-        if (error.code === CommonError.PERMISSION_DENIED)
+      actions.run('roll', async () => {
+        await YachtDiceApi.roll(lounge.id, auth.id, values);
+      }).catch((error) => {
+        if (isPermissionDenied(error))
           setSideEffect({ type: 'SHOW_TOAST', options: CommonToast.NOT_MY_TURN });
       });
     },
     onAddDiceToKeep: (index: number) => {
-      YachtDiceApi.addKeep(lounge.id, state.dice[index]).catch((error) => {
-        if (error.code === CommonError.PERMISSION_DENIED)
+      actions.run('keep', async () => {
+        await YachtDiceApi.addKeep(lounge.id, auth.id, index);
+      }).catch((error) => {
+        if (isPermissionDenied(error))
           setSideEffect({ type: 'SHOW_TOAST', options: CommonToast.NOT_MY_TURN });
       });
     },
     onRemoveDiceToKeep: (index: number) => {
-      YachtDiceApi.removeKeep(lounge.id, state.keep[index]).catch((error) => {
-        if (error.code === CommonError.PERMISSION_DENIED)
+      actions.run('keep', async () => {
+        await YachtDiceApi.removeKeep(lounge.id, auth.id, state.keep[index]);
+      }).catch((error) => {
+        if (isPermissionDenied(error))
           setSideEffect({ type: 'SHOW_TOAST', options: CommonToast.NOT_MY_TURN });
       });
     },
     onClickSelectHandButton: (key: keyof YachtDiceBoard, value: number) => {
-      YachtDiceApi.updateBoards(lounge.id, key, value).catch((error) => {
-        if (error.code === CommonError.PERMISSION_DENIED)
+      actions.run('selectHand', async () => {
+        await YachtDiceApi.updateBoards(lounge.id, auth.id, key, value);
+      }).catch((error) => {
+        if (isPermissionDenied(error))
           setSideEffect({ type: 'SHOW_TOAST', options: CommonToast.NOT_MY_TURN });
       });
     },
@@ -128,5 +153,5 @@ export function useYachtDiceIntent() {
     return () => unsubscribe();
   }, [lounge.id, lounge.loading]);
 
-  return { state, loading, modal, onEvent, sideEffect };
+  return { state, loading, clearSideEffects, modal, onEvent, sideEffects };
 }

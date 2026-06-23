@@ -122,15 +122,26 @@ const failLevel = (game: TheMind): TheMind => {
   };
 };
 
-export const start = async (loungeId: string): Promise<void> => {
+export const start = async (loungeId: string, userId: string): Promise<void> => {
   const loungeSnapshot = await getRef(loungeReference(loungeId), () => {
     throw new Error(CommonError.NO_LOUNGE);
   });
   const lounge = new FModel<Lounge>(loungeSnapshot).sanitize();
 
+  if (lounge.ownerId !== userId) throw new Error(CommonError.PERMISSION_DENIED);
   if (lounge.status !== 'WAITING') throw new Error(CommonError.NO_LOUNGE);
   if (lounge.playerIds.length < 2 || lounge.playerIds.length > 4) {
     throw new Error(CommonError.NO_LOUNGE);
+  }
+
+  const statusResult = await db.runTransaction(loungeReference(loungeId), (current) => {
+    if (!current || current[LOUNGE.ownerId] !== userId || current[LOUNGE.status] !== 'WAITING') {
+      return current;
+    }
+    return { ...current, [LOUNGE.status]: 'PLAYING' };
+  });
+  if (!statusResult.committed || statusResult.snapshot.val()?.[LOUNGE.status] !== 'PLAYING') {
+    throw new Error(CommonError.PERMISSION_DENIED);
   }
 
   const playerIds = shuffle(lounge.playerIds);
@@ -154,7 +165,6 @@ export const start = async (loungeId: string): Promise<void> => {
 
   const updates = initialUpdates();
 
-  updates[`/${LOUNGE.reference}/${loungeId}/${LOUNGE.status}`] = 'PLAYING';
   updates[`/${THE_MIND.reference}/${loungeId}`] = theMind;
 
   await db.update(reference, updates);

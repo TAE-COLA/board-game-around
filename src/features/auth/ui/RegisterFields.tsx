@@ -11,6 +11,8 @@ type IProps = FlexProps & {
   passwordConfirm: FormData<'passwordConfrim', string>;
   nickname: FormData<'nickname', string>;
   valid: boolean;
+  checkEmailLoading?: boolean;
+  submitLoading?: boolean;
   onEmailChange: (email: string) => void;
   onClickCheckForDuplicatesButton: () => void;
   onPasswordChange: (password: string) => void;
@@ -26,6 +28,8 @@ export const RegisterFields: React.FC<IProps> = ({
   passwordConfirm,
   nickname,
   valid,
+  checkEmailLoading = false,
+  submitLoading = false,
   onEmailChange,
   onClickCheckForDuplicatesButton,
   onPasswordChange,
@@ -59,7 +63,8 @@ export const RegisterFields: React.FC<IProps> = ({
         ) : (
           <Button
             onClick={onClickCheckForDuplicatesButton}
-            isDisabled={email.value.length === 0 || email.error !== null}
+            isDisabled={email.value.length === 0 || email.error !== null || checkEmailLoading}
+            isLoading={checkEmailLoading}
             size='sm'
             marginRight='1'
           >
@@ -89,7 +94,12 @@ export const RegisterFields: React.FC<IProps> = ({
         placeholder='닉네임'
         helperText='닉네임은 2자 이상 10자 이하로 입력하세요.'
       />
-      <Button onClick={onClickSubmitButton} isDisabled={!valid} size={{ base: 'md', md: 'lg' }}>
+      <Button
+        onClick={onClickSubmitButton}
+        isDisabled={!valid || submitLoading}
+        isLoading={submitLoading}
+        size={{ base: 'md', md: 'lg' }}
+      >
         회원가입
       </Button>
     </Flex>

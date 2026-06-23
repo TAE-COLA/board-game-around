@@ -15,21 +15,29 @@ export const AuthProvider: React.FC = () => {
   const [authState, setAuthState] = useState({ ...createDummy<AuthContextType>(), loading: true });
 
   useEffect(() => {
+    let cancelled = false;
+
     const unsubscribe = onAuthStateChanged(firebaseAuth, async (currentUser) => {
       if (!currentUser) {
+        if (cancelled) return;
         setAuthState({ ...createDummy<AuthContextType>(), loading: false });
         return;
       }
 
       try {
         const user = await UserApi.fetchById(currentUser.uid);
+        if (cancelled) return;
         setAuthState({ loading: false, ...user });
       } catch {
+        if (cancelled) return;
         setAuthState({ ...createDummy<AuthContextType>(), loading: false });
       }
     });
 
-    return () => unsubscribe();
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
   }, [firebaseAuth]);
 
   useEffect(() => {

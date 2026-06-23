@@ -5,27 +5,34 @@ import { LoginContainer, LoginFields } from '../ui';
 import { useLoginIntent } from './useLoginIntent';
 
 export const LoginPage: React.FC<PageProps> = ({ navigate, toast }) => {
-  const { state, loading, onEvent, sideEffect } = useLoginIntent();
+  const { state, loading, actionPending, clearSideEffects, onEvent, sideEffects } =
+    useLoginIntent();
 
   useEffect(() => {
-    switch (sideEffect?.type) {
-      case 'NAVIGATE_TO_REGISTER':
-        navigate('register');
-        break;
-      case 'NAVIGATE_TO_MAIN':
-        navigate('main');
-        break;
-      case 'SHOW_TOAST':
-        toast(sideEffect.options);
-        break;
-    }
-  }, [sideEffect]);
+    if (sideEffects.length === 0) return;
+
+    sideEffects.forEach((sideEffect) => {
+      switch (sideEffect.type) {
+        case 'NAVIGATE_TO_REGISTER':
+          navigate('register');
+          break;
+        case 'NAVIGATE_TO_MAIN':
+          navigate('main');
+          break;
+        case 'SHOW_TOAST':
+          toast(sideEffect.options);
+          break;
+      }
+    });
+    clearSideEffects();
+  }, [clearSideEffects, navigate, sideEffects, toast]);
 
   return (
     <Page loading={loading} minHeight='100dvh'>
       <LoginContainer onClickRegisterButton={onEvent.onClickRegisterButton}>
         <LoginFields
           loading={loading}
+          loginLoading={!!actionPending.login}
           email={state.email}
           password={state.password}
           onEmailChange={onEvent.onEmailChange}

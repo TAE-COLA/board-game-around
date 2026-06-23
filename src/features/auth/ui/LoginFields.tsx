@@ -3,6 +3,7 @@ import React, { KeyboardEvent } from 'react';
 
 type IProps = FlexProps & {
   loading: boolean;
+  loginLoading?: boolean;
   email: string;
   password: string;
   onEmailChange: (email: string) => void;
@@ -12,6 +13,7 @@ type IProps = FlexProps & {
 
 export const LoginFields: React.FC<IProps> = ({
   loading,
+  loginLoading = false,
   email,
   password,
   onEmailChange,
@@ -60,7 +62,8 @@ export const LoginFields: React.FC<IProps> = ({
       </FormControl>
       <Button
         onClick={onClickLoginButton}
-        isDisabled={loading}
+        isDisabled={loading || loginLoading}
+        isLoading={loginLoading}
         colorScheme='blue'
         size={{ base: 'md', md: 'lg' }}
       >

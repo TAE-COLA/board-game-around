@@ -7,18 +7,23 @@ import { YachtDiceResultModal } from './ResultModal.modal';
 import { useYachtDiceIntent } from './useYachtDiceIntent';
 
 export const YachtDicePage: React.FC<PageProps> = ({ navigate, toast }) => {
-  const { state, loading, modal, onEvent, sideEffect } = useYachtDiceIntent();
+  const { state, loading, clearSideEffects, modal, onEvent, sideEffects } = useYachtDiceIntent();
 
   useEffect(() => {
-    switch (sideEffect?.type) {
-      case 'POP_BACK_STACK':
-        navigate(-1);
-        break;
-      case 'SHOW_TOAST':
-        toast(sideEffect.options);
-        break;
-    }
-  }, [sideEffect]);
+    if (sideEffects.length === 0) return;
+
+    sideEffects.forEach((sideEffect) => {
+      switch (sideEffect.type) {
+        case 'POP_BACK_STACK':
+          navigate(-1);
+          break;
+        case 'SHOW_TOAST':
+          toast(sideEffect.options);
+          break;
+      }
+    });
+    clearSideEffects();
+  }, [clearSideEffects, navigate, sideEffects, toast]);
 
   return (
     <Page loading={loading} minHeight='100dvh'>

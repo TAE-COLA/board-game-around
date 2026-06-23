@@ -68,7 +68,7 @@ const popIn = {
 
 export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
   const auth = useAuthContext();
-  const { state, loading, onEvent, sideEffect } = useTheMindIntent();
+  const { state, loading, clearSideEffects, onEvent, sideEffects } = useTheMindIntent();
   const hands = state.hands ?? {};
   const myHand = hands[auth.id] ?? [];
   const myLowestCard = myHand[0];
@@ -104,15 +104,20 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
   };
 
   useEffect(() => {
-    switch (sideEffect?.type) {
-      case 'NAVIGATE_TO_MAIN':
-        navigate(Paths.main, { replace: true });
-        break;
-      case 'SHOW_TOAST':
-        toast(sideEffect.options);
-        break;
-    }
-  }, [sideEffect]);
+    if (sideEffects.length === 0) return;
+
+    sideEffects.forEach((sideEffect) => {
+      switch (sideEffect.type) {
+        case 'NAVIGATE_TO_MAIN':
+          navigate(Paths.main, { replace: true });
+          break;
+        case 'SHOW_TOAST':
+          toast(sideEffect.options);
+          break;
+      }
+    });
+    clearSideEffects();
+  }, [clearSideEffects, navigate, sideEffects, toast]);
 
   useEffect(() => {
     if (!isTimerRunning && !hasVisibleEmoji) {

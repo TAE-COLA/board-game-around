@@ -1,13 +1,20 @@
 import { UserApi } from 'features';
 import { useEffect, useReducer, useState } from 'react';
-import { CommonToast, launch } from 'shared';
+import { CommonToast, useAsyncAction, useSideEffectQueue } from 'shared';
 import * as Intent from './Login.intent';
+
+type LoginAction = 'login';
 
 export function useLoginIntent() {
   const [state, dispatch] = useReducer(Intent.reducer, new Intent.State({}));
   const [loading, setLoading] = useState(true);
+  const actions = useAsyncAction<LoginAction>();
 
-  const [sideEffect, setSideEffect] = useState<Intent.SideEffect>();
+  const {
+    clearSideEffects,
+    pushSideEffect: setSideEffect,
+    sideEffects,
+  } = useSideEffectQueue<NonNullable<Intent.SideEffect>>();
 
   const onEvent: Intent.Event = {
     onEmailChange: (email) => {
@@ -17,7 +24,7 @@ export function useLoginIntent() {
       dispatch({ type: 'UPDATE_PASSWORD', password });
     },
     onClickLoginButton: () => {
-      launch(setLoading, async () => {
+      actions.run('login', async () => {
         try {
           await UserApi.login(state.email, state.password);
           setSideEffect({ type: 'SHOW_TOAST', options: CommonToast.LOGIN_SUCCESS });
@@ -45,5 +52,5 @@ export function useLoginIntent() {
     return () => clearTimeout(timeout);
   }, []);
 
-  return { state, loading, onEvent, sideEffect };
+  return { state, loading, actionPending: actions.pending, clearSideEffects, onEvent, sideEffects };
 }

@@ -20,11 +20,24 @@ const davinciCodeReference = (loungeId: string) =>
  *
  * 다빈치코드 게임을 시작합니다.
  */
-export const start = async (loungeId: string): Promise<void> => {
+export const start = async (loungeId: string, userId: string): Promise<void> => {
   const loungeSnapshot = await getRef(loungeReference(loungeId), () => {
     throw new Error(CommonError.NO_LOUNGE);
   });
   const lounge = new FModel<Lounge>(loungeSnapshot).sanitize();
+  if (lounge.ownerId !== userId || lounge.status !== 'WAITING') {
+    throw new Error(CommonError.PERMISSION_DENIED);
+  }
+
+  const statusResult = await db.runTransaction(loungeReference(loungeId), (current) => {
+    if (!current || current[LOUNGE.ownerId] !== userId || current[LOUNGE.status] !== 'WAITING') {
+      return current;
+    }
+    return { ...current, [LOUNGE.status]: 'PLAYING' };
+  });
+  if (!statusResult.committed || statusResult.snapshot.val()?.[LOUNGE.status] !== 'PLAYING') {
+    throw new Error(CommonError.PERMISSION_DENIED);
+  }
 
   const shuffledPlayerIds = shuffle(lounge.playerIds);
   const initialHands = shuffledPlayerIds.reduce((acc, playerId) => {
@@ -60,7 +73,6 @@ export const start = async (loungeId: string): Promise<void> => {
 
   const updates = initialUpdates();
 
-  updates[`/${LOUNGE.reference}/${loungeId}/${LOUNGE.status}`] = 'PLAYING';
   updates[`/${DAVINCI_CODE.reference}/${loungeId}`] = davinciCode;
 
   await db.update(reference, updates);
@@ -127,29 +139,42 @@ export const exit = async (loungeId: string, userId: string): Promise<void> => {
  *
  * 다빈치코드 타일을 뽑습니다.
  */
-export const drawTile = async (loungeId: string, isWhite: boolean): Promise<void> => {
-  const davinciCodeSnapshot = await getRef(davinciCodeReference(loungeId), () => {
-    throw new Error(CommonError.NO_GAME_LOUNGE);
+export const drawTile = async (
+  loungeId: string,
+  userId: string,
+  isWhite: boolean
+): Promise<void> => {
+  let rejected = false;
+  const result = await db.runTransaction(davinciCodeReference(loungeId), (current) => {
+    if (!current) {
+      rejected = true;
+      return;
+    }
+    const davinciCode = current as DavinciCode;
+    if (davinciCode.turn !== userId || davinciCode.phase === 'GUESS') {
+      rejected = true;
+      return;
+    }
+
+    const color = isWhite ? DAVINCI_CODE.white : DAVINCI_CODE.black;
+    const remainingTiles = davinciCode.remainingTiles[color] ?? [];
+    const [drawnTile, ...updatedTiles] = remainingTiles;
+    if (!drawnTile) {
+      rejected = true;
+      return;
+    }
+
+    return {
+      ...davinciCode,
+      remainingTiles: {
+        ...davinciCode.remainingTiles,
+        [color]: updatedTiles.length === 0 ? [placeholder] : updatedTiles,
+      },
+      pendingTiles: [...(davinciCode.pendingTiles ?? []).filter((tile) => tile), drawnTile],
+    };
   });
-  const davinciCode = new FModel<DavinciCode>(davinciCodeSnapshot).sanitize();
 
-  const remainingTiles =
-    davinciCode.remainingTiles[isWhite ? DAVINCI_CODE.white : DAVINCI_CODE.black];
-  const pendingTiles = davinciCode.pendingTiles;
-
-  const [drawnTile, ...updatedTiles] = remainingTiles;
-  pendingTiles.push(drawnTile);
-
-  const updates = initialUpdates();
-
-  updates[
-    `/${DAVINCI_CODE.reference}/${loungeId}/${DAVINCI_CODE.remainingTiles}/${
-      isWhite ? DAVINCI_CODE.white : DAVINCI_CODE.black
-    }`
-  ] = updatedTiles.length === 0 ? placeholder : updatedTiles;
-  updates[`/${DAVINCI_CODE.reference}/${loungeId}/${DAVINCI_CODE.pendingTiles}`] = pendingTiles;
-
-  await db.update(reference, updates);
+  if (!result.committed || rejected) throw new Error(CommonError.PERMISSION_DENIED);
 };
 
 /**
@@ -168,17 +193,29 @@ export const updateHand = async (
   hand: DavinciCodeTile[],
   clearPendingTiles: boolean
 ): Promise<void> => {
-  const davinciCodeSnapshot = await getRef(davinciCodeReference(loungeId), () => {
-    throw new Error(CommonError.NO_GAME_LOUNGE);
-  });
-  const davinciCode = new FModel<DavinciCode>(davinciCodeSnapshot).sanitize();
+  let rejected = false;
+  const result = await db.runTransaction(davinciCodeReference(loungeId), (current) => {
+    if (!current) {
+      rejected = true;
+      return;
+    }
+    const davinciCode = current as DavinciCode;
+    if (davinciCode.turn !== playerId) {
+      rejected = true;
+      return;
+    }
 
-  const updates = initialUpdates();
+    const nextGame: DavinciCode = {
+      ...davinciCode,
+      hands: {
+        ...davinciCode.hands,
+        [playerId]: hand,
+      },
+    };
 
-  updates[`/${DAVINCI_CODE.reference}/${loungeId}/${DAVINCI_CODE.hands}/${playerId}`] = hand;
+    if (!clearPendingTiles) return nextGame;
 
-  if (clearPendingTiles) {
-    updates[`/${DAVINCI_CODE.reference}/${loungeId}/${DAVINCI_CODE.pendingTiles}`] = [placeholder];
+    nextGame.pendingTiles = [placeholder as unknown as DavinciCodeTile];
 
     if (davinciCode.phase === 'INITIAL_DRAW') {
       const playerIds = davinciCode.playerIds;
@@ -186,14 +223,16 @@ export const updateHand = async (
       const nextPlayersHand = davinciCode.hands[nextPlayerId];
 
       if (nextPlayersHand.length !== 0) {
-        updates[`/${DAVINCI_CODE.reference}/${loungeId}/${DAVINCI_CODE.phase}`] = 'DRAW';
+        nextGame.phase = 'DRAW';
       }
 
-      updates[`/${DAVINCI_CODE.reference}/${loungeId}/${DAVINCI_CODE.turn}`] = nextPlayerId;
+      nextGame.turn = nextPlayerId;
     } else {
-      updates[`/${DAVINCI_CODE.reference}/${loungeId}/${DAVINCI_CODE.phase}`] = 'GUESS';
+      nextGame.phase = 'GUESS';
     }
-  }
 
-  await db.update(reference, updates);
+    return nextGame;
+  });
+
+  if (!result.committed || rejected) throw new Error(CommonError.PERMISSION_DENIED);
 };

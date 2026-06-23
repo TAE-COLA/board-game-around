@@ -2,8 +2,10 @@ import { useDisclosure } from '@chakra-ui/react';
 import { useAuthContext, useLoungeContext } from 'app';
 import { DavinciCodeApi, LoungeApi, UserApi } from 'features';
 import { useEffect, useReducer, useState } from 'react';
-import { CommonToast, GameName, launch } from 'shared';
+import { CommonToast, GameName, useAsyncAction, useSideEffectQueue } from 'shared';
 import * as Intent from './DavinciCode.intent';
+
+type DavinciCodeAction = 'exit' | 'draw' | 'submitHand';
 
 export const useDavinciCodeIntent = () => {
   const auth = useAuthContext();
@@ -11,8 +13,13 @@ export const useDavinciCodeIntent = () => {
 
   const [state, dispatch] = useReducer(Intent.reducer, new Intent.State({}));
   const [loading, setLoading] = useState(true);
+  const actions = useAsyncAction<DavinciCodeAction>();
 
-  const [sideEffect, setSideEffect] = useState<Intent.SideEffect>();
+  const {
+    clearSideEffects,
+    pushSideEffect: setSideEffect,
+    sideEffects,
+  } = useSideEffectQueue<NonNullable<Intent.SideEffect>>();
 
   const resultModal = useDisclosure();
   const drawModal = useDisclosure();
@@ -38,18 +45,27 @@ export const useDavinciCodeIntent = () => {
 
   const onEvent: Intent.Event = {
     onClickExitButton: () => {
-      launch(setLoading, async () => {
-        await LoungeApi.exit(lounge.id, auth.id);
-        await DavinciCodeApi.exit(lounge.id, auth.id);
-        setSideEffect({ type: 'SHOW_TOAST', options: CommonToast.EXIT_LOUNGE });
-        setSideEffect({ type: 'NAVIGATE_TO_MAIN' });
+      actions.run('exit', async () => {
+        setLoading(true);
+        try {
+          await LoungeApi.exit(lounge.id, auth.id);
+          await DavinciCodeApi.exit(lounge.id, auth.id);
+          setSideEffect({ type: 'SHOW_TOAST', options: CommonToast.EXIT_LOUNGE });
+          setSideEffect({ type: 'NAVIGATE_TO_MAIN' });
+        } finally {
+          setLoading(false);
+        }
       });
     },
     onClickDrawButton: (isWhite) => {
-      DavinciCodeApi.drawTile(lounge.id, isWhite);
+      actions.run('draw', async () => {
+        await DavinciCodeApi.drawTile(lounge.id, auth.id, isWhite);
+      });
     },
     onSubmitHand: (hand) => {
-      DavinciCodeApi.updateHand(lounge.id, auth.id, hand, true);
+      actions.run('submitHand', async () => {
+        await DavinciCodeApi.updateHand(lounge.id, auth.id, hand, true);
+      });
     },
     onClickTile: () => {
       modal.numberModal.onOpen();
@@ -97,5 +113,5 @@ export const useDavinciCodeIntent = () => {
     return () => unsubscribe();
   }, [lounge.id, lounge.loading]);
 
-  return { state, loading, modal, onEvent, sideEffect };
+  return { state, loading, clearSideEffects, modal, onEvent, sideEffects };
 };
