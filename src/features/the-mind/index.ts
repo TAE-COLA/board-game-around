@@ -1,1 +1,3 @@
-export * as TheMindApi from './the-mind.api';
+export * as TheMindApi from './api/the-mind.api';
+export * from './model';
+export * from './page';

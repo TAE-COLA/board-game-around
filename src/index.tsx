@@ -1,5 +1,4 @@
-import { App, Providers } from 'app';
-import { initPages } from 'pages';
+import { App, initPages, Providers } from 'app';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';

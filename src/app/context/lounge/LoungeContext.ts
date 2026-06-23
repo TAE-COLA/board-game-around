@@ -1,4 +1,5 @@
-import { Game, User } from 'models';
+import { User } from 'features/auth';
+import { Game } from 'features/game';
 import { createContext } from 'react';
 
 export interface LoungeContextType {
