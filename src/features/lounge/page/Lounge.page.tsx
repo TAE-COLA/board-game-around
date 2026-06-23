@@ -53,8 +53,20 @@ export const LoungePage: React.FC<PageProps> = ({ navigate, toast }) => {
   }, [sideEffect]);
 
   return (
-    <Page loading={loading} minHeight='100dvh'>
-      <Flex direction='column' width='100%' minHeight='100%' gap={{ base: 4, md: 8 }} paddingBottom={4}>
+    <Page
+      loading={loading}
+      minHeight='100dvh'
+      height={{ base: 'auto', md: '100dvh' }}
+      overflow={{ base: 'visible', md: 'hidden' }}
+    >
+      <Flex
+        direction='column'
+        width='100%'
+        height={{ base: 'auto', md: '100%' }}
+        minHeight={0}
+        gap={{ base: 4, md: 8 }}
+        paddingBottom={4}
+      >
         <LoungeHeader
           onClickCopyButton={onEvent.onClickCopyButton}
           onClickExitButton={onEvent.onClickExitButton}

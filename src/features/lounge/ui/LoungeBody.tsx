@@ -18,9 +18,15 @@ export const LoungeBody: React.FC<IProps> = ({ onClickStartButton, ...props }) =
     (lounge.players.length >= 2 && lounge.players.length <= 4);
 
   return (
-    <Flex width='100%' direction={{ base: 'column', lg: 'row' }} gap={{ base: 4, md: 8 }} {...props}>
-      <RuleBox flex='2' />
-      <Flex direction='column' flex='1' gap={4} minWidth={0}>
+    <Flex
+      width='100%'
+      direction={{ base: 'column', lg: 'row' }}
+      gap={{ base: 4, md: 8 }}
+      minHeight={0}
+      {...props}
+    >
+      <RuleBox flex='2' minHeight={0} />
+      <Flex direction='column' flex='1' gap={4} minWidth={0} minHeight={0}>
         <PlayerList players={lounge.players} owner={lounge.owner} flex='1' />
         <Button
           onClick={onClickStartButton}

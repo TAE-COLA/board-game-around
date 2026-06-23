@@ -151,6 +151,8 @@ export const RuleBox: React.FC<FlexProps> = ({ ...props }) => {
       background='gray.100'
       borderRadius='md'
       minWidth={0}
+      minHeight={0}
+      overflow='hidden'
       {...props}
     >
       <Text fontSize={{ base: 'lg', md: 'xl' }} fontWeight='bold'>
@@ -165,15 +167,21 @@ export const RuleBox: React.FC<FlexProps> = ({ ...props }) => {
       >
         {isOpen ? '튜토리얼 접기' : '튜토리얼 펼치기'}
       </Button>
-      <Box>
+      <Box
+        display='flex'
+        flexDirection='column'
+        flex={{ base: 'initial', md: 1 }}
+        minHeight={0}
+        overflow='hidden'
+      >
         <Text fontWeight='bold' marginBottom={3}>
           게임 설명
         </Text>
-        <Box display={{ base: 'none', md: 'block' }}>
+        <Box display={{ base: 'none', md: 'block' }} flex='1' minHeight={0} overflowY='auto' paddingRight={2}>
           <MarkdownText>{description}</MarkdownText>
         </Box>
         <Collapse in={isOpen} animateOpacity>
-          <Box display={{ md: 'none' }}>
+          <Box display={{ md: 'none' }} overflow='visible'>
             <MarkdownText>{description}</MarkdownText>
           </Box>
         </Collapse>
