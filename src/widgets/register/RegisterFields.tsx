@@ -39,8 +39,8 @@ export const RegisterFields: React.FC<IProps> = ({
       direction='column'
       width='full'
       maxWidth='md'
-      padding='8'
-      gap='4'
+      padding={{ base: 5, md: 8 }}
+      gap={{ base: 3, md: 4 }}
       bg='white'
       borderRadius='md'
       boxShadow='md'
@@ -89,7 +89,7 @@ export const RegisterFields: React.FC<IProps> = ({
         placeholder='닉네임'
         helperText='닉네임은 2자 이상 10자 이하로 입력하세요.'
       />
-      <Button onClick={onClickSubmitButton} isDisabled={!valid} size='lg'>
+      <Button onClick={onClickSubmitButton} isDisabled={!valid} size={{ base: 'md', md: 'lg' }}>
         회원가입
       </Button>
     </Flex>

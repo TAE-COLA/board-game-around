@@ -40,11 +40,11 @@ export const FormInput = <Label extends string>({
           placeholder={placeholder}
           value={data.value}
           onChange={(e) => onValueChange(e.target.value)}
-          paddingRight='100'
+          paddingRight={children ? '7.5rem' : undefined}
           isReadOnly={isReadOnly}
           isDisabled={isDisabled}
         />
-        <InputRightElement width='120'>{children}</InputRightElement>
+        <InputRightElement width='7rem'>{children}</InputRightElement>
       </InputGroup>
       {!data.error ? (
         <FormHelperText paddingX='2'>{helperText}</FormHelperText>

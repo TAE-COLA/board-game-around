@@ -24,6 +24,7 @@ import {
 import { PageProps, Paths, useAuthContext } from 'app';
 import { AnimatePresence } from 'framer-motion';
 import React, { useEffect, useState } from 'react';
+import { GameName } from 'shared';
 import { AnimatedEffect, MotionEffect, Header, MotionBox, Page } from 'widgets';
 import { useTheMindIntent } from './useTheMindIntent';
 
@@ -140,7 +141,7 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
   }, [expiredTimerKey, isTimerRunning, onEvent, remainingSeconds, serverNow, state.lastPlayedAt]);
 
   return (
-    <Page loading={loading} minHeight='100vh'>
+    <Page loading={loading} minHeight='100dvh'>
       <Modal
         isOpen={isResultModalOpen}
         onClose={closeResultModal}
@@ -177,46 +178,57 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
         </ModalContent>
       </Modal>
 
-      <Flex direction='column' width='100%' height='100%' gap={8}>
-        <Header>
-          <Flex width='100%' justify='space-between' align='center' gap={4}>
-            <Heading size='lg'>The Mind</Heading>
-            <Button onClick={onEvent.onClickExitButton} colorScheme='pink'>
+      <Flex direction='column' width='100%' height='100%' gap={{ base: 4, md: 8 }} paddingBottom={4}>
+        <Header
+          direction={{ base: 'column', sm: 'row' }}
+          align={{ base: 'stretch', sm: 'center' }}
+        >
+          <Flex
+            width={{ base: '100%', sm: 'auto' }}
+            justify='space-between'
+            align='center'
+            gap={3}
+            minWidth={0}
+          >
+            <Heading size={{ base: 'md', md: 'lg' }}>{GameName.TheMind.korean}</Heading>
+            <Button onClick={onEvent.onClickExitButton} colorScheme='pink' size={{ base: 'sm', md: 'md' }}>
               Exit
             </Button>
           </Flex>
         </Header>
 
-        <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4}>
-          <Stat padding='4' background='gray.100' borderRadius='md'>
+        <SimpleGrid columns={{ base: 2, md: 4 }} spacing={{ base: 2, md: 4 }}>
+          <Stat padding={{ base: 3, md: 4 }} background='gray.100' borderRadius='md' minWidth={0}>
             <StatLabel>Level</StatLabel>
-            <StatNumber>
+            <StatNumber fontSize={{ base: 'xl', md: '2xl' }}>
               {state.level} / {state.maxLevel}
             </StatNumber>
-            <Text marginTop={1} color='gray.500' fontSize='sm'>
+            <Text marginTop={1} color='gray.500' fontSize={{ base: 'xs', md: 'sm' }}>
               {getRewardLabel(state.level)}
             </Text>
           </Stat>
-          <Stat padding='4' background='gray.100' borderRadius='md'>
+          <Stat padding={{ base: 3, md: 4 }} background='gray.100' borderRadius='md' minWidth={0}>
             <StatLabel>Lives</StatLabel>
-            <StatNumber>{state.lives}</StatNumber>
+            <StatNumber fontSize={{ base: 'xl', md: '2xl' }}>{state.lives}</StatNumber>
           </Stat>
-          <Stat padding='4' background='gray.100' borderRadius='md'>
+          <Stat padding={{ base: 3, md: 4 }} background='gray.100' borderRadius='md' minWidth={0}>
             <StatLabel>Stars</StatLabel>
-            <StatNumber>{state.stars}</StatNumber>
+            <StatNumber fontSize={{ base: 'xl', md: '2xl' }}>{state.stars}</StatNumber>
           </Stat>
-          <Stat padding='4' background='gray.100' borderRadius='md'>
+          <Stat padding={{ base: 3, md: 4 }} background='gray.100' borderRadius='md' minWidth={0}>
             <StatLabel>Phase</StatLabel>
-            <StatNumber fontSize='2xl'>{phaseLabel[state.phase]}</StatNumber>
+            <StatNumber fontSize={{ base: 'xl', md: '2xl' }}>{phaseLabel[state.phase]}</StatNumber>
           </Stat>
         </SimpleGrid>
 
-        <Flex gap={3} wrap='wrap'>
+        <Flex gap={2} wrap='wrap'>
           {state.phase === 'READY' && (
             <Button
               onClick={onEvent.onClickReadyButton}
               colorScheme='pink'
               isDisabled={isReady}
+              width={{ base: '100%', sm: 'auto' }}
+              size={{ base: 'sm', md: 'md' }}
             >
               {isReady ? '준비 완료' : '준비하기'}
             </Button>
@@ -227,29 +239,52 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
                 onClick={onEvent.onClickStarButton}
                 colorScheme='yellow'
                 isDisabled={state.stars <= 0 || votedStar}
+                flex={{ base: '1 0 100%', sm: '0 0 auto' }}
+                size={{ base: 'sm', md: 'md' }}
               >
                 {votedStar ? '별 투표 완료' : '별 사용 동의'}
               </Button>
               {state.starVotePlayerIds.length > 0 && (
-                <Button onClick={onEvent.onClickCancelStarVoteButton} variant='outline'>
+                <Button
+                  onClick={onEvent.onClickCancelStarVoteButton}
+                  variant='outline'
+                  flex={{ base: '1 0 100%', sm: '0 0 auto' }}
+                  size={{ base: 'sm', md: 'md' }}
+                >
                   별 투표 취소
                 </Button>
               )}
             </>
           )}
           {state.phase === 'LEVEL_COMPLETE' && (
-            <Button onClick={onEvent.onClickNextLevelButton} colorScheme='pink'>
+            <Button
+              onClick={onEvent.onClickNextLevelButton}
+              colorScheme='pink'
+              width={{ base: '100%', sm: 'auto' }}
+              size={{ base: 'sm', md: 'md' }}
+            >
               다음 레벨 준비
             </Button>
           )}
           {isEnded && (
             <>
               {state.phase === 'GAME_LOST' && (
-                <Button onClick={onEvent.onClickRestartButton} colorScheme='pink'>
+                <Button
+                  onClick={onEvent.onClickRestartButton}
+                  colorScheme='pink'
+                  flex={{ base: '1 0 100%', sm: '0 0 auto' }}
+                  size={{ base: 'sm', md: 'md' }}
+                >
                   처음부터 다시 시작
                 </Button>
               )}
-              <Button onClick={onEvent.onClickExitButton} colorScheme='pink' variant='outline'>
+              <Button
+                onClick={onEvent.onClickExitButton}
+                colorScheme='pink'
+                variant='outline'
+                flex={{ base: '1 0 100%', sm: '0 0 auto' }}
+                size={{ base: 'sm', md: 'md' }}
+              >
                 메인으로 나가기
               </Button>
             </>
@@ -264,7 +299,7 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
         )}
         {state.phase === 'PLAYING' && (
           <MotionBox
-            padding='4'
+            padding={{ base: 3, md: 4 }}
             background={isTimerDanger ? 'red.50' : 'gray.100'}
             border='1px solid'
             borderColor={isTimerDanger ? 'red.300' : 'gray.200'}
@@ -272,7 +307,7 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
             animate={isTimerDanger ? dangerShake : { x: 0 }}
           >
             <Flex justify='space-between' align='center' gap={4} marginBottom={3}>
-              <Text fontWeight='bold' color={isTimerDanger ? 'red.600' : 'gray.700'}>
+              <Text fontWeight='bold' color={isTimerDanger ? 'red.600' : 'gray.700'} minWidth={0}>
                 {isTimerRunning
                   ? isTimerDanger
                     ? '서둘러야 합니다'
@@ -281,8 +316,9 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
               </Text>
               <Text
                 fontWeight='bold'
-                fontSize='2xl'
+                fontSize={{ base: 'xl', md: '2xl' }}
                 color={isTimerDanger ? 'red.600' : 'gray.800'}
+                flexShrink={0}
               >
                 {isTimerRunning ? `${remainingSeconds}s` : '--'}
               </Text>
@@ -311,24 +347,26 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
           <Text color='red.600'>라이프가 없는 상태에서 레벨에 실패했습니다.</Text>
         )}
 
-        <Flex direction={{ base: 'column', lg: 'row' }} gap={6} flex={1} minHeight={0}>
+        <Flex direction={{ base: 'column', lg: 'row' }} gap={{ base: 5, md: 6 }} flex={1} minHeight={0}>
           <Flex direction='column' flex='1' gap={4}>
             <Heading size='md'>Players</Heading>
-            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
+            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={{ base: 3, md: 4 }}>
               {state.players.map((player) => (
                 <Flex
                   key={player.id}
                   align='center'
                   justify='space-between'
                   gap={3}
-                  padding='4'
+                  padding={{ base: 3, md: 4 }}
                   background='gray.100'
                   borderRadius='md'
-                  minHeight='84px'
+                  minHeight={{ base: '72px', md: '84px' }}
                 >
                   <Flex direction='column' gap={1} minWidth={0} flex='1'>
                     <Flex align='center' gap={2} minHeight='38px' minWidth={0}>
-                      <Text fontWeight='bold'>{player.name}</Text>
+                      <Text fontWeight='bold' noOfLines={1}>
+                        {player.name}
+                      </Text>
                       {state.emojis?.[player.id] &&
                         serverNow - state.emojis[player.id].shownAt < EMOJI_VISIBLE_MS && (
                           <AnimatedEffect
@@ -340,7 +378,7 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
                             width='42px'
                             height='38px'
                             flexShrink={0}
-                            fontSize='3xl'
+                            fontSize={{ base: '2xl', md: '3xl' }}
                             lineHeight='1'
                           >
                             {state.emojis[player.id].value}
@@ -349,7 +387,7 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
                     </Flex>
                     <Text color='gray.600'>{hands[player.id]?.length ?? 0} cards</Text>
                   </Flex>
-                  <Flex gap={2} wrap='wrap' justify='flex-end' align='center'>
+                  <Flex gap={1.5} wrap='wrap' justify='flex-end' align='center' flexShrink={0}>
                     {player.id === auth.id && <Badge colorScheme='pink'>You</Badge>}
                     {state.readyPlayerIds.includes(player.id) && (
                       <Badge colorScheme='green'>Ready</Badge>
@@ -399,23 +437,35 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
 
           <Flex direction='column' flex='1' gap={4}>
             <Heading size='md'>Your Hand</Heading>
-            <Flex wrap='wrap' gap={3}>
+            <Flex wrap='wrap' gap={{ base: 2, md: 3 }}>
               {myHand.map((card) => {
                 const isPlayableCard = state.phase === 'PLAYING' && card === myLowestCard;
 
                 return (
                   <Button
                     key={card}
-                    width={isPlayableCard ? '72px' : '64px'}
-                    height={isPlayableCard ? '108px' : '96px'}
-                    minWidth={isPlayableCard ? '72px' : '64px'}
+                    width={{
+                      base: isPlayableCard ? '60px' : '54px',
+                      md: isPlayableCard ? '72px' : '64px',
+                    }}
+                    height={{
+                      base: isPlayableCard ? '90px' : '80px',
+                      md: isPlayableCard ? '108px' : '96px',
+                    }}
+                    minWidth={{
+                      base: isPlayableCard ? '60px' : '54px',
+                      md: isPlayableCard ? '72px' : '64px',
+                    }}
                     border='1px solid'
                     borderColor={isPlayableCard ? 'pink.400' : 'gray.300'}
                     borderRadius='md'
                     background={isPlayableCard ? 'pink.50' : 'white'}
                     color='gray.900'
                     fontWeight='bold'
-                    fontSize={isPlayableCard ? '3xl' : '2xl'}
+                    fontSize={{
+                      base: isPlayableCard ? '2xl' : 'xl',
+                      md: isPlayableCard ? '3xl' : '2xl',
+                    }}
                     opacity={state.phase === 'PLAYING' && !isPlayableCard ? 0.45 : 1}
                     transform={isPlayableCard ? 'translateY(-4px)' : undefined}
                     boxShadow={isPlayableCard ? 'md' : undefined}
@@ -429,8 +479,8 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
               {myHand.length === 0 && <Text color='gray.600'>No cards in hand.</Text>}
             </Flex>
 
-            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
-              <Box padding='4' background='gray.100' borderRadius='md'>
+            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={{ base: 3, md: 4 }}>
+              <Box padding={{ base: 3, md: 4 }} background='gray.100' borderRadius='md'>
                 <Heading size='sm' marginBottom={3}>
                   Played
                 </Heading>
@@ -448,7 +498,7 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
                 </Flex>
               </Box>
 
-              <Box padding='4' background='gray.100' borderRadius='md'>
+              <Box padding={{ base: 3, md: 4 }} background='gray.100' borderRadius='md'>
                 <Heading size='sm' marginBottom={3}>
                   Discarded
                 </Heading>

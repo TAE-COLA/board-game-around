@@ -21,7 +21,7 @@ export const LoginPage: React.FC<PageProps> = ({ navigate, toast }) => {
   }, [sideEffect]);
 
   return (
-    <Page loading={loading} height='100vh'>
+    <Page loading={loading} minHeight='100dvh'>
       <LoginContainer onClickRegisterButton={onEvent.onClickRegisterButton}>
         <LoginFields
           loading={loading}

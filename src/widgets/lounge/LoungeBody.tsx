@@ -13,17 +13,17 @@ export const LoungeBody: React.FC<IProps> = ({ onClickStartButton, ...props }) =
   const lounge = useLoungeContext();
   const isOwner = auth.id === lounge.owner.id;
   const canStartTheMind =
-    lounge.game.name !== GameName.TheMind.korean ||
+    !GameName.isTheMind(lounge.game.name) ||
     (lounge.players.length >= 2 && lounge.players.length <= 4);
 
   return (
-    <Flex width='100%' gap='8' {...props}>
+    <Flex width='100%' direction={{ base: 'column', lg: 'row' }} gap={{ base: 4, md: 8 }} {...props}>
       <RuleBox flex='2' />
-      <Flex direction='column' flex='1'>
+      <Flex direction='column' flex='1' gap={4} minWidth={0}>
         <PlayerList players={lounge.players} owner={lounge.owner} flex='1' />
         <Button
           onClick={onClickStartButton}
-          size='lg'
+          size={{ base: 'md', md: 'lg' }}
           colorScheme='pink'
           isDisabled={!isOwner || !canStartTheMind}
         >

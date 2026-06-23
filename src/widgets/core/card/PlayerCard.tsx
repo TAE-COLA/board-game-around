@@ -16,11 +16,11 @@ export const PlayerCard: React.FC<IProps> = ({ player, isOwner = false, isPlayer
       align='center'
       size={isPlayerTurn ? 'md' : 'sm'}
       opacity={isPlayerTurn ? '1' : '0.5'}
-      marginStart={isPlayerTurn ? '0' : '4'}
+      marginStart={{ base: 0, md: isPlayerTurn ? '0' : '4' }}
       {...props}
     >
       <CardBody>
-        <Text>{player.name}</Text>
+        <Text noOfLines={1}>{player.name}</Text>
       </CardBody>
       {isOwner && <StarIcon width='6' height='6' marginEnd='4' />}
     </Card>

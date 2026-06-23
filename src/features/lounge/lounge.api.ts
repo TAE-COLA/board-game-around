@@ -1,6 +1,6 @@
 import * as db from 'firebase/database';
 import { FModel, LOUNGE, Lounge, USER_LOUNGE, UserLounge } from 'models';
-import { CommonError, generateCode, initialUpdates, placeholder } from 'shared';
+import { CommonError, GameName, generateCode, initialUpdates, placeholder } from 'shared';
 import { getRef } from '../firebase.util';
 import { database } from '../firebase_config';
 import { fetchById as fetchGameById } from '../game/game.api';
@@ -108,7 +108,7 @@ export const join = async (
     ? lounge.playerIds
     : [...lounge.playerIds, userId];
   const selectedGame = await fetchGameById(gameId);
-  if (selectedGame.name === 'The Mind' && playerIds.length > 4) {
+  if (GameName.isTheMind(selectedGame.name) && playerIds.length > 4) {
     throw new Error(CommonError.NO_LOUNGE);
   }
 

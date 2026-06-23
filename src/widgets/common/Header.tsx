@@ -10,13 +10,14 @@ export const Header: React.FC<IProps> = ({ children, ...props }) => {
     <Flex
       justify='space-between'
       align='center'
-      paddingX='32px'
-      paddingY='16px'
+      gap={4}
+      paddingX={{ base: 4, md: 8 }}
+      paddingY={{ base: 3, md: 4 }}
       bg='white'
       borderRadius='8px'
       {...props}
     >
-      <Text as='b' fontSize='2xl'>
+      <Text as='b' fontSize={{ base: 'lg', md: '2xl' }} flexShrink={0}>
         우니의 보드게임천국
       </Text>
       {children}

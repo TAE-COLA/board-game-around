@@ -3,6 +3,15 @@ export interface Game {
   name: string;
   description: string;
   image: string;
+  metadata?: GameMetadata;
+}
+
+export interface GameMetadata {
+  minPlayers: number;
+  maxPlayers: number;
+  playMode: '협동게임' | '경쟁게임';
+  gameType: '심리게임' | '운빨게임';
+  averagePlayTimeMinutes: number;
 }
 
 export const GAME = {
@@ -10,4 +19,5 @@ export const GAME = {
   name: 'name',
   description: 'description',
   image: 'image',
+  metadata: 'metadata',
 } as const;

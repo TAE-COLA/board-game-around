@@ -26,16 +26,12 @@ export function useLoungeIntent() {
     onClickStartButton: () => {
       launch(setLoading, async () => {
         try {
-          switch (lounge.game.name) {
-            case GameName.YatchDice.korean:
-              await YachtDiceApi.start(lounge.id);
-              break;
-            case GameName.DavinciCode.korean:
-              await DavinciCodeApi.start(lounge.id);
-              break;
-            case GameName.TheMind.korean:
-              await TheMindApi.start(lounge.id);
-              break;
+          if (lounge.game.name === GameName.YatchDice.korean) {
+            await YachtDiceApi.start(lounge.id);
+          } else if (lounge.game.name === GameName.DavinciCode.korean) {
+            await DavinciCodeApi.start(lounge.id);
+          } else if (GameName.isTheMind(lounge.game.name)) {
+            await TheMindApi.start(lounge.id);
           }
         } catch {
           setSideEffect({ type: 'SHOW_TOAST', options: CommonToast.FIREBASE_PERMISSION_DENIED });
@@ -50,16 +46,12 @@ export function useLoungeIntent() {
 
   useEffect(() => {
     if (lounge?.status === 'PLAYING') {
-      switch (lounge.game.name) {
-        case GameName.YatchDice.korean:
-          setSideEffect({ type: 'NAVIGATE_TO_YACHT_DICE' });
-          break;
-        case GameName.DavinciCode.korean:
-          setSideEffect({ type: 'NAVIGATE_TO_DAVINCI_CODE' });
-          break;
-        case GameName.TheMind.korean:
-          setSideEffect({ type: 'NAVIGATE_TO_THE_MIND' });
-          break;
+      if (lounge.game.name === GameName.YatchDice.korean) {
+        setSideEffect({ type: 'NAVIGATE_TO_YACHT_DICE' });
+      } else if (lounge.game.name === GameName.DavinciCode.korean) {
+        setSideEffect({ type: 'NAVIGATE_TO_DAVINCI_CODE' });
+      } else if (GameName.isTheMind(lounge.game.name)) {
+        setSideEffect({ type: 'NAVIGATE_TO_THE_MIND' });
       }
     }
   }, [lounge.status]);

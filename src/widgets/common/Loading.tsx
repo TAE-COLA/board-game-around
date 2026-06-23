@@ -3,7 +3,7 @@ import React from 'react';
 
 export const Loading: React.FC = () => {
   return (
-    <Flex height='100vh' justify='center' align='center'>
+    <Flex minHeight='100dvh' justify='center' align='center'>
       <Spinner size='xl' />
     </Flex>
   );

@@ -6,15 +6,21 @@ import { firestore } from '../firebase_config';
 
 const collection = fs.collection(firestore, GAME.collection);
 
-const localGames: Game[] = [
-  {
-    id: 'the-mind',
-    name: GameName.TheMind.korean,
-    description:
-      'Play numbered cards from 1 to 100 in ascending order without table talk.',
-    image: '',
-  },
-];
+const isTheMindGame = (game: Game) => game.id === 'the-mind' || GameName.isTheMind(game.name);
+
+const normalizeGame = (game: Game): Game =>
+  isTheMindGame(game) ? { ...game, name: GameName.TheMind.korean } : game;
+
+const dedupeGames = (games: Game[]) =>
+  games.reduce<Game[]>((acc, game) => {
+    const exists = acc.some((item) =>
+      isTheMindGame(item) && isTheMindGame(game)
+        ? true
+        : item.id === game.id || item.name === game.name
+    );
+
+    return exists ? acc : [...acc, game];
+  }, []);
 
 /**
  *
@@ -29,15 +35,14 @@ export const fetchAll = async () => {
     const snapshots = await getDocs(collection, () => {
       throw new Error(CommonError.NO_GAME);
     });
-    games = snapshots.docs.map((snapshot) => ({ id: snapshot.id, ...snapshot.data() } as Game));
+    games = dedupeGames(
+      snapshots.docs.map((snapshot) => normalizeGame({ id: snapshot.id, ...snapshot.data() } as Game))
+    );
   } catch {
     games = [];
   }
 
-  return localGames.reduce((acc, game) => {
-    const exists = acc.some((item) => item.id === game.id || item.name === game.name);
-    return exists ? acc : [...acc, game];
-  }, games);
+  return games;
 };
 
 /**
@@ -48,14 +53,11 @@ export const fetchAll = async () => {
  * Game ID로 게임을 가져옵니다.
  */
 export const fetchById = async (id: string): Promise<Game> => {
-  const localGame = localGames.find((game) => game.id === id);
-  if (localGame) return localGame;
-
   const document = fs.doc(collection, id);
   const snapshot = await getDoc(document, () => {
     throw new Error(CommonError.NO_GAME);
   });
   const game = { id: snapshot.id, ...snapshot.data() } as Game;
 
-  return game;
+  return normalizeGame(game);
 };

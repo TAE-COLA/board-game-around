@@ -11,7 +11,7 @@ type IProps = FlexProps & {
 
 export const PlayerList: React.FC<IProps> = ({ players, owner, turn, ...props }) => {
   return (
-    <Flex direction='column' gap='4' {...props}>
+    <Flex direction='column' gap={{ base: 3, md: 4 }} minWidth={0} {...props}>
       {players.map((player) => (
         <PlayerCard
           key={player.id}

@@ -11,7 +11,7 @@ export const App: React.FC = () => {
       className='app'
       flexDirection='column'
       width='100%'
-      minHeight='100vh'
+      minHeight='100dvh'
       overflowX='hidden'
       bgGradient={background}
     >

@@ -50,7 +50,7 @@ export const useTheMindIntent = () => {
   useEffect(() => {
     if (lounge.loading) return;
 
-    if (lounge.game.name !== GameName.TheMind.korean) {
+    if (!GameName.isTheMind(lounge.game.name)) {
       setSideEffect({ type: 'SHOW_TOAST', options: CommonToast.NO_LOUNGE });
       setSideEffect({ type: 'NAVIGATE_TO_MAIN' });
       return;

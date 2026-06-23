@@ -16,9 +16,14 @@ export const LoungeHeader: React.FC<IProps> = ({
   const lounge = useLoungeContext();
 
   return (
-    <Flex width='100%' {...props}>
-      <LoungeCodeBox code={lounge.code} onClickCopyButton={onClickCopyButton} width='100%' />
-      <Button onClick={onClickExitButton} height='12' paddingX='6'>
+    <Flex width='100%' direction={{ base: 'column', sm: 'row' }} gap={2} {...props}>
+      <LoungeCodeBox code={lounge.code} onClickCopyButton={onClickCopyButton} flex='1' minWidth={0} />
+      <Button
+        onClick={onClickExitButton}
+        height={{ base: 10, md: 12 }}
+        paddingX={{ base: 4, md: 6 }}
+        width={{ base: '100%', sm: 'auto' }}
+      >
         게임방 나가기
       </Button>
     </Flex>

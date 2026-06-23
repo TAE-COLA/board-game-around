@@ -7,8 +7,8 @@ type IProps = FlexProps & {
 
 export const RegisterButton: React.FC<IProps> = ({ onClickRegisterButton, ...props }) => {
   return (
-    <Flex direction='row' alignItems='Center' {...props}>
-      <Text fontSize='sm' paddingRight='2'>
+    <Flex direction={{ base: 'column', sm: 'row' }} alignItems='center' gap={2} {...props}>
+      <Text fontSize='sm'>
         계정이 없으신가요?
       </Text>
       <Button onClick={onClickRegisterButton} size='sm'>

@@ -31,8 +31,8 @@ export const LoginFields: React.FC<IProps> = ({
       direction='column'
       width='full'
       maxWidth='md'
-      padding='8'
-      gap='4'
+      padding={{ base: 5, md: 8 }}
+      gap={{ base: 3, md: 4 }}
       bg='white'
       borderRadius='md'
       boxShadow='md'
@@ -58,7 +58,12 @@ export const LoginFields: React.FC<IProps> = ({
           onKeyDown={handleKeyDown}
         />
       </FormControl>
-      <Button onClick={onClickLoginButton} isDisabled={loading} colorScheme='blue' size='lg'>
+      <Button
+        onClick={onClickLoginButton}
+        isDisabled={loading}
+        colorScheme='blue'
+        size={{ base: 'md', md: 'lg' }}
+      >
         로그인
       </Button>
     </Flex>

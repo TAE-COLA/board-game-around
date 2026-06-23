@@ -32,20 +32,26 @@ export const GameEntryModal: React.FC<IProps> = ({
   const [code, setData] = useState('');
 
   return (
-    <Modal isOpen={modal.isOpen} onClose={modal.onClose} size='xl' isCentered>
+    <Modal isOpen={modal.isOpen} onClose={modal.onClose} size={{ base: 'sm', md: 'xl' }} isCentered>
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent marginX={{ base: 4, md: 0 }}>
         <ModalHeader>{game.name} 플레이</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <Flex direction='row' width='100%' justify='Center' align='Center' gap='16'>
-            <Flex direction='column' gap='4'>
+          <Flex
+            direction={{ base: 'column', md: 'row' }}
+            width='100%'
+            justify='center'
+            align='stretch'
+            gap={{ base: 6, md: 16 }}
+          >
+            <Flex direction='column' gap='4' flex='1'>
               <Text>새로운 게임방을 생성하세요</Text>
               <Button onClick={onClickCreateLoungeButton} isDisabled={loading} colorScheme='blue'>
                 게임방 생성
               </Button>
             </Flex>
-            <Flex direction='column' gap='4'>
+            <Flex direction='column' gap='4' flex='1'>
               <Text>또는 기존의 게임방에 참여하세요</Text>
               <Input
                 placeholder='게임방 코드'
