@@ -1,6 +1,13 @@
 import * as db from 'firebase/database';
 import { FModel } from 'models';
-import { CommonError, GameName, generateCode, initialUpdates, placeholder } from 'shared';
+import {
+  CommonError,
+  GameName,
+  generateCode,
+  initialUpdates,
+  isPlaceholder,
+  placeholder,
+} from 'shared';
 import { getRef } from '../../firebase.util';
 import { database } from '../../firebase_config';
 import { fetchById as fetchGameById } from '../../game/api/game.api';
@@ -13,6 +20,11 @@ const userLoungeReference = db.child(reference, USER_LOUNGE.reference);
 
 const userLoungeByUserReference = (userId: string) => db.child(userLoungeReference, userId);
 const loungeByIdReference = (loungeId: string) => db.child(loungeReference, loungeId);
+
+type StoredLounge = Partial<Lounge> & {
+  id?: string;
+  memberIds?: Record<string, boolean>;
+};
 
 const findFirstChild = (snapshot: db.DataSnapshot): db.DataSnapshot => {
   let firstChild: db.DataSnapshot | null = null;
@@ -37,7 +49,67 @@ const isSameGame = async (gameId: string, loungeGameId: string) => {
   return selectedGame.name === loungeGame.name;
 };
 
-const fetchActiveLoungeIdByUserId = async (userId: string): Promise<string | null> => {
+const isDeletedAtSet = (deletedAt: unknown) => !!deletedAt && !isPlaceholder(deletedAt);
+
+const getPlayerIds = (lounge: StoredLounge) => {
+  if (Array.isArray(lounge.playerIds)) return lounge.playerIds;
+  if (lounge.memberIds) return Object.keys(lounge.memberIds).filter((id) => lounge.memberIds?.[id]);
+  return [];
+};
+
+const normalizeLounge = (lounge: StoredLounge): Lounge => ({
+  ...lounge,
+  gameId: lounge.gameId ?? '',
+  code: lounge.code ?? '',
+  ownerId: lounge.ownerId ?? '',
+  playerIds: getPlayerIds(lounge),
+  status: lounge.status ?? 'WAITING',
+  createdAt: lounge.createdAt ?? new Date(0),
+});
+
+const sanitizeLounge = (snapshot: db.DataSnapshot) =>
+  normalizeLounge(new FModel<StoredLounge>(snapshot).sanitize());
+
+const withoutId = (lounge: Lounge): Omit<Lounge, 'id'> => {
+  const { id, ...rest } = lounge;
+  return rest;
+};
+
+const mergePlayerIds = (current: object | null, lounge: Lounge, userId: string) => {
+  const currentData = (current ?? withoutId(lounge)) as StoredLounge;
+  const currentLounge = normalizeLounge({ id: lounge.id, ...currentData });
+  const currentPlayerIds = getPlayerIds(currentLounge);
+  const nextPlayerIds = currentPlayerIds.includes(userId)
+    ? currentPlayerIds
+    : [...currentPlayerIds, userId];
+
+  return {
+    currentLounge,
+    nextLounge: {
+      ...currentData,
+      [LOUNGE.playerIds]: nextPlayerIds,
+      [LOUNGE.status]: currentLounge.status,
+    },
+    nextPlayerIds,
+  };
+};
+
+const leaveLounge = async (lounge: Lounge, userId: string): Promise<void> => {
+  const filteredPlayerIds = lounge.playerIds.filter((id) => id !== userId);
+
+  const updates = initialUpdates();
+
+  updates[`/${LOUNGE.reference}/${lounge.id}/${LOUNGE.ownerId}`] =
+    filteredPlayerIds.length === 0 ? null : filteredPlayerIds[0];
+  updates[`/${LOUNGE.reference}/${lounge.id}/${LOUNGE.playerIds}`] = filteredPlayerIds;
+  updates[`/${LOUNGE.reference}/${lounge.id}/${LOUNGE.deletedAt}`] =
+    filteredPlayerIds.length === 0 ? db.serverTimestamp() : null;
+  updates[`/${USER_LOUNGE.reference}/${userId}`] = null;
+
+  await db.update(reference, updates);
+};
+
+const fetchActiveLoungeByUserId = async (userId: string): Promise<Lounge | null> => {
   const userLoungeSnapshot = await db.get(userLoungeByUserReference(userId));
   if (!userLoungeSnapshot.exists()) return null;
 
@@ -50,13 +122,13 @@ const fetchActiveLoungeIdByUserId = async (userId: string): Promise<string | nul
     return null;
   }
 
-  const lounge = new FModel<Lounge>(loungeSnapshot).sanitize();
+  const lounge = sanitizeLounge(loungeSnapshot);
   if (lounge.deletedAt) {
     await db.set(userLoungeByUserReference(userId), null);
     return null;
   }
 
-  return userLounge.loungeId;
+  return lounge;
 };
 
 const deleteLounge = async (loungeId: string): Promise<void> => {
@@ -74,8 +146,11 @@ const deleteLounge = async (loungeId: string): Promise<void> => {
  * Lounge를 생성합니다.
  */
 export const create = async (gameId: string, ownerId: string): Promise<string> => {
-  const activeLoungeId = await fetchActiveLoungeIdByUserId(ownerId);
-  if (activeLoungeId) return activeLoungeId;
+  const activeLounge = await fetchActiveLoungeByUserId(ownerId);
+  if (activeLounge) {
+    if (await isSameGame(gameId, activeLounge.gameId)) return activeLounge.id;
+    await leaveLounge(activeLounge, ownerId);
+  }
 
   const loungeId = db.push(loungeReference).key!;
 
@@ -136,22 +211,28 @@ export const create = async (gameId: string, ownerId: string): Promise<string> =
  */
 export const join = async (
   code: string,
-  gameId: string,
+  _gameId: string,
   userId: string
 ): Promise<string | null> => {
-  const activeLoungeId = await fetchActiveLoungeIdByUserId(userId);
-  if (activeLoungeId) return activeLoungeId;
-
   const query = db.query(loungeReference, db.orderByChild(LOUNGE.code), db.equalTo(code));
   const loungeSnapshot = await getRef(query, () => {
     throw new Error(CommonError.NO_LOUNGE);
   });
-  const lounge = new FModel<Lounge>(findFirstChild(loungeSnapshot)).sanitize();
+  const lounge = sanitizeLounge(findFirstChild(loungeSnapshot));
 
-  if (!(await isSameGame(gameId, lounge.gameId))) throw new Error(CommonError.NOT_THIS_GAME);
-  if (lounge.status !== 'WAITING') throw new Error(CommonError.NO_LOUNGE);
+  if (lounge.status !== 'WAITING') {
+    throw new Error(CommonError.NO_LOUNGE);
+  }
 
-  const selectedGame = await fetchGameById(gameId);
+  const activeLounge = await fetchActiveLoungeByUserId(userId);
+  if (activeLounge) {
+    if (activeLounge.id === lounge.id) {
+      return activeLounge.id;
+    }
+    await leaveLounge(activeLounge, userId);
+  }
+
+  const loungeGame = await fetchGameById(lounge.gameId);
 
   const claimResult = await db.runTransaction(userLoungeByUserReference(userId), (current) => {
     if (current?.[USER_LOUNGE.loungeId]) return current;
@@ -159,26 +240,25 @@ export const join = async (
   });
 
   const claimedLoungeId = claimResult.snapshot.val()?.[USER_LOUNGE.loungeId];
-  if (claimedLoungeId !== lounge.id) return claimedLoungeId;
+  if (claimedLoungeId !== lounge.id) {
+    return claimedLoungeId;
+  }
 
   let rejected = false;
   const joinResult = await db.runTransaction(loungeByIdReference(lounge.id), (current) => {
-    if (!current || current[LOUNGE.status] !== 'WAITING' || current[LOUNGE.deletedAt]) {
+    const { currentLounge, nextLounge, nextPlayerIds } = mergePlayerIds(current, lounge, userId);
+
+    if (currentLounge.status !== 'WAITING' || isDeletedAtSet(currentLounge.deletedAt)) {
       rejected = true;
       return;
     }
 
-    const currentPlayerIds: string[] = current[LOUNGE.playerIds] ?? [];
-    const nextPlayerIds = currentPlayerIds.includes(userId)
-      ? currentPlayerIds
-      : [...currentPlayerIds, userId];
-
-    if (GameName.isTheMind(selectedGame.name) && nextPlayerIds.length > 4) {
+    if (GameName.isTheMind(loungeGame.name) && nextPlayerIds.length > 4) {
       rejected = true;
       return;
     }
 
-    return { ...current, [LOUNGE.playerIds]: nextPlayerIds };
+    return nextLounge;
   });
 
   if (!joinResult.committed || rejected) {
@@ -200,7 +280,7 @@ export const fetchById = async (id: string): Promise<Lounge> => {
   const loungeSnapshot = await getRef(loungeByIdReference(id), () => {
     throw new Error(CommonError.NO_LOUNGE);
   });
-  const lounge = new FModel<Lounge>(loungeSnapshot).sanitize();
+  const lounge = sanitizeLounge(loungeSnapshot);
 
   return lounge;
 };
@@ -213,9 +293,9 @@ export const fetchById = async (id: string): Promise<Lounge> => {
  * User ID로 Lounge ID를 가져옵니다.
  */
 export const fetchByUserId = async (id: string): Promise<string> => {
-  const activeLoungeId = await fetchActiveLoungeIdByUserId(id);
-  if (!activeLoungeId) throw new Error(CommonError.NO_USER_LOUNGE);
-  return activeLoungeId;
+  const activeLounge = await fetchActiveLoungeByUserId(id);
+  if (!activeLounge) throw new Error(CommonError.NO_USER_LOUNGE);
+  return activeLounge.id;
 };
 
 /**
@@ -236,7 +316,7 @@ export const onStateChanged = (
       return;
     }
 
-    const lounge = new FModel<Lounge>(snapshot).sanitize();
+    const lounge = sanitizeLounge(snapshot);
 
     if (lounge.deletedAt) onChanged(undefined);
     else onChanged(lounge);
@@ -255,18 +335,7 @@ export const exit = async (loungeId: string, userId: string): Promise<void> => {
   const loungeSnapshot = await getRef(loungeByIdReference(loungeId), () => {
     throw new Error(CommonError.NO_LOUNGE);
   });
-  const lounge = new FModel<Lounge>(loungeSnapshot).sanitize();
+  const lounge = sanitizeLounge(loungeSnapshot);
 
-  const filteredPlayerIds = lounge.playerIds.filter((id) => id !== userId);
-
-  const updates = initialUpdates();
-
-  updates[`/${LOUNGE.reference}/${loungeId}/${LOUNGE.ownerId}`] =
-    filteredPlayerIds.length === 0 ? null : filteredPlayerIds[0];
-  updates[`/${LOUNGE.reference}/${loungeId}/${LOUNGE.playerIds}`] = filteredPlayerIds;
-  updates[`/${LOUNGE.reference}/${loungeId}/${LOUNGE.deletedAt}`] =
-    filteredPlayerIds.length === 0 ? db.serverTimestamp() : null;
-  updates[`/${USER_LOUNGE.reference}/${userId}`] = null;
-
-  await db.update(reference, updates);
+  await leaveLounge(lounge, userId);
 };

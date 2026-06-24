@@ -6,7 +6,7 @@ import { firestore } from '../../firebase_config';
 
 const collection = fs.collection(firestore, GAME.collection);
 
-const isTheMindGame = (game: Game) => game.id === 'the-mind' || GameName.isTheMind(game.name);
+const isTheMindGame = (game: Game) => GameName.isTheMindId(game.id) || GameName.isTheMind(game.name);
 
 const normalizeGame = (game: Game): Game =>
   isTheMindGame(game) ? { ...game, name: GameName.TheMind.korean } : game;
@@ -53,11 +53,19 @@ export const fetchAll = async () => {
  * Game ID로 게임을 가져옵니다.
  */
 export const fetchById = async (id: string): Promise<Game> => {
-  const document = fs.doc(collection, id);
-  const snapshot = await getDoc(document, () => {
-    throw new Error(CommonError.NO_GAME);
-  });
-  const game = { id: snapshot.id, ...snapshot.data() } as Game;
+  const ids = GameName.isTheMindId(id) ? [id, ...GameName.TheMindIds] : [id];
+  const uniqueIds = Array.from(new Set(ids));
 
-  return normalizeGame(game);
+  for (const gameId of uniqueIds) {
+    const document = fs.doc(collection, gameId);
+    const snapshot = await fs.getDoc(document);
+
+    if (snapshot.exists()) {
+      const game = { id: snapshot.id, ...snapshot.data() } as Game;
+
+      return normalizeGame(game);
+    }
+  }
+
+  throw new Error(CommonError.NO_GAME);
 };
