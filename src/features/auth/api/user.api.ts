@@ -42,10 +42,10 @@ export const logout = async (): Promise<void> => {
 };
 
 export const checkForEmailDuplicates = async (email: string): Promise<boolean> => {
-  const query = fs.query(collection, fs.where(USER.email, '==', email));
-  const snapshot = await fs.getDocs(query);
+  const auth = fa.getAuth();
+  const signInMethods = await fa.fetchSignInMethodsForEmail(auth, email);
 
-  return !snapshot.empty;
+  return signInMethods.length > 0;
 };
 
 export const hasSession = (): boolean => {
