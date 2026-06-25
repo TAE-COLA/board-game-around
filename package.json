@@ -30,6 +30,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
+    "test:shared": "react-scripts test --watchAll=false --runInBand --runTestsByPath src/shared/shared.logic.test.ts",
+    "test:the-mind": "react-scripts test --watchAll=false --runInBand --runTestsByPath src/features/the-mind/model/the-mind.logic.test.ts",
+    "test:logic": "react-scripts test --watchAll=false --runInBand --runTestsByPath src/shared/shared.logic.test.ts src/features/the-mind/model/the-mind.logic.test.ts",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {

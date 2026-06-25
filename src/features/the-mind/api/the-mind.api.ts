@@ -1,10 +1,26 @@
 import * as db from 'firebase/database';
 import { FModel } from 'models';
-import { LOUNGE, Lounge } from 'features/lounge';
-import { CommonError, initialUpdates, isPlaceholder, placeholder, shuffle } from 'shared';
+import { LOUNGE } from 'features/lounge';
+import { CommonError, initialUpdates } from 'shared';
 import { getRef } from '../../firebase.util';
 import { database } from '../../firebase_config';
-import { TheMind, THE_MIND, TheMindFailureDetail } from '../model';
+import {
+  areTheMindHandsEmpty,
+  createEmptyTheMindList,
+  dealTheMindHands,
+  getTheMindLevelReward,
+  getTheMindLoungePlayerIds,
+  getTheMindLowerCardsInOtherHands,
+  getTheMindMaxLevel,
+  isValidTheMindPlayerCount,
+  normalizeTheMindHands,
+  normalizeTheMindList,
+  serializeTheMindHands,
+  TheMind,
+  THE_MIND,
+  TheMindFailureDetail,
+  TheMindStoredLounge,
+} from '../model';
 
 const reference = db.ref(database);
 const serverTimeOffsetReference = db.ref(database, '.info/serverTimeOffset');
@@ -14,79 +30,11 @@ const loungeReference = (loungeId: string) =>
 const theMindReference = (loungeId: string) =>
   db.child(db.child(reference, THE_MIND.reference), loungeId);
 
-type StoredLounge = Partial<Lounge> & {
-  memberIds?: Record<string, boolean>;
-};
-
-const getLoungePlayerIds = (lounge: StoredLounge) => {
-  if (Array.isArray(lounge.playerIds)) return lounge.playerIds;
-  if (lounge.memberIds) return Object.keys(lounge.memberIds).filter((id) => lounge.memberIds?.[id]);
-  return [];
-};
-
-const isValidPlayerCount = (playerCount: number) => playerCount >= 2 && playerCount <= 4;
-
-const getMaxLevel = (playerCount: number) => {
-  if (playerCount === 2) return 12;
-  if (playerCount === 3) return 10;
-  return 8;
-};
-
-const getLevelReward = (level: number) => {
-  if ([2, 5, 8].includes(level)) return { stars: 1, lives: 0 };
-  if ([3, 6, 9].includes(level)) return { stars: 0, lives: 1 };
-  return { stars: 0, lives: 0 };
-};
-
 const CARD_TIMER_MS = 30_000;
 const EMOJIS = ['🙂‍↕️', '🙂‍↔️', '🥱'];
 
-const dealHands = (playerIds: string[], level: number) => {
-  const deck = shuffle(Array.from({ length: 100 }, (_, index) => index + 1));
-
-  return playerIds.reduce(
-    (acc, playerId, playerIndex) => {
-      acc[playerId] = deck
-        .slice(playerIndex * level, playerIndex * level + level)
-        .sort((a, b) => a - b);
-      return acc;
-    },
-    {} as { [key: string]: number[] }
-  );
-};
-
-const emptyList = <T>() => [placeholder as unknown as T];
-
-const normalizeList = <T>(value?: T[]) => (value ?? []).filter((item) => !isPlaceholder(item));
-
-const normalizeHands = (game: TheMind): TheMind['hands'] =>
-  game.playerIds.reduce((acc, playerId) => {
-    acc[playerId] = normalizeList(game.hands?.[playerId]).sort((a, b) => a - b);
-    return acc;
-  }, {} as TheMind['hands']);
-
-const serializeHands = (hands: TheMind['hands']): TheMind['hands'] =>
-  Object.entries(hands).reduce((acc, [playerId, cards]) => {
-    acc[playerId] = cards.length === 0 ? emptyList() : cards;
-    return acc;
-  }, {} as TheMind['hands']);
-
-const areHandsEmpty = (hands: TheMind['hands']) =>
-  Object.values(hands).every((cards) => normalizeList(cards).length === 0);
-
-const getLowerCardsInOtherHands = (hands: TheMind['hands'], playerId: string, card: number) =>
-  Object.entries(hands)
-    .flatMap(([handOwnerId, cards]) =>
-      handOwnerId === playerId
-        ? []
-        : cards
-            .filter((handCard) => handCard < card)
-            .map((handCard) => ({ playerId: handOwnerId, card: handCard }))
-    )
-    .sort((a, b) => a.card - b.card);
-
 const resolveLevelComplete = (game: TheMind): TheMind => {
-  const reward = getLevelReward(game.level);
+  const reward = getTheMindLevelReward(game.level);
   const lives = Math.min(5, game.lives + reward.lives);
   const stars = Math.min(3, game.stars + reward.stars);
   const isFinalLevel = game.level >= game.maxLevel;
@@ -95,8 +43,8 @@ const resolveLevelComplete = (game: TheMind): TheMind => {
     ...game,
     lives,
     stars,
-    readyPlayerIds: emptyList(),
-    starVotePlayerIds: emptyList(),
+    readyPlayerIds: createEmptyTheMindList(),
+    starVotePlayerIds: createEmptyTheMindList(),
     lastPlayedAt: null,
     lastResult: { type: 'SUCCESS', level: game.level, lives },
     phase: isFinalLevel ? 'GAME_WON' : 'LEVEL_COMPLETE',
@@ -112,11 +60,11 @@ const resolveLevelComplete = (game: TheMind): TheMind => {
 const startLevel = (game: TheMind, level: number): TheMind => ({
   ...game,
   level,
-  hands: dealHands(game.playerIds, level),
-  playedCards: emptyList(),
-  discardedCards: emptyList(),
-  readyPlayerIds: emptyList(),
-  starVotePlayerIds: emptyList(),
+  hands: dealTheMindHands(game.playerIds, level),
+  playedCards: createEmptyTheMindList(),
+  discardedCards: createEmptyTheMindList(),
+  readyPlayerIds: createEmptyTheMindList(),
+  starVotePlayerIds: createEmptyTheMindList(),
   lastPlayedAt: null,
   lastResult: null,
   phase: 'READY',
@@ -151,38 +99,38 @@ export const start = async (loungeId: string, userId: string): Promise<void> => 
   const loungeSnapshot = await getRef(loungeReference(loungeId), () => {
     throw new Error(CommonError.NO_LOUNGE);
   });
-  const lounge = new FModel<StoredLounge>(loungeSnapshot).sanitize();
-  const loungePlayerIds = getLoungePlayerIds(lounge);
+  const lounge = new FModel<TheMindStoredLounge>(loungeSnapshot).sanitize();
+  const loungePlayerIds = getTheMindLoungePlayerIds(lounge);
 
   if (lounge.ownerId !== userId) throw new Error(CommonError.PERMISSION_DENIED);
   if (lounge.status !== 'WAITING') throw new Error(CommonError.NO_LOUNGE);
-  if (!isValidPlayerCount(loungePlayerIds.length)) {
+  if (!isValidTheMindPlayerCount(loungePlayerIds.length)) {
     throw new Error(CommonError.NO_LOUNGE);
   }
 
   const statusResult = await db.runTransaction(loungeReference(loungeId), (current) => {
     if (!current) return;
 
-    const currentLounge = current as StoredLounge;
-    const currentPlayerIds = getLoungePlayerIds(currentLounge);
+    const currentLounge = current as TheMindStoredLounge;
+    const currentPlayerIds = getTheMindLoungePlayerIds(currentLounge);
 
     if (
       currentLounge[LOUNGE.ownerId] !== userId ||
       currentLounge[LOUNGE.status] !== 'WAITING' ||
-      !isValidPlayerCount(currentPlayerIds.length)
+      !isValidTheMindPlayerCount(currentPlayerIds.length)
     ) {
       return;
     }
 
     return { ...current, [LOUNGE.playerIds]: currentPlayerIds, [LOUNGE.status]: 'PLAYING' };
   });
-  const startedLounge = statusResult.snapshot.val() as StoredLounge | null;
-  const startedPlayerIds = getLoungePlayerIds(startedLounge ?? {});
+  const startedLounge = statusResult.snapshot.val() as TheMindStoredLounge | null;
+  const startedPlayerIds = getTheMindLoungePlayerIds(startedLounge ?? {});
 
   if (
     !statusResult.committed ||
     startedLounge?.[LOUNGE.status] !== 'PLAYING' ||
-    !isValidPlayerCount(startedPlayerIds.length)
+    !isValidTheMindPlayerCount(startedPlayerIds.length)
   ) {
     throw new Error(CommonError.PERMISSION_DENIED);
   }
@@ -193,14 +141,14 @@ export const start = async (loungeId: string, userId: string): Promise<void> => 
     loungeId,
     playerIds,
     level: 1,
-    maxLevel: getMaxLevel(playerIds.length),
+    maxLevel: getTheMindMaxLevel(playerIds.length),
     lives: playerIds.length,
     stars: 1,
-    hands: dealHands(playerIds, 1),
-    playedCards: emptyList(),
-    discardedCards: emptyList(),
-    readyPlayerIds: emptyList(),
-    starVotePlayerIds: emptyList(),
+    hands: dealTheMindHands(playerIds, 1),
+    playedCards: createEmptyTheMindList(),
+    discardedCards: createEmptyTheMindList(),
+    readyPlayerIds: createEmptyTheMindList(),
+    starVotePlayerIds: createEmptyTheMindList(),
     lastPlayedAt: null,
     lastResult: null,
     phase: 'READY',
@@ -247,7 +195,7 @@ export const exit = async (loungeId: string, userId: string): Promise<void> => {
   updates[`/${THE_MIND.reference}/${loungeId}/${THE_MIND.readyPlayerIds}`] =
     theMind.readyPlayerIds.filter((id) => id !== userId);
   updates[`/${THE_MIND.reference}/${loungeId}/${THE_MIND.starVotePlayerIds}`] =
-    normalizeList(theMind.starVotePlayerIds).filter((id) => id !== userId);
+    normalizeTheMindList(theMind.starVotePlayerIds).filter((id) => id !== userId);
 
   if (filteredPlayerIds.length === 0) {
     updates[`/${THE_MIND.reference}/${loungeId}/${THE_MIND.finishedAt}`] = db.serverTimestamp();
@@ -262,13 +210,13 @@ export const ready = async (loungeId: string, userId: string): Promise<void> => 
     const game = current as TheMind;
     if (game.phase !== 'READY' || !game.playerIds.includes(userId)) return current;
 
-    const readyPlayerIds = Array.from(new Set([...normalizeList(game.readyPlayerIds), userId]));
+    const readyPlayerIds = Array.from(new Set([...normalizeTheMindList(game.readyPlayerIds), userId]));
     const allReady = game.playerIds.every((playerId) => readyPlayerIds.includes(playerId));
 
     return {
       ...game,
-      readyPlayerIds: allReady ? emptyList() : readyPlayerIds,
-      starVotePlayerIds: emptyList(),
+      readyPlayerIds: allReady ? createEmptyTheMindList() : readyPlayerIds,
+      starVotePlayerIds: createEmptyTheMindList(),
       lastPlayedAt: allReady ? null : game.lastPlayedAt ?? null,
       lastResult: allReady ? null : game.lastResult ?? null,
       phase: allReady ? 'PLAYING' : 'READY',
@@ -285,11 +233,11 @@ export const playCard = async (
     if (!current) return current;
     const game = current as TheMind;
     if (game.phase !== 'PLAYING' || !game.playerIds.includes(userId)) return current;
-    const currentHands = normalizeHands(game);
+    const currentHands = normalizeTheMindHands(game);
     const [lowestCard] = currentHands[userId];
     if (lowestCard !== card) return current;
 
-    const blockingCards = getLowerCardsInOtherHands(currentHands, userId, card);
+    const blockingCards = getTheMindLowerCardsInOtherHands(currentHands, userId, card);
     if (blockingCards.length > 0) {
       const [lowestBlockingCard] = blockingCards;
 
@@ -298,7 +246,7 @@ export const playCard = async (
         playedByPlayerId: userId,
         playedCard: card,
         blockingCards: [lowestBlockingCard],
-        playedCards: [...normalizeList(game.playedCards), card],
+        playedCards: [...normalizeTheMindList(game.playedCards), card],
       });
     }
 
@@ -307,13 +255,13 @@ export const playCard = async (
 
     let nextGame: TheMind = {
       ...game,
-      hands: serializeHands(handsAfterPlay),
-      playedCards: [...normalizeList(game.playedCards), card],
-      starVotePlayerIds: emptyList(),
+      hands: serializeTheMindHands(handsAfterPlay),
+      playedCards: [...normalizeTheMindList(game.playedCards), card],
+      starVotePlayerIds: createEmptyTheMindList(),
       lastPlayedAt: db.serverTimestamp() as unknown as number,
     };
 
-    if (areHandsEmpty(handsAfterPlay)) {
+    if (areTheMindHandsEmpty(handsAfterPlay)) {
       nextGame = resolveLevelComplete(nextGame);
     }
 
@@ -330,7 +278,7 @@ export const timeout = async (loungeId: string, serverNow: number): Promise<void
 
     return failLevel(game, {
       reason: 'TIMEOUT',
-      playedCards: normalizeList(game.playedCards),
+      playedCards: normalizeTheMindList(game.playedCards),
     });
   });
 };
@@ -344,7 +292,7 @@ export const voteStar = async (loungeId: string, userId: string): Promise<void> 
     }
 
     const starVotePlayerIds = Array.from(
-      new Set([...normalizeList(game.starVotePlayerIds), userId])
+      new Set([...normalizeTheMindList(game.starVotePlayerIds), userId])
     );
     const allAgreed = game.playerIds.every((playerId) => starVotePlayerIds.includes(playerId));
 
@@ -352,7 +300,7 @@ export const voteStar = async (loungeId: string, userId: string): Promise<void> 
       return { ...game, starVotePlayerIds };
     }
 
-    const hands = normalizeHands(game);
+    const hands = normalizeTheMindHands(game);
     const discardedCards: number[] = [];
 
     game.playerIds.forEach((playerId) => {
@@ -366,15 +314,15 @@ export const voteStar = async (loungeId: string, userId: string): Promise<void> 
     let nextGame: TheMind = {
       ...game,
       stars: game.stars - 1,
-      hands: serializeHands(hands),
+      hands: serializeTheMindHands(hands),
       discardedCards: [
-        ...normalizeList(game.discardedCards),
+        ...normalizeTheMindList(game.discardedCards),
         ...discardedCards,
       ].sort((a, b) => a - b),
-      starVotePlayerIds: emptyList(),
+      starVotePlayerIds: createEmptyTheMindList(),
     };
 
-    if (areHandsEmpty(hands)) {
+    if (areTheMindHandsEmpty(hands)) {
       nextGame = resolveLevelComplete(nextGame);
     }
 
@@ -385,7 +333,8 @@ export const voteStar = async (loungeId: string, userId: string): Promise<void> 
 export const cancelStarVote = async (loungeId: string): Promise<void> => {
   const updates = initialUpdates();
 
-  updates[`/${THE_MIND.reference}/${loungeId}/${THE_MIND.starVotePlayerIds}`] = emptyList();
+  updates[`/${THE_MIND.reference}/${loungeId}/${THE_MIND.starVotePlayerIds}`] =
+    createEmptyTheMindList();
 
   await db.update(reference, updates);
 };
@@ -427,14 +376,14 @@ export const restart = async (loungeId: string): Promise<void> => {
       loungeId: game.loungeId,
       playerIds: game.playerIds,
       level: 1,
-      maxLevel: getMaxLevel(game.playerIds.length),
+      maxLevel: getTheMindMaxLevel(game.playerIds.length),
       lives: game.playerIds.length,
       stars: 1,
-      hands: dealHands(game.playerIds, 1),
-      playedCards: emptyList(),
-      discardedCards: emptyList(),
-      readyPlayerIds: emptyList(),
-      starVotePlayerIds: emptyList(),
+      hands: dealTheMindHands(game.playerIds, 1),
+      playedCards: createEmptyTheMindList(),
+      discardedCards: createEmptyTheMindList(),
+      readyPlayerIds: createEmptyTheMindList(),
+      starVotePlayerIds: createEmptyTheMindList(),
       lastPlayedAt: null,
       lastResult: null,
       phase: 'READY',
