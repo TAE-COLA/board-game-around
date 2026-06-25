@@ -11,11 +11,13 @@ class State {
   hands: TheMind['hands'] = {};
   playedCards: number[] = [];
   discardedCards: number[] = [];
+  discardedCardsByPlayerId: TheMind['discardedCardsByPlayerId'] = {};
   readyPlayerIds: string[] = [];
   starVotePlayerIds: string[] = [];
   lastPlayedAt: number | null = null;
   lastResult: TheMind['lastResult'] = null;
   emojis: TheMind['emojis'] = {};
+  speechBubbles: TheMind['speechBubbles'] = {};
   serverTimeOffset = 0;
   phase: TheMindPhase = 'READY';
 
@@ -55,12 +57,14 @@ const handleReduce = (state: State, reduce: Reduce): State => {
         hands: reduce.game.hands ?? {},
         playedCards: reduce.game.playedCards ?? [],
         discardedCards: reduce.game.discardedCards ?? [],
+        discardedCardsByPlayerId: reduce.game.discardedCardsByPlayerId ?? {},
         readyPlayerIds: reduce.game.readyPlayerIds ?? [],
         starVotePlayerIds: reduce.game.starVotePlayerIds ?? [],
         lastPlayedAt:
           typeof reduce.game.lastPlayedAt === 'number' ? reduce.game.lastPlayedAt : null,
         lastResult: reduce.game.lastResult ?? null,
         emojis: reduce.game.emojis ?? {},
+        speechBubbles: reduce.game.speechBubbles ?? {},
         phase: reduce.game.phase,
       });
     case 'UPDATE_SERVER_TIME_OFFSET':

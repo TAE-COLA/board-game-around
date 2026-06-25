@@ -28,6 +28,9 @@ export interface TheMind {
   };
   playedCards: number[];
   discardedCards: number[];
+  discardedCardsByPlayerId?: {
+    [key: string]: number[];
+  };
   readyPlayerIds: string[];
   starVotePlayerIds: string[];
   lastPlayedAt?: number | null;
@@ -39,6 +42,13 @@ export interface TheMind {
   } | null;
   emojis?: {
     [key: string]: {
+      value: string;
+      shownAt: number;
+    };
+  };
+  speechBubbles?: {
+    [key: string]: {
+      type: 'CARD' | 'EMOJI';
       value: string;
       shownAt: number;
     };
@@ -58,11 +68,13 @@ export const THE_MIND = {
   hands: 'hands',
   playedCards: 'playedCards',
   discardedCards: 'discardedCards',
+  discardedCardsByPlayerId: 'discardedCardsByPlayerId',
   readyPlayerIds: 'readyPlayerIds',
   starVotePlayerIds: 'starVotePlayerIds',
   lastPlayedAt: 'lastPlayedAt',
   lastResult: 'lastResult',
   emojis: 'emojis',
+  speechBubbles: 'speechBubbles',
   phase: 'phase',
   finishedAt: 'finishedAt',
 } as const;

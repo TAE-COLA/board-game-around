@@ -59,7 +59,7 @@ export const useTheMindIntent = () => {
     },
     onClickCancelStarVoteButton: () => {
       actions.run('cancelStar', async () => {
-        await TheMindApi.cancelStarVote(lounge.id);
+        await TheMindApi.cancelStarVote(lounge.id, auth.id);
       });
     },
     onClickNextLevelButton: () => {

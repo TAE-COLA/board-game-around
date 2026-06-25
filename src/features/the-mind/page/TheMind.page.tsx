@@ -3,7 +3,7 @@ import {
   Box,
   Button,
   Flex,
-  Heading,
+  Grid,
   Modal,
   ModalBody,
   ModalContent,
@@ -15,22 +15,17 @@ import {
   PopoverContent,
   PopoverTrigger,
   Progress,
-  SimpleGrid,
-  Stat,
-  StatLabel,
-  StatNumber,
   Text,
+  useBreakpointValue,
 } from '@chakra-ui/react';
 import { PageProps, Paths, useAuthContext } from 'app';
-import { AnimatePresence } from 'framer-motion';
-import React, { useEffect, useState } from 'react';
-import { GameName } from 'shared';
-import { AnimatedEffect, Header, MotionBox, MotionEffect, Page } from 'shared/ui';
+import React, { useEffect, useMemo, useState } from 'react';
+import { AnimatedEffect, Header, MotionEffect, Page } from 'shared/ui';
 import { useTheMindIntent } from './useTheMindIntent';
 
 const CARD_TIMER_SECONDS = 30;
 const DANGER_SECONDS = 10;
-const EMOJI_VISIBLE_MS = 3000;
+const SPEECH_BUBBLE_VISIBLE_MS = 3000;
 const EMOJIS = ['🙂‍↕️', '🙂‍↔️', '🥱'];
 const EMOJI_EFFECTS: Record<string, MotionEffect> = {
   '🙂‍↕️': 'nudge-y',
@@ -38,45 +33,38 @@ const EMOJI_EFFECTS: Record<string, MotionEffect> = {
   '🥱': 'balloon',
 };
 
-const phaseLabel = {
-  READY: '준비',
-  PLAYING: '진행 중',
-  LEVEL_COMPLETE: '레벨 완료',
-  GAME_WON: '승리',
-  GAME_LOST: '패배',
-};
-
-const pilePreview = (cards: number[]) => cards.slice(-12);
-
 const getRewardLabel = (level: number) => {
-  if ([2, 5, 8].includes(level)) return '클리어 보상: 스타 +1';
-  if ([3, 6, 9].includes(level)) return '클리어 보상: 라이프 +1';
+  if ([2, 5, 8].includes(level)) return '클리어 보상: +1 스타';
+  if ([3, 6, 9].includes(level)) return '클리어 보상: +1 생명';
   return '클리어 보상 없음';
 };
 
-const dangerShake = {
-  x: [0, -3, 3, -2, 2, 0],
-  transition: { duration: 0.28, repeat: Infinity, repeatDelay: 0.7 },
-};
-
-const popIn = {
-  initial: { opacity: 0, scale: 0.72, y: 10 },
-  animate: { opacity: 1, scale: 1, y: 0 },
-  exit: { opacity: 0, scale: 0.84, y: -8 },
-  transition: { type: 'spring', stiffness: 520, damping: 24 },
+const getPhaseLabel = (phase: string) => {
+  if (phase === 'READY') return '준비 중';
+  if (phase === 'PLAYING') return '진행 중';
+  if (phase === 'LEVEL_COMPLETE') return '레벨 완료';
+  if (phase === 'GAME_WON') return '승리';
+  return '패배';
 };
 
 export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
   const auth = useAuthContext();
   const { state, loading, clearSideEffects, onEvent, sideEffects } = useTheMindIntent();
+  const compactHand = useBreakpointValue({ base: true, md: false }) ?? false;
   const hands = state.hands ?? {};
   const myHand = hands[auth.id] ?? [];
-  const myLowestCard = myHand[0];
+  const myLowestCard = myHand.length > 0 ? Math.min(...myHand) : undefined;
+  const myHandDescending = useMemo(() => [...myHand].sort((a, b) => b - a), [myHand]);
+  const visibleHandCards =
+    compactHand && myHandDescending.length > 2 ? myHandDescending.slice(-2) : myHandDescending;
+  const stackedHandCount =
+    compactHand && myHandDescending.length > 2 ? myHandDescending.length - 2 : 0;
   const isReady = state.readyPlayerIds.includes(auth.id);
   const votedStar = state.starVotePlayerIds.includes(auth.id);
   const isEnded = state.phase === 'GAME_WON' || state.phase === 'GAME_LOST';
   const [now, setNow] = useState(Date.now());
   const [closedResultKey, setClosedResultKey] = useState<string | null>(null);
+  const [dismissedStarVoteKey, setDismissedStarVoteKey] = useState<string | null>(null);
   const [expiredTimerKey, setExpiredTimerKey] = useState<number | null>(null);
   const serverNow = now + state.serverTimeOffset;
   const elapsedSeconds =
@@ -90,8 +78,9 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
   const timerProgress = (remainingSeconds / CARD_TIMER_SECONDS) * 100;
   const isTimerRunning = state.phase === 'PLAYING' && !!state.lastPlayedAt;
   const isTimerDanger = isTimerRunning && remainingSeconds <= DANGER_SECONDS;
-  const hasVisibleEmoji = Object.values(state.emojis ?? {}).some(
-    (emoji) => typeof emoji.shownAt === 'number' && serverNow - emoji.shownAt < EMOJI_VISIBLE_MS
+  const hasVisibleSpeechBubble = Object.values(state.speechBubbles ?? {}).some(
+    (bubble) =>
+      typeof bubble.shownAt === 'number' && serverNow - bubble.shownAt < SPEECH_BUBBLE_VISIBLE_MS
   );
   const failureDetail =
     state.lastResult?.type === 'FAILURE' ? state.lastResult.failure : undefined;
@@ -102,19 +91,31 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
     : null;
   const isResultModalOpen = !!state.lastResult && closedResultKey !== resultKey;
   const isSuccessResult = state.lastResult?.type === 'SUCCESS';
+  const starVoteKey =
+    state.starVotePlayerIds.length > 0
+      ? state.starVotePlayerIds.slice().sort().join('|')
+      : null;
+  const isStarVoteActive = state.phase === 'PLAYING' && state.starVotePlayerIds.length > 0;
+  const isStarConsentModalOpen =
+    isStarVoteActive && !votedStar && dismissedStarVoteKey !== starVoteKey;
+  const starVoteRequester = state.starVotePlayerIds[0];
   const displayedPlayedCards =
     failureDetail?.playedCards && failureDetail.playedCards.length > 0
       ? failureDetail.playedCards
       : state.playedCards;
+  const stackCards = displayedPlayedCards.slice(-48);
   const failedPlayedCardIndex =
     typeof failureDetail?.playedCard === 'number' ? displayedPlayedCards.length - 1 : -1;
+  const stackOffset = compactHand ? 2 : 3;
+  const stackCardWidth = compactHand ? 34 : 48;
+  const stackCardHeight = compactHand ? 50 : 70;
+  const stackStartOffset = -((stackCards.length - 1) * stackOffset) / 2;
 
   const getPlayerName = (playerId?: string) => {
     if (!playerId) return '알 수 없는 플레이어';
     return state.players.find((player) => player.id === playerId)?.name ?? '알 수 없는 플레이어';
   };
   const lowestBlockingCard = failureDetail?.blockingCards?.[0];
-
   const failureReasonText =
     failureDetail?.reason === 'LOWER_CARD' &&
     typeof failureDetail.playedCard === 'number' &&
@@ -128,6 +129,10 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
 
   const closeResultModal = () => {
     setClosedResultKey(resultKey);
+  };
+
+  const closeStarConsentModal = () => {
+    setDismissedStarVoteKey(starVoteKey);
   };
 
   useEffect(() => {
@@ -147,22 +152,26 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
   }, [clearSideEffects, navigate, sideEffects, toast]);
 
   useEffect(() => {
-    if (!isTimerRunning && !hasVisibleEmoji) {
+    if (!isTimerRunning && !hasVisibleSpeechBubble) {
       setNow(Date.now());
       return;
     }
 
     const intervalId = window.setInterval(() => {
       setNow(Date.now());
-    }, 500);
+    }, 300);
 
     return () => window.clearInterval(intervalId);
-  }, [hasVisibleEmoji, isTimerRunning, state.lastPlayedAt]);
+  }, [hasVisibleSpeechBubble, isTimerRunning, state.lastPlayedAt]);
 
   useEffect(() => {
     if (resultKey && resultKey !== closedResultKey) return;
     if (!resultKey) setClosedResultKey(null);
   }, [resultKey, closedResultKey]);
+
+  useEffect(() => {
+    if (!starVoteKey) setDismissedStarVoteKey(null);
+  }, [starVoteKey]);
 
   useEffect(() => {
     if (!isTimerRunning || remainingSeconds > 0 || !state.lastPlayedAt) return;
@@ -172,8 +181,107 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
     onEvent.onTimerExpired(serverNow);
   }, [expiredTimerKey, isTimerRunning, onEvent, remainingSeconds, serverNow, state.lastPlayedAt]);
 
+  const renderCard = (card: number, isPlayableCard: boolean) => (
+    <Button
+      key={card}
+      width={{ base: '44px', md: '64px' }}
+      height={{ base: '68px', md: '96px' }}
+      minWidth={{ base: '44px', md: '64px' }}
+      border='1px solid'
+      borderColor={isPlayableCard ? 'pink.400' : 'gray.300'}
+      borderRadius='md'
+      background={isPlayableCard ? 'pink.50' : 'white'}
+      color='gray.900'
+      fontWeight='bold'
+      fontSize={{ base: 'xl', md: '2xl' }}
+      opacity={state.phase === 'PLAYING' && !isPlayableCard ? 0.45 : 1}
+      transform={isPlayableCard ? 'translateY(-6px)' : undefined}
+      boxShadow={isPlayableCard ? 'md' : undefined}
+      onClick={() => onEvent.onClickCard(card)}
+      isDisabled={!isPlayableCard}
+      padding={0}
+    >
+      {card}
+    </Button>
+  );
+
+  const renderDiscardedCards = () => (
+    <Flex wrap='wrap' gap={1.5} minHeight={{ base: '22px', md: '24px' }}>
+      {state.discardedCards.length === 0 ? (
+        <Text color='gray.500' fontSize={{ base: 'xs', md: 'sm' }}>
+          버린 카드 없음
+        </Text>
+      ) : (
+        state.discardedCards.map((card, index) => (
+          <Box
+            key={`${card}-${index}`}
+            width={{ base: '24px', md: '28px' }}
+            height={{ base: '34px', md: '40px' }}
+            border='1px solid'
+            borderColor='gray.300'
+            borderRadius='sm'
+            background='whiteAlpha.800'
+            color='gray.700'
+            display='flex'
+            alignItems='center'
+            justifyContent='center'
+            fontSize={{ base: 'xs', md: 'sm' }}
+            fontWeight='bold'
+            boxShadow='sm'
+          >
+            {card}
+          </Box>
+        ))
+      )}
+    </Flex>
+  );
+
   return (
-    <Page loading={loading} minHeight='100dvh'>
+    <Page
+      loading={loading}
+      height='100dvh'
+      maxHeight='100dvh'
+      minHeight='100dvh'
+      overflow='hidden'
+      boxSizing='border-box'
+      paddingX={{ base: 2, md: 4 }}
+      paddingY={{ base: 2, md: 3 }}
+      bgGradient='linear(to-br, blue.200, pink.200)'
+    >
+      <Modal
+        isOpen={isStarConsentModalOpen}
+        onClose={closeStarConsentModal}
+        size='sm'
+        isCentered
+      >
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>별을 사용할까요?</ModalHeader>
+          <ModalBody>
+            <Flex direction='column' gap={3}>
+              <Text color='gray.700'>
+                {getPlayerName(starVoteRequester)}님이 별 사용을 제안했습니다.
+              </Text>
+              <Text color='gray.600' fontSize='sm'>
+                모두 동의하면 별 1개를 사용하고, 각 플레이어의 가장 낮은 카드가 공개되어
+                버려집니다.
+              </Text>
+              <Badge alignSelf='flex-start' colorScheme='yellow' fontSize='sm'>
+                동의 {state.starVotePlayerIds.length} / {state.players.length}
+              </Badge>
+            </Flex>
+          </ModalBody>
+          <ModalFooter gap={2}>
+            <Button variant='ghost' onClick={closeStarConsentModal}>
+              나중에
+            </Button>
+            <Button colorScheme='yellow' onClick={onEvent.onClickStarButton}>
+              동의
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
       <Modal
         isOpen={isResultModalOpen}
         onClose={closeResultModal}
@@ -215,352 +323,416 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
         </ModalContent>
       </Modal>
 
-      <Flex direction='column' width='100%' height='100%' gap={{ base: 4, md: 8 }} paddingBottom={4}>
+      <Flex direction='column' height='100%' gap={{ base: 2, md: 3 }} minHeight={0}>
         <Header
-          direction={{ base: 'column', sm: 'row' }}
-          align={{ base: 'stretch', sm: 'center' }}
+          flexShrink={0}
+          paddingX={{ base: 3, md: 5 }}
+          paddingY={{ base: 2, md: 3 }}
+          bg='whiteAlpha.800'
+          backdropFilter='blur(8px)'
         >
-          <Flex
-            width={{ base: '100%', sm: 'auto' }}
-            justify='space-between'
-            align='center'
-            gap={3}
-            minWidth={0}
-          >
-            <Heading size={{ base: 'md', md: 'lg' }}>{GameName.TheMind.korean}</Heading>
-            <Button onClick={onEvent.onClickExitButton} colorScheme='pink' size={{ base: 'sm', md: 'md' }}>
-              Exit
-            </Button>
-          </Flex>
+          <Button onClick={onEvent.onClickExitButton} colorScheme='pink' size={{ base: 'sm', md: 'md' }}>
+            Exit
+          </Button>
         </Header>
 
-        <SimpleGrid columns={{ base: 2, md: 4 }} spacing={{ base: 2, md: 4 }}>
-          <Stat padding={{ base: 3, md: 4 }} background='gray.100' borderRadius='md' minWidth={0}>
-            <StatLabel>Level</StatLabel>
-            <StatNumber fontSize={{ base: 'xl', md: '2xl' }}>
-              {state.level} / {state.maxLevel}
-            </StatNumber>
-            <Text marginTop={1} color='gray.500' fontSize={{ base: 'xs', md: 'sm' }}>
-              {getRewardLabel(state.level)}
-            </Text>
-          </Stat>
-          <Stat padding={{ base: 3, md: 4 }} background='gray.100' borderRadius='md' minWidth={0}>
-            <StatLabel>Lives</StatLabel>
-            <StatNumber fontSize={{ base: 'xl', md: '2xl' }}>{state.lives}</StatNumber>
-          </Stat>
-          <Stat padding={{ base: 3, md: 4 }} background='gray.100' borderRadius='md' minWidth={0}>
-            <StatLabel>Stars</StatLabel>
-            <StatNumber fontSize={{ base: 'xl', md: '2xl' }}>{state.stars}</StatNumber>
-          </Stat>
-          <Stat padding={{ base: 3, md: 4 }} background='gray.100' borderRadius='md' minWidth={0}>
-            <StatLabel>Phase</StatLabel>
-            <StatNumber fontSize={{ base: 'xl', md: '2xl' }}>{phaseLabel[state.phase]}</StatNumber>
-          </Stat>
-        </SimpleGrid>
-
-        <Flex gap={2} wrap='wrap'>
-          {state.phase === 'READY' && (
-            <Button
-              onClick={onEvent.onClickReadyButton}
-              colorScheme='pink'
-              isDisabled={isReady}
-              width={{ base: '100%', sm: 'auto' }}
-              size={{ base: 'sm', md: 'md' }}
-            >
-              {isReady ? '준비 완료' : '준비하기'}
-            </Button>
-          )}
-          {state.phase === 'PLAYING' && (
-            <>
-              <Button
-                onClick={onEvent.onClickStarButton}
-                colorScheme='yellow'
-                isDisabled={state.stars <= 0 || votedStar}
-                flex={{ base: '1 0 100%', sm: '0 0 auto' }}
-                size={{ base: 'sm', md: 'md' }}
-              >
-                {votedStar ? '별 투표 완료' : '별 사용 동의'}
-              </Button>
-              {state.starVotePlayerIds.length > 0 && (
-                <Button
-                  onClick={onEvent.onClickCancelStarVoteButton}
-                  variant='outline'
-                  flex={{ base: '1 0 100%', sm: '0 0 auto' }}
-                  size={{ base: 'sm', md: 'md' }}
-                >
-                  별 투표 취소
-                </Button>
-              )}
-            </>
-          )}
-          {state.phase === 'LEVEL_COMPLETE' && (
-            <Button
-              onClick={onEvent.onClickNextLevelButton}
-              colorScheme='pink'
-              width={{ base: '100%', sm: 'auto' }}
-              size={{ base: 'sm', md: 'md' }}
-            >
-              다음 레벨 준비
-            </Button>
-          )}
-          {isEnded && (
-            <>
-              {state.phase === 'GAME_LOST' && (
-                <Button
-                  onClick={onEvent.onClickRestartButton}
-                  colorScheme='pink'
-                  flex={{ base: '1 0 100%', sm: '0 0 auto' }}
-                  size={{ base: 'sm', md: 'md' }}
-                >
-                  처음부터 다시 시작
-                </Button>
-              )}
-              <Button
-                onClick={onEvent.onClickExitButton}
-                colorScheme='pink'
-                variant='outline'
-                flex={{ base: '1 0 100%', sm: '0 0 auto' }}
-                size={{ base: 'sm', md: 'md' }}
-              >
-                메인으로 나가기
-              </Button>
-            </>
-          )}
-        </Flex>
-
-        {state.phase === 'PLAYING' && (
-          <Text color='gray.600'>
-            내 손에서 가장 낮은 카드만 낼 수 있습니다. 상대 손에 더 낮은 카드가 남아 있으면
-            레벨을 다시 시작합니다.
-          </Text>
-        )}
-        {state.phase === 'PLAYING' && (
-          <MotionBox
-            padding={{ base: 3, md: 4 }}
-            background={isTimerDanger ? 'red.50' : 'gray.100'}
-            border='1px solid'
-            borderColor={isTimerDanger ? 'red.300' : 'gray.200'}
-            borderRadius='md'
-            animate={isTimerDanger ? dangerShake : { x: 0 }}
-          >
-            <Flex justify='space-between' align='center' gap={4} marginBottom={3}>
-              <Text fontWeight='bold' color={isTimerDanger ? 'red.600' : 'gray.700'} minWidth={0}>
-                {isTimerRunning
-                  ? isTimerDanger
-                    ? '서둘러야 합니다'
-                    : '다음 카드를 기다리는 중'
-                  : '첫 카드 대기 중'}
-              </Text>
-              <Text
-                fontWeight='bold'
-                fontSize={{ base: 'xl', md: '2xl' }}
-                color={isTimerDanger ? 'red.600' : 'gray.800'}
-                flexShrink={0}
-              >
-                {isTimerRunning ? `${remainingSeconds}s` : '--'}
-              </Text>
-            </Flex>
+        <Box
+          flexShrink={0}
+          alignSelf='center'
+          width='100%'
+          maxWidth={{ base: '100%', lg: '1120px', xl: '1180px' }}
+          paddingX={{ base: 2, md: 3 }}
+          paddingY={{ base: 1.5, md: 2 }}
+          borderRadius='md'
+          background='whiteAlpha.650'
+          backdropFilter='blur(8px)'
+          boxShadow='sm'
+        >
+          <Flex align='center' gap={{ base: 2, md: 3 }}>
             <Progress
-              value={isTimerRunning ? timerProgress : 100}
+              value={state.phase === 'PLAYING' ? timerProgress : 100}
               colorScheme={isTimerDanger ? 'red' : 'pink'}
-              size='sm'
+              size='xs'
               borderRadius='full'
-              background={isTimerDanger ? 'red.100' : 'gray.200'}
+              background='whiteAlpha.700'
+              flex='1'
             />
-            <Text marginTop={2} color={isTimerDanger ? 'red.500' : 'gray.500'} fontSize='sm'>
-              {isTimerRunning
-                ? remainingSeconds === 0
-                  ? '시간이 모두 흘렀습니다. 팀의 감각을 다시 맞춰야 합니다.'
-                  : '누군가 카드를 낼 때마다 30초 타이머가 다시 시작됩니다.'
-                : '누군가 첫 카드를 내면 30초 타이머가 시작됩니다.'}
+            <Text
+              width={{ base: '34px', md: '42px' }}
+              color={isTimerDanger ? 'red.500' : 'gray.500'}
+              fontSize={{ base: 'xs', md: 'sm' }}
+              fontWeight='bold'
+              textAlign='right'
+            >
+              {state.phase === 'PLAYING' && isTimerRunning ? `${remainingSeconds}s` : '--'}
             </Text>
-          </MotionBox>
-        )}
-        {state.phase === 'LEVEL_COMPLETE' && (
-          <Text color='green.600'>레벨 {state.level}을 완료했습니다.</Text>
-        )}
-        {state.phase === 'GAME_WON' && <Text color='green.600'>팀이 모든 레벨을 완료했습니다.</Text>}
-        {state.phase === 'GAME_LOST' && (
-          <Text color='red.600'>라이프가 없는 상태에서 레벨에 실패했습니다.</Text>
-        )}
+          </Flex>
+        </Box>
 
-        <Flex direction={{ base: 'column', lg: 'row' }} gap={{ base: 5, md: 6 }} flex={1} minHeight={0}>
-          <Flex direction='column' flex='1' gap={4}>
-            <Heading size='md'>Players</Heading>
-            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={{ base: 3, md: 4 }}>
-              {state.players.map((player) => (
+        <Grid
+          flex='1 1 auto'
+          alignSelf='center'
+          width='100%'
+          maxWidth={{ base: '100%', lg: '1120px', xl: '1180px' }}
+          minHeight={0}
+          overflow='hidden'
+          templateAreas={{
+            base: '"status resources" "stack stack" "players players"',
+            md: '"status stack players"',
+          }}
+          templateColumns={{
+            base: 'minmax(190px, 1fr) auto',
+            md: 'minmax(220px, 1fr) minmax(0, 3fr) minmax(260px, 1fr)',
+          }}
+          templateRows={{ base: 'auto 1fr auto', md: '1fr' }}
+          gap={{ base: 2, md: 3 }}
+          alignItems='stretch'
+        >
+          <Flex
+            gridArea='status'
+            direction='column'
+            justify='flex-start'
+            gap={{ base: 2, md: 3 }}
+            minWidth={0}
+            minHeight={0}
+          >
+            <Box
+              background='whiteAlpha.800'
+              borderRadius='md'
+              paddingX={{ base: 3, md: 4 }}
+              paddingY={{ base: 3, md: 4 }}
+              boxShadow='sm'
+              backdropFilter='blur(8px)'
+              minWidth={0}
+            >
+              <Text
+                fontWeight='black'
+                fontSize={{ base: 'lg', md: '3xl' }}
+                lineHeight='1'
+                color='gray.900'
+                whiteSpace='nowrap'
+              >
+                LEVEL {state.level}
+              </Text>
+              <Text marginTop={2} color='gray.500' fontSize={{ base: '10px', md: 'sm' }} noOfLines={2}>
+                {getRewardLabel(state.level)}
+              </Text>
+            </Box>
+            <Box>{renderDiscardedCards()}</Box>
+            <Flex
+              display={{ base: 'none', md: 'flex' }}
+              direction='column'
+              gap={2}
+              fontSize='3xl'
+              paddingLeft={1}
+            >
+              <Text lineHeight='1.2'>{'❤️'.repeat(state.lives)}</Text>
+              <Text lineHeight='1.2'>{'⭐'.repeat(state.stars)}</Text>
+            </Flex>
+            <Box
+              display={{ base: 'none', md: 'block' }}
+              marginTop='auto'
+              color={isTimerDanger ? 'red.500' : 'gray.500'}
+              fontSize='sm'
+            >
+              <Text fontWeight='bold'>{getPhaseLabel(state.phase)}</Text>
+              {state.phase === 'PLAYING' && (
+                <Text>{isTimerRunning ? `${remainingSeconds}s` : '--'}</Text>
+              )}
+              {isStarVoteActive && (
+                <Badge marginTop={1} colorScheme='yellow'>
+                  별 {state.starVotePlayerIds.length}/{state.players.length}
+                </Badge>
+              )}
+            </Box>
+          </Flex>
+
+          <Flex
+            gridArea='resources'
+            display={{ base: 'flex', md: 'none' }}
+            direction='column'
+            align='flex-end'
+            justify='flex-start'
+            gap={1}
+            minWidth={0}
+            fontSize='2xl'
+            paddingTop={1}
+          >
+            <Text lineHeight='1.1' whiteSpace='nowrap'>
+              {'❤️'.repeat(state.lives)}
+            </Text>
+            <Text lineHeight='1.1' whiteSpace='nowrap'>
+              {'⭐'.repeat(state.stars)}
+            </Text>
+          </Flex>
+
+          <Flex
+            gridArea='stack'
+            align='center'
+            justify='center'
+            minWidth={0}
+            minHeight={0}
+            overflow='hidden'
+            position='relative'
+          >
+            {stackCards.length === 0 ? (
+              <Text color='gray.400' fontSize={{ base: 'sm', md: 'md' }}>
+                아직 낸 카드 없음
+              </Text>
+            ) : (
+              <Box
+                position='relative'
+                width='100%'
+                maxWidth={{ base: '180px', md: '420px' }}
+                height='100%'
+                marginX='auto'
+              >
+                {stackCards.map((card, index) => {
+                  const originalIndex = displayedPlayedCards.length - stackCards.length + index;
+                  const isFailedPlayedCard = originalIndex === failedPlayedCardIndex;
+
+                  return (
+                    <Box
+                      key={`${card}-${originalIndex}`}
+                      position='absolute'
+                      left={`calc(50% + ${stackStartOffset + index * stackOffset}px)`}
+                      top='50%'
+                      width={`${stackCardWidth}px`}
+                      height={`${stackCardHeight}px`}
+                      marginLeft={`-${stackCardWidth / 2}px`}
+                      marginTop={`-${stackCardHeight / 2}px`}
+                      border='1px solid'
+                      borderColor={isFailedPlayedCard ? 'red.400' : 'pink.300'}
+                      borderRadius='md'
+                      background={isFailedPlayedCard ? 'red.100' : 'white'}
+                      color={isFailedPlayedCard ? 'red.700' : 'gray.900'}
+                      display='flex'
+                      alignItems='center'
+                      justifyContent='center'
+                      fontWeight='bold'
+                      fontSize={{ base: 'lg', md: '2xl' }}
+                      boxShadow='md'
+                      zIndex={index}
+                    >
+                      {card}
+                    </Box>
+                  );
+                })}
+              </Box>
+            )}
+          </Flex>
+
+          <Flex
+            gridArea='players'
+            direction={{ base: 'row', md: 'column' }}
+            gap={{ base: 1, md: 2 }}
+            minWidth={0}
+            minHeight={0}
+            overflow='hidden'
+          >
+            {state.players.map((player) => {
+              const handCount = hands[player.id]?.length ?? 0;
+              const bubble = state.speechBubbles?.[player.id];
+              const showBubble =
+                bubble &&
+                typeof bubble.shownAt === 'number' &&
+                serverNow - bubble.shownAt < SPEECH_BUBBLE_VISIBLE_MS;
+
+              return (
                 <Flex
                   key={player.id}
                   align='center'
-                  justify='space-between'
-                  gap={3}
-                  padding={{ base: 3, md: 4 }}
-                  background='gray.100'
-                  borderRadius='md'
-                  minHeight={{ base: '72px', md: '84px' }}
+                  gap={{ base: 0, md: 2 }}
+                  minWidth={0}
+                  height={{ base: '42px', md: '56px' }}
+                  flex={{ base: '1 1 0', md: '0 0 auto' }}
+                  flexShrink={0}
                 >
-                  <Flex direction='column' gap={1} minWidth={0} flex='1'>
-                    <Flex align='center' gap={2} minHeight='38px' minWidth={0}>
-                      <Text fontWeight='bold' noOfLines={1}>
-                        {player.name}
-                      </Text>
-                      {state.emojis?.[player.id] &&
-                        serverNow - state.emojis[player.id].shownAt < EMOJI_VISIBLE_MS && (
+                  <Box display={{ base: 'none', md: 'block' }} width='64px' flexShrink={0}>
+                    {showBubble && (
+                      <Box
+                        position='relative'
+                        background='white'
+                        opacity={0.94}
+                        borderRadius='md'
+                        boxShadow='sm'
+                        minHeight={{ base: '32px', md: '38px' }}
+                        display='flex'
+                        alignItems='center'
+                        justifyContent='center'
+                        fontWeight='bold'
+                        fontSize={bubble.type === 'EMOJI' ? { base: 'lg', md: '2xl' } : { base: 'sm', md: 'lg' }}
+                        _after={{
+                          content: '""',
+                          position: 'absolute',
+                          right: '-6px',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          borderTop: '6px solid transparent',
+                          borderBottom: '6px solid transparent',
+                          borderLeft: '6px solid white',
+                        }}
+                      >
+                        {bubble.type === 'EMOJI' ? (
                           <AnimatedEffect
-                            key={`${player.id}-${state.emojis[player.id].shownAt}`}
-                            effect={EMOJI_EFFECTS[state.emojis[player.id].value] ?? 'none'}
-                            display='inline-flex'
-                            alignItems='center'
-                            justifyContent='center'
-                            width='42px'
-                            height='38px'
-                            flexShrink={0}
-                            fontSize={{ base: '2xl', md: '3xl' }}
-                            lineHeight='1'
+                            key={`${player.id}-${bubble.shownAt}`}
+                            effect={EMOJI_EFFECTS[bubble.value] ?? 'none'}
                           >
-                            {state.emojis[player.id].value}
+                            {bubble.value}
                           </AnimatedEffect>
+                        ) : (
+                          bubble.value
                         )}
-                    </Flex>
-                    <Text color='gray.600'>{hands[player.id]?.length ?? 0} cards</Text>
-                  </Flex>
-                  <Flex gap={1.5} wrap='wrap' justify='flex-end' align='center' flexShrink={0}>
-                    {player.id === auth.id && <Badge colorScheme='pink'>You</Badge>}
-                    {state.readyPlayerIds.includes(player.id) && (
-                      <Badge colorScheme='green'>Ready</Badge>
+                      </Box>
                     )}
-                    {state.starVotePlayerIds.includes(player.id) && (
-                      <Badge colorScheme='yellow'>Star</Badge>
-                    )}
-                    {player.id === auth.id && (
-                      <Popover placement='top' isLazy>
-                        <PopoverTrigger>
-                          <Button
-                            size='xs'
-                            minWidth='28px'
-                            height='22px'
-                            paddingX={2}
-                            variant='outline'
-                          >
-                            🙂
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent width='auto' borderRadius='md'>
-                          <PopoverBody padding='2'>
-                            <Flex gap={2}>
-                              {EMOJIS.map((emoji) => (
-                                <Button
-                                  key={emoji}
-                                  size='sm'
-                                  minWidth='36px'
-                                  paddingX={2}
-                                  variant='ghost'
-                                  fontSize='xl'
-                                  onClick={() => onEvent.onClickEmoji(emoji)}
-                                >
-                                  {emoji}
-                                </Button>
-                              ))}
-                            </Flex>
-                          </PopoverBody>
-                        </PopoverContent>
-                      </Popover>
-                    )}
-                  </Flex>
-                </Flex>
-              ))}
-            </SimpleGrid>
-          </Flex>
-
-          <Flex direction='column' flex='1' gap={4}>
-            <Heading size='md'>Your Hand</Heading>
-            <Flex wrap='wrap' gap={{ base: 2, md: 3 }}>
-              {myHand.map((card) => {
-                const isPlayableCard = state.phase === 'PLAYING' && card === myLowestCard;
-
-                return (
-                  <Button
-                    key={card}
-                    width={{
-                      base: isPlayableCard ? '60px' : '54px',
-                      md: isPlayableCard ? '72px' : '64px',
-                    }}
-                    height={{
-                      base: isPlayableCard ? '90px' : '80px',
-                      md: isPlayableCard ? '108px' : '96px',
-                    }}
-                    minWidth={{
-                      base: isPlayableCard ? '60px' : '54px',
-                      md: isPlayableCard ? '72px' : '64px',
-                    }}
-                    border='1px solid'
-                    borderColor={isPlayableCard ? 'pink.400' : 'gray.300'}
+                  </Box>
+                  <Flex
+                    flex='1'
+                    height='100%'
+                    align='center'
+                    justify='space-between'
+                    gap={{ base: 1, md: 2 }}
+                    paddingX={{ base: 2, md: 3 }}
+                    background='white'
+                    opacity={0.94}
                     borderRadius='md'
-                    background={isPlayableCard ? 'pink.50' : 'white'}
-                    color='gray.900'
-                    fontWeight='bold'
-                    fontSize={{
-                      base: isPlayableCard ? '2xl' : 'xl',
-                      md: isPlayableCard ? '3xl' : '2xl',
-                    }}
-                    opacity={state.phase === 'PLAYING' && !isPlayableCard ? 0.45 : 1}
-                    transform={isPlayableCard ? 'translateY(-4px)' : undefined}
-                    boxShadow={isPlayableCard ? 'md' : undefined}
-                    onClick={() => onEvent.onClickCard(card)}
-                    isDisabled={!isPlayableCard}
+                    boxShadow='sm'
+                    minWidth={0}
+                    overflow='hidden'
                   >
-                    {card}
-                  </Button>
-                );
-              })}
-              {myHand.length === 0 && <Text color='gray.600'>No cards in hand.</Text>}
-            </Flex>
-
-            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={{ base: 3, md: 4 }}>
-              <Box padding={{ base: 3, md: 4 }} background='gray.100' borderRadius='md'>
-                <Heading size='sm' marginBottom={3}>
-                  Played
-                </Heading>
-                <Flex gap={2} wrap='wrap'>
-                  <AnimatePresence initial={false}>
-                    {pilePreview(displayedPlayedCards).map((card, index, previewCards) => {
-                      const originalIndex =
-                        displayedPlayedCards.length - previewCards.length + index;
-                      const isFailedPlayedCard = originalIndex === failedPlayedCardIndex;
-
-                      return (
-                        <MotionBox key={`${card}-${originalIndex}`} {...popIn}>
-                          <Badge colorScheme={isFailedPlayedCard ? 'red' : 'pink'} fontSize='md'>
-                            {card}
-                          </Badge>
-                        </MotionBox>
-                      );
-                    })}
-                  </AnimatePresence>
-                  {displayedPlayedCards.length === 0 && <Text color='gray.600'>Empty</Text>}
+                    <Text fontWeight='bold' noOfLines={1} minWidth={0}>
+                      {player.name}
+                    </Text>
+                    <Flex align='center' gap={{ base: 1, md: 1.5 }} flexShrink={0} minWidth='fit-content'>
+                      {player.id === auth.id && <Badge colorScheme='pink'>You</Badge>}
+                      {state.readyPlayerIds.includes(player.id) && (
+                        <Badge colorScheme='green'>Ready</Badge>
+                      )}
+                      {state.starVotePlayerIds.includes(player.id) && (
+                        <Badge colorScheme='yellow'>Star</Badge>
+                      )}
+                      <Text color='gray.700' fontWeight='bold' whiteSpace='nowrap'>
+                        🃏×{handCount}
+                      </Text>
+                    </Flex>
+                  </Flex>
                 </Flex>
-              </Box>
-
-              <Box padding={{ base: 3, md: 4 }} background='gray.100' borderRadius='md'>
-                <Heading size='sm' marginBottom={3}>
-                  Discarded
-                </Heading>
-                <Flex gap={2} wrap='wrap'>
-                  <AnimatePresence initial={false}>
-                    {pilePreview(state.discardedCards).map((card, index) => (
-                      <MotionBox key={`${card}-${index}`} {...popIn}>
-                        <Badge colorScheme='gray' fontSize='md'>
-                          {card}
-                        </Badge>
-                      </MotionBox>
-                    ))}
-                  </AnimatePresence>
-                  {state.discardedCards.length === 0 && <Text color='gray.600'>Empty</Text>}
-                </Flex>
-              </Box>
-            </SimpleGrid>
+              );
+            })}
           </Flex>
-        </Flex>
+        </Grid>
+
+        <Grid
+          flexShrink={0}
+          alignSelf='center'
+          width='100%'
+          maxWidth={{ base: '100%', lg: '980px', xl: '1080px' }}
+          height='auto'
+          minHeight={0}
+          templateColumns={{ base: '48px 1fr 48px', md: '64px 1fr 64px' }}
+          gap={{ base: 2, md: 3 }}
+          alignItems='center'
+        >
+          <Button
+            width='100%'
+            height={{ base: '48px', md: '64px' }}
+            padding={0}
+            fontSize={{ base: '2xl', md: '4xl' }}
+            colorScheme='yellow'
+            isDisabled={state.phase !== 'PLAYING' || state.stars <= 0 || votedStar}
+            onClick={onEvent.onClickStarButton}
+          >
+            ⭐
+          </Button>
+
+          <Flex justify='center' align='center' minWidth={0} height='100%'>
+            {state.phase === 'READY' && (
+              <Button
+                onClick={onEvent.onClickReadyButton}
+                colorScheme='pink'
+                isDisabled={isReady}
+                size={{ base: 'md', md: 'md' }}
+              >
+                {isReady ? '준비 완료' : '준비하기'}
+              </Button>
+            )}
+            {state.phase === 'PLAYING' && (
+              <Flex justify='center' align='flex-end' gap={{ base: 1.5, md: 2 }} minWidth={0}>
+                {stackedHandCount > 0 && (
+                  <Box position='relative' width={{ base: '34px', md: '42px' }} height={{ base: '58px', md: '74px' }} flexShrink={0}>
+                    {Array.from({ length: Math.min(stackedHandCount, 6) }).map((_, index) => (
+                      <Box
+                        key={`hand-stack-${index}`}
+                        position='absolute'
+                        left={`${index * 2}px`}
+                        top={`${index * 2}px`}
+                        width={{ base: '28px', md: '34px' }}
+                        height={{ base: '46px', md: '58px' }}
+                        border='1px solid'
+                        borderColor='pink.300'
+                        borderRadius='md'
+                        background='pink.500'
+                        boxShadow='inset 0 0 0 2px rgba(255,255,255,0.32)'
+                      />
+                    ))}
+                  </Box>
+                )}
+                {visibleHandCards.map((card) => renderCard(card, card === myLowestCard))}
+                {myHand.length === 0 && <Text color='gray.500'>손에 카드가 없습니다.</Text>}
+              </Flex>
+            )}
+            {state.phase === 'LEVEL_COMPLETE' && (
+              <Button onClick={onEvent.onClickNextLevelButton} colorScheme='pink' size={{ base: 'md', md: 'lg' }}>
+                다음 레벨 준비
+              </Button>
+            )}
+            {isEnded && (
+              <Flex gap={2}>
+                {state.phase === 'GAME_LOST' && (
+                  <Button onClick={onEvent.onClickRestartButton} colorScheme='pink'>
+                    다시 시작
+                  </Button>
+                )}
+                <Button onClick={onEvent.onClickExitButton} variant='outline' colorScheme='pink'>
+                  나가기
+                </Button>
+              </Flex>
+            )}
+          </Flex>
+
+          <Popover placement='top' isLazy>
+            <PopoverTrigger>
+              <Button
+                width='100%'
+                height={{ base: '48px', md: '64px' }}
+                padding={0}
+                fontSize={{ base: '2xl', md: '4xl' }}
+                variant='outline'
+              >
+                😊
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent width='auto' borderRadius='md'>
+              <PopoverBody padding='2'>
+                <Flex gap={2}>
+                  {EMOJIS.map((emoji) => (
+                    <Button
+                      key={emoji}
+                      size='sm'
+                      minWidth='40px'
+                      paddingX={2}
+                      variant='ghost'
+                      fontSize='xl'
+                      onClick={() => onEvent.onClickEmoji(emoji)}
+                    >
+                      {emoji}
+                    </Button>
+                  ))}
+                </Flex>
+              </PopoverBody>
+            </PopoverContent>
+          </Popover>
+        </Grid>
       </Flex>
     </Page>
   );

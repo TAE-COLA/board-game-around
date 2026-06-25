@@ -2,6 +2,7 @@ import * as db from 'firebase/database';
 import { FModel } from 'models';
 import { LOUNGE } from 'features/lounge';
 import { CommonError, initialUpdates } from 'shared';
+import { shuffle } from 'shared/shuffle';
 import { getRef } from '../../firebase.util';
 import { database } from '../../firebase_config';
 import {
@@ -63,6 +64,7 @@ const startLevel = (game: TheMind, level: number): TheMind => ({
   hands: dealTheMindHands(game.playerIds, level),
   playedCards: createEmptyTheMindList(),
   discardedCards: createEmptyTheMindList(),
+  discardedCardsByPlayerId: {},
   readyPlayerIds: createEmptyTheMindList(),
   starVotePlayerIds: createEmptyTheMindList(),
   lastPlayedAt: null,
@@ -147,10 +149,12 @@ export const start = async (loungeId: string, userId: string): Promise<void> => 
     hands: dealTheMindHands(playerIds, 1),
     playedCards: createEmptyTheMindList(),
     discardedCards: createEmptyTheMindList(),
+    discardedCardsByPlayerId: {},
     readyPlayerIds: createEmptyTheMindList(),
     starVotePlayerIds: createEmptyTheMindList(),
     lastPlayedAt: null,
     lastResult: null,
+    speechBubbles: {},
     phase: 'READY',
   };
 
@@ -240,8 +244,19 @@ export const playCard = async (
     const blockingCards = getTheMindLowerCardsInOtherHands(currentHands, userId, card);
     if (blockingCards.length > 0) {
       const [lowestBlockingCard] = blockingCards;
+      const gameWithSpeechBubble = {
+        ...game,
+        speechBubbles: {
+          ...(game.speechBubbles ?? {}),
+          [userId]: {
+            type: 'CARD' as const,
+            value: `${card}`,
+            shownAt: db.serverTimestamp() as unknown as number,
+          },
+        },
+      };
 
-      return failLevel(game, {
+      return failLevel(gameWithSpeechBubble, {
         reason: 'LOWER_CARD',
         playedByPlayerId: userId,
         playedCard: card,
@@ -258,6 +273,14 @@ export const playCard = async (
       hands: serializeTheMindHands(handsAfterPlay),
       playedCards: [...normalizeTheMindList(game.playedCards), card],
       starVotePlayerIds: createEmptyTheMindList(),
+      speechBubbles: {
+        ...(game.speechBubbles ?? {}),
+        [userId]: {
+          type: 'CARD',
+          value: `${card}`,
+          shownAt: db.serverTimestamp() as unknown as number,
+        },
+      },
       lastPlayedAt: db.serverTimestamp() as unknown as number,
     };
 
@@ -302,12 +325,17 @@ export const voteStar = async (loungeId: string, userId: string): Promise<void> 
 
     const hands = normalizeTheMindHands(game);
     const discardedCards: number[] = [];
+    const discardedCardsByPlayerId = { ...(game.discardedCardsByPlayerId ?? {}) };
 
     game.playerIds.forEach((playerId) => {
       const [lowestCard, ...remainingCards] = hands[playerId].sort((a, b) => a - b);
       if (lowestCard === undefined) return;
 
       discardedCards.push(lowestCard);
+      discardedCardsByPlayerId[playerId] = [
+        ...normalizeTheMindList(discardedCardsByPlayerId[playerId]),
+        lowestCard,
+      ];
       hands[playerId] = remainingCards;
     });
 
@@ -319,6 +347,7 @@ export const voteStar = async (loungeId: string, userId: string): Promise<void> 
         ...normalizeTheMindList(game.discardedCards),
         ...discardedCards,
       ].sort((a, b) => a - b),
+      discardedCardsByPlayerId,
       starVotePlayerIds: createEmptyTheMindList(),
     };
 
@@ -330,13 +359,22 @@ export const voteStar = async (loungeId: string, userId: string): Promise<void> 
   });
 };
 
-export const cancelStarVote = async (loungeId: string): Promise<void> => {
-  const updates = initialUpdates();
+export const cancelStarVote = async (loungeId: string, userId: string): Promise<void> => {
+  await db.runTransaction(theMindReference(loungeId), (current) => {
+    if (!current) return current;
+    const game = current as TheMind;
+    if (game.phase !== 'PLAYING' || !game.playerIds.includes(userId)) return current;
 
-  updates[`/${THE_MIND.reference}/${loungeId}/${THE_MIND.starVotePlayerIds}`] =
-    createEmptyTheMindList();
+    const starVotePlayerIds = normalizeTheMindList(game.starVotePlayerIds).filter(
+      (playerId) => playerId !== userId
+    );
 
-  await db.update(reference, updates);
+    return {
+      ...game,
+      starVotePlayerIds:
+        starVotePlayerIds.length === 0 ? createEmptyTheMindList() : starVotePlayerIds,
+    };
+  });
 };
 
 export const sendEmoji = async (
@@ -349,6 +387,11 @@ export const sendEmoji = async (
   const updates = initialUpdates();
 
   updates[`/${THE_MIND.reference}/${loungeId}/${THE_MIND.emojis}/${userId}`] = {
+    value: emoji,
+    shownAt: db.serverTimestamp(),
+  };
+  updates[`/${THE_MIND.reference}/${loungeId}/${THE_MIND.speechBubbles}/${userId}`] = {
+    type: 'EMOJI',
     value: emoji,
     shownAt: db.serverTimestamp(),
   };
@@ -382,10 +425,12 @@ export const restart = async (loungeId: string): Promise<void> => {
       hands: dealTheMindHands(game.playerIds, 1),
       playedCards: createEmptyTheMindList(),
       discardedCards: createEmptyTheMindList(),
+      discardedCardsByPlayerId: {},
       readyPlayerIds: createEmptyTheMindList(),
       starVotePlayerIds: createEmptyTheMindList(),
       lastPlayedAt: null,
       lastResult: null,
+      speechBubbles: {},
       phase: 'READY',
     };
   });
