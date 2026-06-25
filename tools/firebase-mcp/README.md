@@ -1,29 +1,28 @@
-# Firebase MCP server
+# Firebase MCP 서버
 
-Project-scoped MCP server for inspecting this app's Firebase data.
+이 앱의 Firebase 데이터를 점검하기 위한 프로젝트 범위 MCP 서버입니다.
 
-The server uses only Node.js built-ins and Firebase REST APIs. It reads Firebase project settings from
-the repository `.env` file unless explicit environment variables are provided.
+이 서버는 Node.js 내장 기능과 Firebase REST API만 사용합니다. 명시적인 환경 변수가 제공되지 않으면 저장소의 `.env` 파일에서 Firebase 프로젝트 설정을 읽습니다.
 
-## Credentials
+## 인증 정보
 
-Create a Firebase service account key in Firebase Console:
+Firebase Console에서 Firebase 서비스 계정 키를 만듭니다.
 
-1. Project settings
-2. Service accounts
-3. Generate new private key
+1. 프로젝트 설정
+2. 서비스 계정
+3. 새 비공개 키 생성
 
-Store the JSON outside the repository, for example:
+JSON 파일은 저장소 밖에 보관합니다. 예:
 
 ```bash
 /private/tmp/board-game-around-firebase-service-account.json
 ```
 
-Do not commit the JSON file.
+JSON 파일은 커밋하지 마세요.
 
-## Codex MCP config
+## Codex MCP 설정
 
-Add an MCP server entry like this:
+다음과 같은 MCP 서버 항목을 추가합니다.
 
 ```json
 {
@@ -42,29 +41,29 @@ Add an MCP server entry like this:
 }
 ```
 
-Restart Codex after changing MCP config.
+MCP 설정을 변경한 뒤 Codex를 다시 시작합니다.
 
-## Write access
+## 쓰기 권한
 
-Writes are disabled by default. To enable Realtime Database write tools, add:
+기본적으로 쓰기 작업은 비활성화되어 있습니다. Realtime Database 쓰기 도구를 활성화하려면 다음 값을 추가합니다.
 
 ```json
 "FIREBASE_MCP_ENABLE_WRITES": "true"
 ```
 
-Only enable writes when you intentionally want Codex to modify production Firebase data.
+Codex가 프로덕션 Firebase 데이터를 수정하길 의도한 경우에만 쓰기를 활성화하세요.
 
-## Tools
+## 도구
 
-- `firebase_project_info`: show project, database URL, and write mode.
-- `firestore_get_document`: read one Firestore document, such as `Games/the-mind`.
-- `firestore_list_collection`: list Firestore documents in a collection, such as `Games`.
-- `rtdb_get`: read a Realtime Database path, such as `Lounge`.
-- `rtdb_query_equal`: query Realtime Database with `orderBy` and `equalTo`, such as Lounge by code.
-- `rtdb_update`: patch a Realtime Database path. Requires write mode.
-- `rtdb_set`: replace or delete a Realtime Database path. Requires write mode.
+- `firebase_project_info`: 프로젝트, database URL, 쓰기 모드를 표시합니다.
+- `firestore_get_document`: `Games/the-mind` 같은 Firestore 문서 하나를 읽습니다.
+- `firestore_list_collection`: `Games` 같은 컬렉션의 Firestore 문서를 나열합니다.
+- `rtdb_get`: `Lounge` 같은 Realtime Database 경로를 읽습니다.
+- `rtdb_query_equal`: 라운지 코드를 조회하는 것처럼 `orderBy`와 `equalTo`로 Realtime Database를 조회합니다.
+- `rtdb_update`: Realtime Database 경로를 patch합니다. 쓰기 모드가 필요합니다.
+- `rtdb_set`: Realtime Database 경로를 교체하거나 삭제합니다. 쓰기 모드가 필요합니다.
 
-## Local smoke test
+## 로컬 스모크 테스트
 
 ```bash
 printf '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}\n{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}\n' \

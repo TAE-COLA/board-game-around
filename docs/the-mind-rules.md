@@ -1,229 +1,212 @@
-# The Mind rules reference
+# 더 마인드 규칙 참조
 
-This document is the implementation reference for The Mind in this repository.
-It summarizes the game rules as behavior and state transitions rather than
-copying the rulebook text.
+이 문서는 이 저장소에서 더 마인드를 구현할 때 기준으로 삼는 참조 문서입니다. 룰북 문장을 그대로 옮기기보다는, 게임 규칙을 동작과 상태 전이 중심으로 정리합니다.
 
-Sources checked:
+확인한 출처:
 
 - https://en.wikipedia.org/wiki/The_Mind_(card_game)
 - https://ru.wikipedia.org/wiki/The_Mind_(%D0%B8%D0%B3%D1%80%D0%B0)
 
-## Game identity
+## 게임 식별 정보
 
-- Title: The Mind
-- Designer: Wolfgang Warsch
-- Type: cooperative real-time card game
-- Players: 2 to 4
-- Deck: number cards 1 through 100
-- Objective: the team wins by completing all required levels without losing all
-  lives.
+- 제목: 더 마인드
+- 디자이너: 볼프강 바르쉬
+- 유형: 실시간 협동 카드 게임
+- 인원: 2명에서 4명
+- 덱: 1부터 100까지의 숫자 카드
+- 목표: 모든 필수 레벨을 완료하기 전까지 생명을 모두 잃지 않으면 팀이 승리합니다.
 
-## Core concept
+## 핵심 개념
 
-Players collectively play all cards in ascending numeric order, but they may not
-communicate card values, timing plans, counts, signals, or strategy during a
-level. There is no turn order. Any player may play a card whenever they believe
-it is currently the lowest unplayed card held by the team.
+플레이어들은 모든 카드를 숫자 오름차순으로 함께 내야 합니다. 다만 레벨 진행 중에는 카드 값, 낼 타이밍, 카드 개수, 신호, 전략을 서로 전달할 수 없습니다. 턴 순서는 없습니다. 어떤 플레이어든 지금 자기 카드가 팀 전체에서 아직 내지 않은 가장 낮은 카드라고 판단하면 카드를 낼 수 있습니다.
 
-## Components and state
+## 구성 요소와 상태
 
-- Number cards: 1 through 100.
-- Life tokens/cards: team retry resource. When a level fails while at least 1
-  life remains, lose 1 life and restart that level. If the level fails while
-  lives are already 0, the game is lost.
-- Throwing star tokens/cards: team resource used to discard each player's lowest
-  card.
-- Level cards: determine the current level and milestone rewards.
+- 숫자 카드: 1부터 100까지입니다.
+- 생명 토큰/카드: 팀의 재시도 자원입니다. 생명이 1개 이상 남아 있을 때 레벨에 실패하면 생명 1개를 잃고 같은 레벨을 다시 시작합니다. 생명이 이미 0인 상태에서 레벨에 실패하면 게임에서 패배합니다.
+- 슈리켄 토큰/카드: 각 플레이어의 가장 낮은 카드를 버릴 때 사용하는 팀 자원입니다.
+- 레벨 카드: 현재 레벨과 보상 구간을 결정합니다.
 
-Implementation state should include:
+구현 상태에는 다음 값이 포함되어야 합니다.
 
-- player count
-- current level
-- max level
-- team lives
-- team throwing stars
-- shuffled deck
-- each player's hidden hand
-- played pile
-- discarded cards
-- ready state per player
-- current phase: setup, ready, playing, resolving mistake, level complete,
-  game won, game lost
+- 플레이어 수
+- 현재 레벨
+- 최대 레벨
+- 팀 생명
+- 팀 슈리켄
+- 섞인 덱
+- 각 플레이어의 숨겨진 손패
+- 낸 카드 더미
+- 버린 카드
+- 플레이어별 준비 상태
+- 현재 phase: setup, ready, playing, resolving mistake, level complete, game won, game lost
 
-## Setup
+## 준비
 
-1. Choose 2, 3, or 4 players.
-2. Set the team's starting lives equal to the player count.
-3. Set the team's starting throwing stars to 1.
-4. Set the final level by player count:
-   - 2 players: level 12
-   - 3 players: level 10
-   - 4 players: level 8
-5. Start at level 1.
+1. 2명, 3명, 4명 중 하나의 인원으로 시작합니다.
+2. 팀의 시작 생명은 플레이어 수와 같습니다.
+3. 팀의 시작 슈리켄은 1개입니다.
+4. 플레이어 수에 따라 마지막 레벨을 정합니다.
+   - 2명: 레벨 12
+   - 3명: 레벨 10
+   - 4명: 레벨 8
+5. 레벨 1에서 시작합니다.
 
-Physical component limits matter if modeled strictly:
+구성품 수량을 엄격히 모델링한다면 다음 제한도 고려해야 합니다.
 
-- life supply has 5 total life cards
-- throwing star supply has 3 total throwing star cards
-- rewards cannot increase a resource beyond available supply
+- 생명 공급량은 총 5개입니다.
+- 슈리켄 공급량은 총 3개입니다.
+- 보상으로 자원이 늘어날 때도 사용 가능한 공급량을 넘을 수 없습니다.
 
-## Level setup
+## 레벨 준비
 
-At the start of each level:
+각 레벨을 시작할 때:
 
-1. Shuffle the full 1-100 number deck.
-2. Deal cards face down to each player.
-3. Each player receives cards equal to the current level number.
-   - Level 1: each player receives 1 card.
-   - Level 2: each player receives 2 cards.
-   - Continue similarly.
-4. Players may look at only their own hand.
-5. When ready, every player indicates readiness. In the physical game this is
-   represented by placing a hand on the table.
-6. The level begins only after all players are ready.
+1. 1부터 100까지의 숫자 덱 전체를 섞습니다.
+2. 각 플레이어에게 카드를 뒤집어 나눠 줍니다.
+3. 각 플레이어는 현재 레벨 숫자만큼 카드를 받습니다.
+   - 레벨 1: 각 플레이어가 카드 1장을 받습니다.
+   - 레벨 2: 각 플레이어가 카드 2장을 받습니다.
+   - 이후에도 같은 방식으로 진행합니다.
+4. 플레이어는 자기 손패만 볼 수 있습니다.
+5. 준비가 되면 모든 플레이어가 준비 상태를 표시합니다. 실제 게임에서는 손을 테이블 위에 올리는 방식으로 표현합니다.
+6. 모든 플레이어가 준비한 뒤에만 레벨이 시작됩니다.
 
-Implementation note: once a level begins, hands should usually be sorted for the
-local user's readability, but other players' cards must remain hidden.
+구현 메모: 레벨이 시작된 뒤에는 로컬 사용자의 가독성을 위해 손패를 정렬하는 편이 좋습니다. 다만 다른 플레이어의 카드는 계속 숨겨져 있어야 합니다.
 
-## Playing a level
+## 레벨 진행
 
-- There is no turn sequence.
-- Any player can play their own lowest card at any time.
-- A player cannot choose a higher card while holding a lower card.
-- Cards must be played in strictly ascending order across the entire team.
-- Players may not reveal, hint at, or encode information about their cards.
-- The team is expected to rely on timing and shared intuition.
-- A level is complete when all players have no cards remaining.
+- 턴 순서는 없습니다.
+- 어떤 플레이어든 언제든 자기 손패의 가장 낮은 카드를 낼 수 있습니다.
+- 플레이어는 자기 손에 더 낮은 카드가 남아 있는데 더 높은 카드를 선택할 수 없습니다.
+- 팀 전체가 낸 카드는 엄격한 오름차순이어야 합니다.
+- 플레이어는 자기 카드 정보를 공개하거나 암시하거나 인코딩할 수 없습니다.
+- 팀은 타이밍과 공유된 직감에 의존해야 합니다.
+- 모든 플레이어의 손패가 비면 레벨을 완료합니다.
 
-## Mistake resolution
+## 실수 처리
 
-A mistake occurs when a player plays a card while one or more lower-numbered
-cards are still in another player's hand.
+실수는 어떤 플레이어가 카드를 냈을 때 다른 플레이어 손에 더 낮은 숫자 카드가 하나 이상 남아 있으면 발생합니다.
 
-When this happens:
+실수가 발생하면:
 
-1. The level fails immediately.
-2. If the team has at least 1 life, lose exactly 1 life.
-3. Shuffle and redeal the same level.
-4. Return to ready state for that level.
-5. If the team has 0 lives when the mistake happens, the game is lost.
+1. 레벨은 즉시 실패합니다.
+2. 팀 생명이 1개 이상 있으면 정확히 1개를 잃습니다.
+3. 같은 레벨의 카드를 다시 섞고 다시 나눠 줍니다.
+4. 해당 레벨의 준비 상태로 돌아갑니다.
+5. 실수 발생 시점에 생명이 0이면 게임에서 패배합니다.
 
-Important implementation detail:
+중요한 구현 세부사항:
 
-- A failed level does not continue from the current hands.
-- Played and discarded piles reset when the failed level restarts.
-- Lives may be 0; the next level failure at 0 lives ends the game.
+- 실패한 레벨은 현재 손패에서 계속 진행하지 않습니다.
+- 실패한 레벨을 다시 시작하면 낸 카드 더미와 버린 카드 더미는 초기화됩니다.
+- 생명은 0이 될 수 있습니다. 생명이 0인 상태에서 다음 레벨 실패가 발생하면 게임이 종료됩니다.
 
-## Throwing stars
+## 슈리켄
 
-Throwing stars are a shared team resource.
+슈리켄은 팀이 공유하는 자원입니다.
 
-To use one:
+사용 절차:
 
-1. A player proposes using a throwing star.
-2. All players must agree.
-3. If unanimous and at least 1 throwing star is available, spend 1 throwing star.
-4. Each player with at least one card discards their lowest card face up.
-5. Continue the level.
+1. 한 플레이어가 슈리켄 사용을 제안합니다.
+2. 모든 플레이어가 동의해야 합니다.
+3. 만장일치이고 슈리켄이 1개 이상 있으면 슈리켄 1개를 사용합니다.
+4. 카드가 1장 이상 있는 각 플레이어는 자기 손패의 가장 낮은 카드를 앞면으로 버립니다.
+5. 레벨을 계속 진행합니다.
 
-Notes for implementation:
+구현 참고:
 
-- Players with no cards discard nothing.
-- If the vote is not unanimous, no throwing star is spent and play continues.
-- The discarded cards are public information.
-- A throwing star action does not cost a life.
+- 카드가 없는 플레이어는 아무것도 버리지 않습니다.
+- 만장일치가 아니면 슈리켄을 사용하지 않고 플레이를 계속합니다.
+- 버린 카드는 공개 정보입니다.
+- 슈리켄 사용은 생명을 소모하지 않습니다.
 
-## Level completion and rewards
+## 레벨 완료와 보상
 
-When all player hands are empty, the level is complete.
+모든 플레이어의 손패가 비면 레벨을 완료합니다.
 
-After completing a level, apply that level's reward if any:
+레벨 완료 후 해당 레벨에 보상이 있으면 적용합니다.
 
-- Complete level 2: gain 1 throwing star.
-- Complete level 3: gain 1 life.
-- Complete level 5: gain 1 throwing star.
-- Complete level 6: gain 1 life.
-- Complete level 8: gain 1 throwing star.
-- Complete level 9: gain 1 life.
+- 레벨 2 완료: 슈리켄 1개 획득
+- 레벨 3 완료: 생명 1개 획득
+- 레벨 5 완료: 슈리켄 1개 획득
+- 레벨 6 완료: 생명 1개 획득
+- 레벨 8 완료: 슈리켄 1개 획득
+- 레벨 9 완료: 생명 1개 획득
 
-Respect the physical supply caps if strict component modeling is enabled:
+구성품 공급량 제한을 엄격히 적용한다면 다음 상한을 지킵니다.
 
-- lives cap at 5
-- throwing stars cap at 3
+- 생명 최대 5개
+- 슈리켄 최대 3개
 
-Then:
+그 다음:
 
-- If the completed level was the final level for the player count, the team wins.
-- Otherwise, advance to the next level and repeat level setup.
+- 완료한 레벨이 플레이어 수 기준 마지막 레벨이면 팀이 승리합니다.
+- 그렇지 않으면 다음 레벨로 넘어가고 레벨 준비를 반복합니다.
 
-## End conditions
+## 종료 조건
 
-The team loses when:
+팀 패배:
 
-- a level fails while team lives are already 0.
+- 팀 생명이 이미 0인 상태에서 레벨에 실패합니다.
 
-The team wins when:
+팀 승리:
 
-- the team completes the final required level:
-  - level 12 with 2 players
-  - level 10 with 3 players
-  - level 8 with 4 players
+- 플레이어 수별 마지막 필수 레벨을 완료합니다.
+  - 2명: 레벨 12
+  - 3명: 레벨 10
+  - 4명: 레벨 8
 
-## Communication restrictions
+## 의사소통 제한
 
-During a level, players may not:
+레벨 진행 중 플레이어는 다음 행동을 할 수 없습니다.
 
-- say or show card values
-- say whether their cards are high, low, close, safe, or risky
-- count down or coordinate exact timing
-- use secret signs, gestures, or coded signals
-- discuss who should play next
+- 카드 값을 말하거나 보여주기
+- 자기 카드가 높다, 낮다, 가깝다, 안전하다, 위험하다고 말하기
+- 카운트다운하거나 정확한 타이밍 조율하기
+- 비밀 신호, 몸짓, 암호화된 신호 사용하기
+- 다음에 누가 내야 하는지 논의하기
 
-Allowed interaction:
+허용되는 상호작용:
 
-- readiness confirmation before the level starts
-- proposing and voting on a throwing star
-- normal non-informational presence/tension, as long as it does not encode card
-  information
+- 레벨 시작 전 준비 확인
+- 슈리켄 사용 제안과 투표
+- 카드 정보를 인코딩하지 않는 일반적인 긴장감이나 존재감 표현
 
-For a digital implementation, the safest interpretation is to prevent all chat
-or emotes during active play except explicit throwing-star vote controls.
+디지털 구현에서는 활성 플레이 중 명시적인 슈리켄 투표 컨트롤을 제외한 모든 채팅이나 이모지를 막는 것이 가장 안전한 해석입니다.
 
-## Advanced blind variant
+## 고급 블라인드 변형 규칙
 
-After winning the normal game, the team may continue in a harder blind mode:
+일반 게임에서 승리한 뒤 팀은 더 어려운 블라인드 모드를 이어서 플레이할 수 있습니다.
 
-1. Return to level 1.
-2. Keep the remaining lives and throwing stars from the completed game.
-3. Play cards face down instead of face up.
-4. At the end of the level, reveal and verify the played sequence.
-5. If an ordering mistake occurred, lose 1 life.
-6. Other rules remain the same, including throwing stars discarding cards face
-   up.
+1. 레벨 1로 돌아갑니다.
+2. 완료한 게임에서 남은 생명과 슈리켄을 유지합니다.
+3. 카드를 앞면이 아니라 뒷면으로 냅니다.
+4. 레벨 끝에 낸 카드를 공개하고 순서를 검증합니다.
+5. 순서 실수가 있으면 생명 1개를 잃습니다.
+6. 슈리켄으로 카드를 앞면으로 버리는 것을 포함해 나머지 규칙은 동일합니다.
 
-This should be implemented as an optional mode, not as part of the normal win
-condition.
+이 변형 규칙은 일반 승리 조건의 일부가 아니라 선택 모드로 구현해야 합니다.
 
-## Implementation priorities
+## 구현 우선순위
 
-Minimum viable The Mind implementation:
+최소 구현 범위:
 
-1. 2-4 player setup.
-2. Level progression and final level by player count.
-3. Random 1-100 deck shuffle each level.
-4. Hidden hands, local player hand visibility.
-5. Ready phase before each level.
-6. Real-time card play without turns.
-7. Mistake detection, same-level restart, and one-life penalty per failed level.
-8. Throwing star proposal, unanimous vote, and discard resolution.
-9. Level rewards.
-10. Win/loss handling.
+1. 2~4인 준비
+2. 플레이어 수에 따른 레벨 진행과 마지막 레벨
+3. 각 레벨마다 1~100 덱 무작위 섞기
+4. 숨겨진 손패와 로컬 플레이어 손패 표시
+5. 각 레벨 전 준비 phase
+6. 턴 없는 실시간 카드 제출
+7. 실수 감지, 같은 레벨 재시작, 실패당 생명 1개 차감
+8. 슈리켄 제안, 만장일치 투표, 버리기 처리
+9. 레벨 보상
+10. 승리/패배 처리
 
-Optional later features:
+나중에 추가할 수 있는 기능:
 
-- strict component supply visualization
-- multiplayer networking / synchronized state
-- AI players for solo testing
-- blind variant
-- animations and tension-building timing UI
+- 구성품 공급량의 엄격한 시각화
+- 멀티플레이 네트워킹 / 동기화 상태
+- 혼자 테스트하기 위한 AI 플레이어
+- 블라인드 변형 규칙
+- 애니메이션과 긴장감을 높이는 타이밍 UI
