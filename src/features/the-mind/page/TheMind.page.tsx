@@ -93,11 +93,38 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
   const hasVisibleEmoji = Object.values(state.emojis ?? {}).some(
     (emoji) => typeof emoji.shownAt === 'number' && serverNow - emoji.shownAt < EMOJI_VISIBLE_MS
   );
+  const failureDetail =
+    state.lastResult?.type === 'FAILURE' ? state.lastResult.failure : undefined;
   const resultKey = state.lastResult
-    ? `${state.lastResult.type}-${state.lastResult.level}-${state.lastResult.lives}-${state.phase}`
+    ? `${state.lastResult.type}-${state.lastResult.level}-${state.lastResult.lives}-${
+        failureDetail?.playedCard ?? 'none'
+      }-${state.phase}`
     : null;
   const isResultModalOpen = !!state.lastResult && closedResultKey !== resultKey;
   const isSuccessResult = state.lastResult?.type === 'SUCCESS';
+  const displayedPlayedCards =
+    failureDetail?.playedCards && failureDetail.playedCards.length > 0
+      ? failureDetail.playedCards
+      : state.playedCards;
+  const failedPlayedCardIndex =
+    typeof failureDetail?.playedCard === 'number' ? displayedPlayedCards.length - 1 : -1;
+
+  const getPlayerName = (playerId?: string) => {
+    if (!playerId) return '알 수 없는 플레이어';
+    return state.players.find((player) => player.id === playerId)?.name ?? '알 수 없는 플레이어';
+  };
+  const lowestBlockingCard = failureDetail?.blockingCards?.[0];
+
+  const failureReasonText =
+    failureDetail?.reason === 'LOWER_CARD' &&
+    typeof failureDetail.playedCard === 'number' &&
+    lowestBlockingCard
+      ? `${getPlayerName(lowestBlockingCard.playerId)}님 손에 더 낮은 ${
+          lowestBlockingCard.card
+        }번 카드가 남아 있었는데, ${getPlayerName(
+          failureDetail.playedByPlayerId
+        )}님이 ${failureDetail.playedCard}번 카드를 먼저 냈습니다.`
+      : null;
 
   const closeResultModal = () => {
     setClosedResultKey(resultKey);
@@ -173,6 +200,11 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
                     ? '라이프가 없는 상태에서 실패해 게임이 종료되었습니다.'
                     : `라이프가 ${state.lastResult?.lives}개 남았습니다. 같은 레벨을 다시 준비합니다.`}
               </Text>
+              {failureReasonText && (
+                <Text color='red.600' fontWeight='semibold'>
+                  {failureReasonText}
+                </Text>
+              )}
             </Flex>
           </ModalBody>
           <ModalFooter>
@@ -491,15 +523,21 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
                 </Heading>
                 <Flex gap={2} wrap='wrap'>
                   <AnimatePresence initial={false}>
-                    {pilePreview(state.playedCards).map((card, index) => (
-                      <MotionBox key={`${card}-${index}`} {...popIn}>
-                        <Badge colorScheme='pink' fontSize='md'>
-                          {card}
-                        </Badge>
-                      </MotionBox>
-                    ))}
+                    {pilePreview(displayedPlayedCards).map((card, index, previewCards) => {
+                      const originalIndex =
+                        displayedPlayedCards.length - previewCards.length + index;
+                      const isFailedPlayedCard = originalIndex === failedPlayedCardIndex;
+
+                      return (
+                        <MotionBox key={`${card}-${originalIndex}`} {...popIn}>
+                          <Badge colorScheme={isFailedPlayedCard ? 'red' : 'pink'} fontSize='md'>
+                            {card}
+                          </Badge>
+                        </MotionBox>
+                      );
+                    })}
                   </AnimatePresence>
-                  {state.playedCards.length === 0 && <Text color='gray.600'>Empty</Text>}
+                  {displayedPlayedCards.length === 0 && <Text color='gray.600'>Empty</Text>}
                 </Flex>
               </Box>
 

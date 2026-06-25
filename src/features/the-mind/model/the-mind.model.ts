@@ -5,6 +5,17 @@ export type TheMindPhase =
   | 'GAME_WON'
   | 'GAME_LOST';
 
+export interface TheMindFailureDetail {
+  reason: 'LOWER_CARD' | 'TIMEOUT';
+  playedByPlayerId?: string;
+  playedCard?: number;
+  blockingCards?: {
+    playerId: string;
+    card: number;
+  }[];
+  playedCards: number[];
+}
+
 export interface TheMind {
   loungeId: string;
   playerIds: string[];
@@ -24,6 +35,7 @@ export interface TheMind {
     type: 'SUCCESS' | 'FAILURE';
     level: number;
     lives: number;
+    failure?: TheMindFailureDetail;
   } | null;
   emojis?: {
     [key: string]: {

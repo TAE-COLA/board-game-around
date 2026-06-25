@@ -4,7 +4,7 @@ import { LOUNGE, Lounge } from 'features/lounge';
 import { CommonError, initialUpdates, isPlaceholder, placeholder, shuffle } from 'shared';
 import { getRef } from '../../firebase.util';
 import { database } from '../../firebase_config';
-import { TheMind, THE_MIND } from '../model';
+import { TheMind, THE_MIND, TheMindFailureDetail } from '../model';
 
 const reference = db.ref(database);
 const serverTimeOffsetReference = db.ref(database, '.info/serverTimeOffset');
@@ -62,10 +62,16 @@ const serializeHands = (hands: TheMind['hands']): TheMind['hands'] =>
 const areHandsEmpty = (hands: TheMind['hands']) =>
   Object.values(hands).every((cards) => normalizeList(cards).length === 0);
 
-const hasLowerCardInOtherHands = (hands: TheMind['hands'], playerId: string, card: number) =>
-  Object.entries(hands).some(
-    ([handOwnerId, cards]) => handOwnerId !== playerId && cards.some((handCard) => handCard < card)
-  );
+const getLowerCardsInOtherHands = (hands: TheMind['hands'], playerId: string, card: number) =>
+  Object.entries(hands)
+    .flatMap(([handOwnerId, cards]) =>
+      handOwnerId === playerId
+        ? []
+        : cards
+            .filter((handCard) => handCard < card)
+            .map((handCard) => ({ playerId: handOwnerId, card: handCard }))
+    )
+    .sort((a, b) => a.card - b.card);
 
 const resolveLevelComplete = (game: TheMind): TheMind => {
   const reward = getLevelReward(game.level);
@@ -104,21 +110,28 @@ const startLevel = (game: TheMind, level: number): TheMind => ({
   phase: 'READY',
 });
 
-const failLevel = (game: TheMind): TheMind => {
+const failLevel = (game: TheMind, failure?: TheMindFailureDetail): TheMind => {
+  const lastResult = {
+    type: 'FAILURE' as const,
+    level: game.level,
+    lives: Math.max(0, game.lives - 1),
+    ...(failure ? { failure } : {}),
+  };
+
   if (game.lives <= 0) {
     return {
       ...game,
       lives: 0,
       phase: 'GAME_LOST',
       lastPlayedAt: null,
-      lastResult: { type: 'FAILURE', level: game.level, lives: 0 },
+      lastResult: { ...lastResult, lives: 0 },
       finishedAt: db.serverTimestamp() as unknown as Date,
     };
   }
 
   return {
     ...startLevel({ ...game, lives: game.lives - 1 }, game.level),
-    lastResult: { type: 'FAILURE', level: game.level, lives: game.lives - 1 },
+    lastResult,
   };
 };
 
@@ -246,8 +259,17 @@ export const playCard = async (
     const [lowestCard] = currentHands[userId];
     if (lowestCard !== card) return current;
 
-    if (hasLowerCardInOtherHands(currentHands, userId, card)) {
-      return failLevel(game);
+    const blockingCards = getLowerCardsInOtherHands(currentHands, userId, card);
+    if (blockingCards.length > 0) {
+      const [lowestBlockingCard] = blockingCards;
+
+      return failLevel(game, {
+        reason: 'LOWER_CARD',
+        playedByPlayerId: userId,
+        playedCard: card,
+        blockingCards: [lowestBlockingCard],
+        playedCards: [...normalizeList(game.playedCards), card],
+      });
     }
 
     const handAfterPlay = currentHands[userId].filter((value) => value !== card);
@@ -276,7 +298,10 @@ export const timeout = async (loungeId: string, serverNow: number): Promise<void
     if (game.phase !== 'PLAYING' || typeof game.lastPlayedAt !== 'number') return current;
     if (serverNow - game.lastPlayedAt < CARD_TIMER_MS) return current;
 
-    return failLevel(game);
+    return failLevel(game, {
+      reason: 'TIMEOUT',
+      playedCards: normalizeList(game.playedCards),
+    });
   });
 };
 
