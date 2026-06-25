@@ -53,16 +53,16 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
   const compactHand = useBreakpointValue({ base: true, md: false }) ?? false;
   const hands = state.hands ?? {};
   const myHand = hands[auth.id] ?? [];
+  const isCrowdedPlayerTiles = state.players.length >= 3;
   const myLowestCard = myHand.length > 0 ? Math.min(...myHand) : undefined;
   const myHandDescending = useMemo(() => [...myHand].sort((a, b) => b - a), [myHand]);
-  const visibleHandCards =
-    compactHand && myHandDescending.length > 2 ? myHandDescending.slice(-2) : myHandDescending;
-  const stackedHandCount =
-    compactHand && myHandDescending.length > 2 ? myHandDescending.length - 2 : 0;
   const isReady = state.readyPlayerIds.includes(auth.id);
   const votedStar = state.starVotePlayerIds.includes(auth.id);
   const isEnded = state.phase === 'GAME_WON' || state.phase === 'GAME_LOST';
   const [now, setNow] = useState(Date.now());
+  const [viewportWidth, setViewportWidth] = useState(() =>
+    typeof window === 'undefined' ? 0 : window.innerWidth
+  );
   const [closedResultKey, setClosedResultKey] = useState<string | null>(null);
   const [dismissedStarVoteKey, setDismissedStarVoteKey] = useState<string | null>(null);
   const [expiredTimerKey, setExpiredTimerKey] = useState<number | null>(null);
@@ -106,10 +106,29 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
   const stackCards = displayedPlayedCards.slice(-48);
   const failedPlayedCardIndex =
     typeof failureDetail?.playedCard === 'number' ? displayedPlayedCards.length - 1 : -1;
-  const stackOffset = compactHand ? 2 : 3;
-  const stackCardWidth = compactHand ? 34 : 48;
-  const stackCardHeight = compactHand ? 50 : 70;
-  const stackStartOffset = -((stackCards.length - 1) * stackOffset) / 2;
+  const stackOffset = compactHand ? 4 : 3;
+  const stackCardWidth = compactHand ? 58 : 48;
+  const stackCardHeight = compactHand ? 84 : 70;
+  const stackGap = compactHand ? 8 : 10;
+  const stackAvailableWidth = compactHand ? Math.max(0, viewportWidth - 32) : 420;
+  const maxVisibleStackCards = Math.max(
+    1,
+    Math.floor((stackAvailableWidth + stackGap) / (stackCardWidth + stackGap))
+  );
+  const visibleStackCards = stackCards.slice(-maxVisibleStackCards);
+  const hiddenStackCount = stackCards.length - visibleStackCards.length;
+  const handCardWidth = compactHand ? 44 : 64;
+  const handCardHeight = compactHand ? 68 : 96;
+  const handGap = compactHand ? 6 : 8;
+  const handAvailableWidth = compactHand ? Math.max(0, viewportWidth - 160) : 520;
+  const maxVisibleHandCards = Math.max(
+    1,
+    Math.floor((handAvailableWidth + handGap) / (handCardWidth + handGap))
+  );
+  const visibleHandCards = compactHand
+    ? myHandDescending.slice(-maxVisibleHandCards)
+    : myHandDescending;
+  const hiddenHandCount = myHandDescending.length - visibleHandCards.length;
 
   const getPlayerName = (playerId?: string) => {
     if (!playerId) return '알 수 없는 플레이어';
@@ -152,6 +171,17 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
   }, [clearSideEffects, navigate, sideEffects, toast]);
 
   useEffect(() => {
+    const handleResize = () => {
+      setViewportWidth(window.innerWidth);
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
     if (!isTimerRunning && !hasVisibleSpeechBubble) {
       setNow(Date.now());
       return;
@@ -184,21 +214,26 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
   const renderCard = (card: number, isPlayableCard: boolean) => (
     <Button
       key={card}
-      width={{ base: '44px', md: '64px' }}
-      height={{ base: '68px', md: '96px' }}
-      minWidth={{ base: '44px', md: '64px' }}
+      width={{ base: `${handCardWidth}px`, md: `${handCardWidth}px` }}
+      height={{ base: `${handCardHeight}px`, md: `${handCardHeight}px` }}
+      minWidth={{ base: `${handCardWidth}px`, md: `${handCardWidth}px` }}
       border='1px solid'
       borderColor={isPlayableCard ? 'pink.400' : 'gray.300'}
       borderRadius='md'
-      background={isPlayableCard ? 'pink.50' : 'white'}
-      color='gray.900'
+      background={isPlayableCard ? 'pink.50' : state.phase === 'PLAYING' ? 'gray.100' : 'white'}
+      color={isPlayableCard ? 'gray.900' : state.phase === 'PLAYING' ? 'gray.500' : 'gray.900'}
       fontWeight='bold'
       fontSize={{ base: 'xl', md: '2xl' }}
-      opacity={state.phase === 'PLAYING' && !isPlayableCard ? 0.45 : 1}
-      transform={isPlayableCard ? 'translateY(-6px)' : undefined}
+      transform={isPlayableCard ? { base: undefined, md: 'translateY(-6px)' } : undefined}
       boxShadow={isPlayableCard ? 'md' : undefined}
       onClick={() => onEvent.onClickCard(card)}
       isDisabled={!isPlayableCard}
+      _disabled={{
+        opacity: 1,
+        cursor: 'not-allowed',
+        background: state.phase === 'PLAYING' ? 'gray.100' : 'white',
+        color: state.phase === 'PLAYING' ? 'gray.500' : 'gray.900',
+      }}
       padding={0}
     >
       {card}
@@ -206,34 +241,53 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
   );
 
   const renderDiscardedCards = () => (
-    <Flex wrap='wrap' gap={1.5} minHeight={{ base: '22px', md: '24px' }}>
-      {state.discardedCards.length === 0 ? (
-        <Text color='gray.500' fontSize={{ base: 'xs', md: 'sm' }}>
-          버린 카드 없음
-        </Text>
-      ) : (
-        state.discardedCards.map((card, index) => (
-          <Box
-            key={`${card}-${index}`}
-            width={{ base: '24px', md: '28px' }}
-            height={{ base: '34px', md: '40px' }}
-            border='1px solid'
-            borderColor='gray.300'
-            borderRadius='sm'
-            background='whiteAlpha.800'
-            color='gray.700'
-            display='flex'
-            alignItems='center'
-            justifyContent='center'
-            fontSize={{ base: 'xs', md: 'sm' }}
-            fontWeight='bold'
-            boxShadow='sm'
-          >
-            {card}
-          </Box>
-        ))
-      )}
-    </Flex>
+    <Box
+      background='whiteAlpha.650'
+      border='1px solid'
+      borderColor='whiteAlpha.600'
+      borderRadius='md'
+      padding={{ base: 2, md: 3 }}
+      boxShadow='sm'
+      backdropFilter='blur(8px)'
+    >
+      <Text
+        color='gray.600'
+        fontSize={{ base: '10px', md: 'xs' }}
+        fontWeight='bold'
+        lineHeight='1'
+        marginBottom={2}
+      >
+        버린 카드
+      </Text>
+      <Flex wrap='wrap' gap={1.5} minHeight={{ base: '24px', md: '28px' }} align='center'>
+        {state.discardedCards.length === 0 ? (
+          <Text color='gray.500' fontSize={{ base: 'xs', md: 'sm' }}>
+            없음
+          </Text>
+        ) : (
+          state.discardedCards.map((card, index) => (
+            <Box
+              key={`${card}-${index}`}
+              width={{ base: '26px', md: '30px' }}
+              height={{ base: '36px', md: '42px' }}
+              border='1px solid'
+              borderColor='gray.300'
+              borderRadius='sm'
+              background='white'
+              color='gray.700'
+              display='flex'
+              alignItems='center'
+              justifyContent='center'
+              fontSize={{ base: 'xs', md: 'sm' }}
+              fontWeight='bold'
+              boxShadow='sm'
+            >
+              {card}
+            </Box>
+          ))
+        )}
+      </Flex>
+    </Box>
   );
 
   return (
@@ -377,19 +431,19 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
           minHeight={0}
           overflow='hidden'
           templateAreas={{
-            base: '"status resources" "stack stack" "players players"',
+            base: '"level level" "lives stars" "discarded discarded" "stack stack" "players players"',
             md: '"status stack players"',
           }}
           templateColumns={{
-            base: 'minmax(190px, 1fr) auto',
+            base: 'minmax(0, 1fr) minmax(0, 1fr)',
             md: 'minmax(220px, 1fr) minmax(0, 3fr) minmax(260px, 1fr)',
           }}
-          templateRows={{ base: 'auto 1fr auto', md: '1fr' }}
+          templateRows={{ base: 'auto auto auto 1fr auto', md: '1fr' }}
           gap={{ base: 2, md: 3 }}
           alignItems='stretch'
         >
           <Flex
-            gridArea='status'
+            gridArea={{ base: 'level', md: 'status' }}
             direction='column'
             justify='flex-start'
             gap={{ base: 2, md: 3 }}
@@ -418,7 +472,7 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
                 {getRewardLabel(state.level)}
               </Text>
             </Box>
-            <Box>{renderDiscardedCards()}</Box>
+            <Box display={{ base: 'none', md: 'block' }}>{renderDiscardedCards()}</Box>
             <Flex
               display={{ base: 'none', md: 'flex' }}
               direction='column'
@@ -447,21 +501,47 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
             </Box>
           </Flex>
 
+          <Box gridArea='discarded' display={{ base: 'block', md: 'none' }} minWidth={0}>
+            {renderDiscardedCards()}
+          </Box>
+
           <Flex
-            gridArea='resources'
+            gridArea='lives'
             display={{ base: 'flex', md: 'none' }}
-            direction='column'
-            align='flex-end'
-            justify='flex-start'
-            gap={1}
+            align='center'
+            justify='center'
+            minHeight='46px'
             minWidth={0}
-            fontSize='2xl'
-            paddingTop={1}
+            padding={2}
+            borderRadius='md'
+            border='1px solid'
+            borderColor='whiteAlpha.700'
+            background='whiteAlpha.800'
+            boxShadow='sm'
+            backdropFilter='blur(8px)'
+            fontSize='xl'
           >
-            <Text lineHeight='1.1' whiteSpace='nowrap'>
+            <Text lineHeight='1' whiteSpace='nowrap'>
               {'❤️'.repeat(state.lives)}
             </Text>
-            <Text lineHeight='1.1' whiteSpace='nowrap'>
+          </Flex>
+          <Flex
+            gridArea='stars'
+            display={{ base: 'flex', md: 'none' }}
+            align='center'
+            justify='center'
+            minHeight='46px'
+            minWidth={0}
+            padding={2}
+            borderRadius='md'
+            border='1px solid'
+            borderColor='whiteAlpha.700'
+            background='whiteAlpha.800'
+            boxShadow='sm'
+            backdropFilter='blur(8px)'
+            fontSize='xl'
+          >
+            <Text lineHeight='1' whiteSpace='nowrap'>
               {'⭐'.repeat(state.stars)}
             </Text>
           </Flex>
@@ -480,45 +560,70 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
                 아직 낸 카드 없음
               </Text>
             ) : (
-              <Box
+              <Flex
                 position='relative'
                 width='100%'
-                maxWidth={{ base: '180px', md: '420px' }}
+                maxWidth={{ base: '100%', md: '420px' }}
                 height='100%'
                 marginX='auto'
+                align='center'
+                justify='center'
+                gap={`${stackGap}px`}
+                paddingX={{ base: 1, md: 0 }}
               >
-                {stackCards.map((card, index) => {
-                  const originalIndex = displayedPlayedCards.length - stackCards.length + index;
+                {visibleStackCards.map((card, index) => {
+                  const originalIndex =
+                    displayedPlayedCards.length - visibleStackCards.length + index;
                   const isFailedPlayedCard = originalIndex === failedPlayedCardIndex;
 
                   return (
                     <Box
                       key={`${card}-${originalIndex}`}
-                      position='absolute'
-                      left={`calc(50% + ${stackStartOffset + index * stackOffset}px)`}
-                      top='50%'
+                      position='relative'
                       width={`${stackCardWidth}px`}
                       height={`${stackCardHeight}px`}
-                      marginLeft={`-${stackCardWidth / 2}px`}
-                      marginTop={`-${stackCardHeight / 2}px`}
-                      border='1px solid'
-                      borderColor={isFailedPlayedCard ? 'red.400' : 'pink.300'}
-                      borderRadius='md'
-                      background={isFailedPlayedCard ? 'red.100' : 'white'}
-                      color={isFailedPlayedCard ? 'red.700' : 'gray.900'}
-                      display='flex'
-                      alignItems='center'
-                      justifyContent='center'
-                      fontWeight='bold'
-                      fontSize={{ base: 'lg', md: '2xl' }}
-                      boxShadow='md'
-                      zIndex={index}
+                      flex='0 0 auto'
                     >
-                      {card}
+                      {index === 0 &&
+                        hiddenStackCount > 0 &&
+                        Array.from({ length: Math.min(hiddenStackCount, 5) }).map((_, stackIndex) => (
+                          <Box
+                            key={`played-stack-${stackIndex}`}
+                            position='absolute'
+                            left={`${-(Math.min(hiddenStackCount, 5) - stackIndex) * stackOffset}px`}
+                            top={`${-(Math.min(hiddenStackCount, 5) - stackIndex) * stackOffset}px`}
+                            width={`${stackCardWidth}px`}
+                            height={`${stackCardHeight}px`}
+                            border='1px solid'
+                            borderColor='gray.300'
+                            borderRadius='md'
+                            background='white'
+                            boxShadow='sm'
+                          />
+                        ))}
+                      <Box
+                        position='relative'
+                        width='100%'
+                        height='100%'
+                        border='1px solid'
+                        borderColor={isFailedPlayedCard ? 'red.400' : 'pink.300'}
+                        borderRadius='md'
+                        background={isFailedPlayedCard ? 'red.100' : 'white'}
+                        color={isFailedPlayedCard ? 'red.700' : 'gray.900'}
+                        display='flex'
+                        alignItems='center'
+                        justifyContent='center'
+                        fontWeight='bold'
+                        fontSize={{ base: '2xl', md: '2xl' }}
+                        boxShadow={{ base: 'lg', md: 'md' }}
+                        zIndex={hiddenStackCount > 0 && index === 0 ? 2 : 1}
+                      >
+                        {card}
+                      </Box>
                     </Box>
                   );
                 })}
-              </Box>
+              </Flex>
             )}
           </Flex>
 
@@ -528,7 +633,7 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
             gap={{ base: 1, md: 2 }}
             minWidth={0}
             minHeight={0}
-            overflow='hidden'
+            overflow={{ base: 'visible', md: 'hidden' }}
           >
             {state.players.map((player) => {
               const handCount = hands[player.id]?.length ?? 0;
@@ -544,10 +649,56 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
                   align='center'
                   gap={{ base: 0, md: 2 }}
                   minWidth={0}
-                  height={{ base: '42px', md: '56px' }}
+                  height={{ base: isCrowdedPlayerTiles ? '52px' : '42px', md: '56px' }}
                   flex={{ base: '1 1 0', md: '0 0 auto' }}
                   flexShrink={0}
+                  position='relative'
                 >
+                  {showBubble && (
+                    <Box
+                      display={{ base: 'flex', md: 'none' }}
+                      position='absolute'
+                      left='50%'
+                      bottom='calc(100% + 6px)'
+                      transform='translateX(-50%)'
+                      zIndex={3}
+                      minWidth='32px'
+                      maxWidth='72px'
+                      minHeight='28px'
+                      paddingX={2}
+                      paddingY={1}
+                      background='white'
+                      opacity={0.94}
+                      borderRadius='md'
+                      boxShadow='md'
+                      alignItems='center'
+                      justifyContent='center'
+                      fontWeight='bold'
+                      fontSize={bubble.type === 'EMOJI' ? 'xl' : 'sm'}
+                      lineHeight='1'
+                      _after={{
+                        content: '""',
+                        position: 'absolute',
+                        left: '50%',
+                        bottom: '-6px',
+                        transform: 'translateX(-50%)',
+                        borderLeft: '6px solid transparent',
+                        borderRight: '6px solid transparent',
+                        borderTop: '6px solid white',
+                      }}
+                    >
+                      {bubble.type === 'EMOJI' ? (
+                        <AnimatedEffect
+                          key={`${player.id}-${bubble.shownAt}`}
+                          effect={EMOJI_EFFECTS[bubble.value] ?? 'none'}
+                        >
+                          {bubble.value}
+                        </AnimatedEffect>
+                      ) : (
+                        bubble.value
+                      )}
+                    </Box>
+                  )}
                   <Box display={{ base: 'none', md: 'block' }} width='64px' flexShrink={0}>
                     {showBubble && (
                       <Box
@@ -590,9 +741,11 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
                     flex='1'
                     height='100%'
                     align='center'
-                    justify='space-between'
-                    gap={{ base: 1, md: 2 }}
+                    justify={{ base: isCrowdedPlayerTiles ? 'center' : 'space-between', md: 'space-between' }}
+                    direction={{ base: isCrowdedPlayerTiles ? 'column' : 'row', md: 'row' }}
+                    gap={{ base: isCrowdedPlayerTiles ? 0 : 1, md: 2 }}
                     paddingX={{ base: 2, md: 3 }}
+                    paddingY={{ base: isCrowdedPlayerTiles ? 1 : 0, md: 0 }}
                     background='white'
                     opacity={0.94}
                     borderRadius='md'
@@ -600,10 +753,23 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
                     minWidth={0}
                     overflow='hidden'
                   >
-                    <Text fontWeight='bold' noOfLines={1} minWidth={0}>
+                    <Text
+                      fontWeight='bold'
+                      noOfLines={1}
+                      minWidth={0}
+                      maxWidth='100%'
+                      fontSize={{ base: isCrowdedPlayerTiles ? 'xs' : 'md', md: 'md' }}
+                      lineHeight='1.1'
+                    >
                       {player.name}
                     </Text>
-                    <Flex align='center' gap={{ base: 1, md: 1.5 }} flexShrink={0} minWidth='fit-content'>
+                    <Flex
+                      align='center'
+                      justify='center'
+                      gap={{ base: 1, md: 1.5 }}
+                      flexShrink={0}
+                      minWidth='fit-content'
+                    >
                       {player.id === auth.id && <Badge colorScheme='pink'>You</Badge>}
                       {state.readyPlayerIds.includes(player.id) && (
                         <Badge colorScheme='green'>Ready</Badge>
@@ -611,7 +777,13 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
                       {state.starVotePlayerIds.includes(player.id) && (
                         <Badge colorScheme='yellow'>Star</Badge>
                       )}
-                      <Text color='gray.700' fontWeight='bold' whiteSpace='nowrap'>
+                      <Text
+                        color='gray.700'
+                        fontWeight='bold'
+                        whiteSpace='nowrap'
+                        fontSize={{ base: isCrowdedPlayerTiles ? 'xs' : 'md', md: 'md' }}
+                        lineHeight='1.1'
+                      >
                         🃏×{handCount}
                       </Text>
                     </Flex>
@@ -657,27 +829,44 @@ export const TheMindPage: React.FC<PageProps> = ({ navigate, toast }) => {
               </Button>
             )}
             {state.phase === 'PLAYING' && (
-              <Flex justify='center' align='flex-end' gap={{ base: 1.5, md: 2 }} minWidth={0}>
-                {stackedHandCount > 0 && (
-                  <Box position='relative' width={{ base: '34px', md: '42px' }} height={{ base: '58px', md: '74px' }} flexShrink={0}>
-                    {Array.from({ length: Math.min(stackedHandCount, 6) }).map((_, index) => (
-                      <Box
-                        key={`hand-stack-${index}`}
-                        position='absolute'
-                        left={`${index * 2}px`}
-                        top={`${index * 2}px`}
-                        width={{ base: '28px', md: '34px' }}
-                        height={{ base: '46px', md: '58px' }}
-                        border='1px solid'
-                        borderColor='pink.300'
-                        borderRadius='md'
-                        background='pink.500'
-                        boxShadow='inset 0 0 0 2px rgba(255,255,255,0.32)'
-                      />
-                    ))}
+              <Flex
+                justify='center'
+                align='flex-end'
+                gap={`${handGap}px`}
+                minWidth={0}
+                width='100%'
+                overflow='visible'
+              >
+                {visibleHandCards.map((card, index) => (
+                  <Box
+                    key={card}
+                    position='relative'
+                    width={`${handCardWidth}px`}
+                    height={`${handCardHeight}px`}
+                    flex='0 0 auto'
+                  >
+                    {index === 0 &&
+                      hiddenHandCount > 0 &&
+                      Array.from({ length: Math.min(hiddenHandCount, 6) }).map((_, stackIndex) => (
+                        <Box
+                          key={`hand-stack-${stackIndex}`}
+                          position='absolute'
+                          left={`${-(Math.min(hiddenHandCount, 6) - stackIndex) * 3}px`}
+                          top='0'
+                          width={`${handCardWidth}px`}
+                          height={`${handCardHeight}px`}
+                          border='1px solid'
+                          borderColor='gray.300'
+                          borderRadius='md'
+                          background='white'
+                          boxShadow='sm'
+                        />
+                      ))}
+                    <Box position='relative' zIndex={2}>
+                      {renderCard(card, card === myLowestCard)}
+                    </Box>
                   </Box>
-                )}
-                {visibleHandCards.map((card) => renderCard(card, card === myLowestCard))}
+                ))}
                 {myHand.length === 0 && <Text color='gray.500'>손에 카드가 없습니다.</Text>}
               </Flex>
             )}

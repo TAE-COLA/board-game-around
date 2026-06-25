@@ -19,11 +19,13 @@ export const LoungeCodeBox: React.FC<IProps> = ({ code, onClickCopyButton, ...pr
         flex='1'
         minWidth={0}
       >
-        <Text flexShrink={0}>게임방 코드</Text>
-        <Text paddingX='2' size='lg' flexShrink={0}>
+        <Text flexShrink={0} fontSize={{ base: 'sm', md: 'md' }}>
+          게임방 코드
+        </Text>
+        <Text paddingX={{ base: 1.5, md: 2 }} size='lg' flexShrink={0}>
           |
         </Text>
-        <Text fontWeight='bold' noOfLines={1}>
+        <Text fontWeight='bold' noOfLines={1} minWidth={0} fontSize={{ base: 'sm', md: 'md' }}>
           {code}
         </Text>
       </Flex>
