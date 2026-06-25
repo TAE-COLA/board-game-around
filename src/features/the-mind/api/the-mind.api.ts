@@ -14,6 +14,18 @@ const loungeReference = (loungeId: string) =>
 const theMindReference = (loungeId: string) =>
   db.child(db.child(reference, THE_MIND.reference), loungeId);
 
+type StoredLounge = Partial<Lounge> & {
+  memberIds?: Record<string, boolean>;
+};
+
+const getLoungePlayerIds = (lounge: StoredLounge) => {
+  if (Array.isArray(lounge.playerIds)) return lounge.playerIds;
+  if (lounge.memberIds) return Object.keys(lounge.memberIds).filter((id) => lounge.memberIds?.[id]);
+  return [];
+};
+
+const isValidPlayerCount = (playerCount: number) => playerCount >= 2 && playerCount <= 4;
+
 const getMaxLevel = (playerCount: number) => {
   if (playerCount === 2) return 12;
   if (playerCount === 3) return 10;
@@ -139,25 +151,43 @@ export const start = async (loungeId: string, userId: string): Promise<void> => 
   const loungeSnapshot = await getRef(loungeReference(loungeId), () => {
     throw new Error(CommonError.NO_LOUNGE);
   });
-  const lounge = new FModel<Lounge>(loungeSnapshot).sanitize();
+  const lounge = new FModel<StoredLounge>(loungeSnapshot).sanitize();
+  const loungePlayerIds = getLoungePlayerIds(lounge);
 
   if (lounge.ownerId !== userId) throw new Error(CommonError.PERMISSION_DENIED);
   if (lounge.status !== 'WAITING') throw new Error(CommonError.NO_LOUNGE);
-  if (lounge.playerIds.length < 2 || lounge.playerIds.length > 4) {
+  if (!isValidPlayerCount(loungePlayerIds.length)) {
     throw new Error(CommonError.NO_LOUNGE);
   }
 
   const statusResult = await db.runTransaction(loungeReference(loungeId), (current) => {
-    if (!current || current[LOUNGE.ownerId] !== userId || current[LOUNGE.status] !== 'WAITING') {
-      return current;
+    if (!current) return;
+
+    const currentLounge = current as StoredLounge;
+    const currentPlayerIds = getLoungePlayerIds(currentLounge);
+
+    if (
+      currentLounge[LOUNGE.ownerId] !== userId ||
+      currentLounge[LOUNGE.status] !== 'WAITING' ||
+      !isValidPlayerCount(currentPlayerIds.length)
+    ) {
+      return;
     }
-    return { ...current, [LOUNGE.status]: 'PLAYING' };
+
+    return { ...current, [LOUNGE.playerIds]: currentPlayerIds, [LOUNGE.status]: 'PLAYING' };
   });
-  if (!statusResult.committed || statusResult.snapshot.val()?.[LOUNGE.status] !== 'PLAYING') {
+  const startedLounge = statusResult.snapshot.val() as StoredLounge | null;
+  const startedPlayerIds = getLoungePlayerIds(startedLounge ?? {});
+
+  if (
+    !statusResult.committed ||
+    startedLounge?.[LOUNGE.status] !== 'PLAYING' ||
+    !isValidPlayerCount(startedPlayerIds.length)
+  ) {
     throw new Error(CommonError.PERMISSION_DENIED);
   }
 
-  const playerIds = shuffle(lounge.playerIds);
+  const playerIds = shuffle(startedPlayerIds);
 
   const theMind: TheMind = {
     loungeId,
