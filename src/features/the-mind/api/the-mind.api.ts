@@ -197,7 +197,7 @@ export const exit = async (loungeId: string, userId: string): Promise<void> => {
   updates[`/${THE_MIND.reference}/${loungeId}/${THE_MIND.hands}/${userId}`] = null;
   updates[`/${THE_MIND.reference}/${loungeId}/${THE_MIND.playerIds}`] = filteredPlayerIds;
   updates[`/${THE_MIND.reference}/${loungeId}/${THE_MIND.readyPlayerIds}`] =
-    theMind.readyPlayerIds.filter((id) => id !== userId);
+    normalizeTheMindList(theMind.readyPlayerIds).filter((id) => id !== userId);
   updates[`/${THE_MIND.reference}/${loungeId}/${THE_MIND.starVotePlayerIds}`] =
     normalizeTheMindList(theMind.starVotePlayerIds).filter((id) => id !== userId);
 
