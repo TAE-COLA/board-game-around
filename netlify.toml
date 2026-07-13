@@ -1,2 +1,10 @@
+[build]
+  command = "npm run build"
+  publish = "build"
+
 [build.environment]
   NODE_VERSION = "18.20.8"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"

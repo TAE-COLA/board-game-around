@@ -12,6 +12,8 @@
     "@chakra-ui/react": "^2.8.2",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@netlify/blobs": "^10.7.9",
     "@types/node": "^22.5.0",
     "@types/react": "^18.3.4",
     "@types/react-dom": "^18.3.0",
@@ -24,7 +26,8 @@
     "react-query": "^3.39.3",
     "react-router-dom": "^6.26.1",
     "react-scripts": "5.0.1",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "zod": "^3.25.76"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -33,6 +36,8 @@
     "test:shared": "react-scripts test --watchAll=false --runInBand --runTestsByPath src/shared/shared.logic.test.ts",
     "test:the-mind": "react-scripts test --watchAll=false --runInBand --runTestsByPath src/features/the-mind/model/the-mind.logic.test.ts",
     "test:logic": "react-scripts test --watchAll=false --runInBand --runTestsByPath src/shared/shared.logic.test.ts src/features/the-mind/model/the-mind.logic.test.ts",
+    "test:arteia": "node netlify/lib/arteia/run-tests.mjs",
+    "arteia:sync": "node tools/arteia/sync-to-netlify.mjs",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
